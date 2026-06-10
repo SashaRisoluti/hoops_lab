@@ -74,6 +74,35 @@ def test_team_game_factors_joins_opponent_counts() -> None:
     assert first["DEF_EFG"] == round(39 / 85, 6) or abs(first["DEF_EFG"] - 39 / 85) < 1e-9
 
 
+def test_league_playmaking_rebounding_percentiles() -> None:
+    from hoops_lab.analytics.team_identity import league_playmaking_rebounding
+
+    db = Database(path=":memory:")
+    db.connect().register(
+        "advanced_team_stats",
+        pd.DataFrame(
+            {
+                "TEAM_ID": [1, 2],
+                "season": ["2023-24", "2023-24"],
+                "AST_PCT": [0.65, 0.55],
+                "AST_TO": [2.1, 1.6],
+                "AST_RATIO": [19.0, 16.0],
+                "OREB_PCT": [0.30, 0.24],
+                "DREB_PCT": [0.74, 0.70],
+                "REB_PCT": [0.52, 0.48],
+            }
+        ),
+    )
+
+    league = league_playmaking_rebounding(db, season="2023-24")
+
+    team1 = league.loc[league["TEAM_ID"] == 1].iloc[0]
+    assert team1["AST_PCT_PCTL"] == 100.0
+    assert team1["REB_PCT_PCTL"] == 100.0
+    team2 = league.loc[league["TEAM_ID"] == 2].iloc[0]
+    assert team2["AST_PCT_PCTL"] == 50.0
+
+
 def test_league_team_factors_rank_teams() -> None:
     league = league_team_factors(_db(), season="2023-24")
 

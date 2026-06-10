@@ -31,14 +31,15 @@ st.markdown(
     """
 Use the **sidebar** to navigate the analysis sections:
 
-| Section | Roadmap |
+| Section | What you find |
 |---|---|
-| 📊 Historical Stats Explorer | Phase 1 — in progress |
-| 🧬 Player Analyzer | Phase 2 |
-| 🛡️ Team Identity · 🔎 Opponent Scouting · ⚔️ Matchup Analysis · 🎯 Shot Map | Phase 3 |
-| 🧩 Lineup Explorer | Phase 4 |
-| 📡 Live Command Center | Phase 5 |
-| 📝 Post-Game Review | Phase 6 |
+| 📊 Historical Stats Explorer | Dynamic filters, custom stats table, percentile histogram |
+| 🧬 Player Analyzer | Player card, percentile radar, lineup-based on/off |
+| 🛡️ Team Identity · 🔎 Scouting · ⚔️ Matchup | Four Factors, auto scouting, leverage index |
+| 🎯 Shot Map | Half-court shot chart, zone efficiency, assisted share |
+| 🧩 Lineup Explorer | Complete 5-man lineups and exact player combinations |
+| 📡 Live Command Center | Replay/live game state, tactical alerts, win probability |
+| 📝 Post-Game Review | Automated report: factors, runs, shot quality, insights |
 """
 )
 
@@ -58,5 +59,3 @@ else:
         "No data loaded yet — run `python -m hoops_lab.ingestion.historical` and "
         "`python -m hoops_lab.storage.seed` from the repo root."
     )
-
-st.info("🚧 Project under active development — Phase 1 (Historical Dashboard) is being built.")

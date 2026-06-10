@@ -37,6 +37,26 @@ def test_build_game_states_extracts_margin_and_time() -> None:
     assert bool(first["home_won"]) is True
 
 
+def test_wp_curve_adds_probabilities_to_scoring_events() -> None:
+    from hoops_lab.models.win_probability import wp_curve
+
+    model = train_win_probability(_synthetic_states())
+    events = pd.DataFrame(
+        {
+            "period": [1, 1, 2],
+            "clock": ["PT10M00.00S", "PT05M00.00S", "PT06M00.00S"],
+            "scoreHome": ["2", "", "20"],
+            "scoreAway": ["0", "", "10"],
+        }
+    )
+    curve = wp_curve(model, events)
+
+    assert len(curve) == 2  # only scoring updates
+    assert ((curve["wp_home"] > 0) & (curve["wp_home"] < 1)).all()
+    # A bigger lead later in the game must mean a higher win probability.
+    assert curve["wp_home"].iloc[1] > curve["wp_home"].iloc[0]
+
+
 def _synthetic_states(n: int = 600) -> pd.DataFrame:
     rng = np.random.default_rng(11)
     margins = rng.integers(-20, 21, n)

@@ -68,15 +68,43 @@ def test_download_play_by_play_merges_games(tmp_path) -> None:
     assert sorted(saved["gameId"]) == ["001", "002"]
 
 
-def test_download_shot_chart_passes_team_id(tmp_path) -> None:
+def test_download_shot_chart_passes_team_id_and_names_file_by_team(tmp_path) -> None:
     df = pd.DataFrame({"LOC_X": [0], "LOC_Y": [0]})
     client = make_client(df)
     downloader = HistoricalDownloader(client=client, raw_dir=tmp_path)
 
     result = downloader.download_shot_chart(season="2023-24", team_id=1610612742)
 
-    assert result.dataset == "shot_chart"
+    # Team id in the dataset name so multiple teams' files coexist.
+    assert result.dataset == "shot_chart_1610612742"
+    assert result.path.name == "shot_chart_1610612742_2023-24.parquet"
     assert client.fetch_df.call_args.kwargs.get("team_id") == 1610612742
+
+
+def test_download_league_shot_charts_covers_every_team(tmp_path) -> None:
+    client = MagicMock()
+    client.fetch_df.return_value = pd.DataFrame({"LOC_X": [0], "LOC_Y": [0]})
+    downloader = HistoricalDownloader(client=client, raw_dir=tmp_path)
+
+    results = downloader.download_league_shot_charts("2023-24")
+
+    assert client.fetch_df.call_count == 30
+    assert len(results) == 30
+    assert len({r.dataset for r in results}) == 30  # one file per team
+
+
+def test_sample_game_ids_per_team_unions_recent_games() -> None:
+    from hoops_lab.ingestion.historical import sample_game_ids_per_team
+
+    team_box = pd.DataFrame(
+        {
+            "TEAM_ID": [1, 1, 1, 2, 2],
+            "GAME_ID": ["g4", "g3", "g1", "g4", "g2"],
+            "GAME_DATE": ["2024-04-10", "2024-04-08", "2024-04-01", "2024-04-10", "2024-04-05"],
+        }
+    )
+    # Team 1 keeps g4+g3, team 2 keeps g4+g2; the shared g4 appears once.
+    assert sample_game_ids_per_team(team_box, per_team=2) == ["g2", "g3", "g4"]
 
 
 def test_download_lineups_queries_each_team(tmp_path) -> None:

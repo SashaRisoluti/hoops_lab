@@ -62,6 +62,11 @@ def adapt_live_actions(actions: list[dict], game_id: str) -> pd.DataFrame:
                 "description": description,
                 "scoreHome": action.get("scoreHome", ""),
                 "scoreAway": action.get("scoreAway", ""),
+                # Shot-map passthrough (present on shot events in the live feed).
+                "xLegacy": action.get("xLegacy", ""),
+                "yLegacy": action.get("yLegacy", ""),
+                "playerName": action.get("playerName", ""),
+                "shotDistance": action.get("shotDistance", ""),
             }
         )
     return pd.DataFrame(rows)

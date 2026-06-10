@@ -88,6 +88,27 @@ def predict_wp_frame(model: LogisticRegression, states: pd.DataFrame) -> np.ndar
     return model.predict_proba(featured[["margin", "margin_time"]])[:, 1]
 
 
+def wp_curve(model: LogisticRegression, events: pd.DataFrame) -> pd.DataFrame:
+    """Home win probability at every scoring update of (ordered) events.
+
+    Returns the scoring rows with margin, minutes_remaining and wp_home
+    columns added — ready for a line chart.
+    """
+    home = pd.to_numeric(events["scoreHome"], errors="coerce")
+    away = pd.to_numeric(events["scoreAway"], errors="coerce")
+    scoring = events.loc[home.notna() & away.notna()].copy()
+    if scoring.empty:
+        scoring["margin"] = scoring["minutes_remaining"] = scoring["wp_home"] = []
+        return scoring
+
+    clock_min = (_clock_seconds(scoring["clock"]) / 60.0).fillna(0.0)
+    period = scoring["period"].astype(int)
+    scoring["minutes_remaining"] = ((4 - period.clip(upper=4)) * 12.0 + clock_min).clip(lower=0.0)
+    scoring["margin"] = (home.loc[scoring.index] - away.loc[scoring.index]).astype(float)
+    scoring["wp_home"] = predict_wp_frame(model, scoring)
+    return scoring
+
+
 def predict_wp(model: LogisticRegression, margin: float, minutes_remaining: float) -> float:
     """Home win probability for a single game state."""
     frame = pd.DataFrame({"margin": [margin], "minutes_remaining": [minutes_remaining]})

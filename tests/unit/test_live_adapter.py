@@ -83,3 +83,29 @@ def test_adapt_live_actions_maps_to_stats_format() -> None:
     assert events.iloc[4]["subType"] == "Free Throw 1 of 2"
     assert "MISS" in events.iloc[4]["description"]  # missed FT marker for the parser
     assert (events["gameId"] == "LIVE1").all()
+
+
+def test_adapter_passes_shot_coordinates_through() -> None:
+    actions = [
+        {
+            "actionNumber": 2,
+            "period": 1,
+            "clock": "PT11M30.00S",
+            "teamId": 10,
+            "actionType": "3pt",
+            "subType": "Jump Shot",
+            "shotResult": "Made",
+            "xLegacy": -220,
+            "yLegacy": 30,
+            "playerName": "Doncic",
+            "shotDistance": 23.5,
+            "description": "3PT (Irving 2 AST)",
+        }
+    ]
+    events = adapt_live_actions(actions, game_id="LIVE2")
+
+    row = events.iloc[0]
+    assert row["xLegacy"] == -220
+    assert row["yLegacy"] == 30
+    assert row["playerName"] == "Doncic"
+    assert row["shotDistance"] == 23.5

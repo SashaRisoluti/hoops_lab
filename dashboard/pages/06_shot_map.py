@@ -1,7 +1,9 @@
-"""Shot Map — every shot on the half-court + zone efficiency.
+"""Shot Map — every shot on the half-court, zone efficiency, assisted share.
 
-Shot-location data is downloaded for the reference team only (public-demo
-data strategy); extend the ingestion to more teams when needed.
+The team dropdown lists every team with shot-location data (the reference
+team by default, per the demo data strategy — it grows automatically when
+more teams' shot charts are downloaded). The assisted share is recovered by
+joining play-by-play descriptions, so it covers the sampled games.
 """
 
 import sys
@@ -16,7 +18,7 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart, zone_efficiency  # noqa: E402
-from hoops_lab.config import REFERENCE_TEAM  # noqa: E402
+from hoops_lab.analytics.shot_context import assisted_summary  # noqa: E402
 
 st.set_page_config(page_title="Shot Map", page_icon="🏀", layout="wide")
 st.title("🎯 Shot Map")
@@ -26,25 +28,38 @@ if database.table_rows("shots") == 0:
     st.warning("No shot data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
-st.caption(
-    f"Shot-location data covers **{REFERENCE_TEAM}** (demo data strategy); "
-    "swap the team via REFERENCE_TEAM and re-run the downloader."
+teams_with_shots = database.query_df(
+    """
+    SELECT DISTINCT s.TEAM_ID, t.full_name
+    FROM shots AS s
+    JOIN teams AS t ON t.team_id = s.TEAM_ID
+    ORDER BY t.full_name
+    """
 )
 
-season_options = database.query_df("SELECT DISTINCT season FROM shots ORDER BY season DESC")[
-    "season"
-].tolist()
-
 st.sidebar.header("🔍 Filters")
+team_name = st.sidebar.selectbox("Team", teams_with_shots["full_name"].tolist())
+team_id = int(teams_with_shots.loc[teams_with_shots["full_name"] == team_name, "TEAM_ID"].iloc[0])
+
+season_options = database.query_df(
+    "SELECT DISTINCT season FROM shots WHERE TEAM_ID = ? ORDER BY season DESC", [team_id]
+)["season"].tolist()
 season = st.sidebar.selectbox("Season", season_options)
+
 player_options = database.query_df(
-    "SELECT DISTINCT PLAYER_NAME FROM shots WHERE season = ? ORDER BY PLAYER_NAME", [season]
+    "SELECT DISTINCT PLAYER_NAME FROM shots WHERE season = ? AND TEAM_ID = ? ORDER BY PLAYER_NAME",
+    [season, team_id],
 )["PLAYER_NAME"].tolist()
 players = st.sidebar.multiselect("Players (empty = whole team)", player_options)
 outcome = st.sidebar.radio("Outcome", ["All", "Made only", "Missed only"], horizontal=True)
 
-sql = "SELECT * FROM shots WHERE season = ?"
-params: list = [season]
+st.caption(
+    f"Shot-location data available for **{len(teams_with_shots)} team(s)** — add more with "
+    "`HistoricalDownloader.download_shot_chart` and re-seed."
+)
+
+sql = "SELECT * FROM shots WHERE season = ? AND TEAM_ID = ?"
+params: list = [season, team_id]
 if players:
     sql += f" AND PLAYER_NAME IN ({', '.join('?' for _ in players)})"
     params.extend(players)
@@ -76,4 +91,18 @@ with zones_col:
         st.caption(
             f"{len(shots):,} shots · {made:,} made ({made / len(shots):.1%}) · "
             "PPS weighs threes at 3 points."
+        )
+
+    st.subheader("🤝 Assisted makes")
+    assisted = assisted_summary(database, shots) if not shots.empty else None
+    if assisted is None:
+        st.info("No play-by-play coverage for the filtered shots.")
+    else:
+        ast_cols = st.columns(3)
+        ast_cols[0].metric("Assisted share", f"{assisted['share']:.0%}")
+        ast_cols[1].metric("Makes covered", assisted["made_covered"])
+        ast_cols[2].metric("Games covered", assisted["games_covered"])
+        st.caption(
+            "From play-by-play descriptions — limited to the sampled games; "
+            "extend the PBP download to widen coverage."
         )

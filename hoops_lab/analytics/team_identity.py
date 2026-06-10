@@ -70,6 +70,22 @@ def league_team_factors(db: Database, season: str) -> pd.DataFrame:
     return league
 
 
+#: Playmaking & rebounding columns from advanced_team_stats (all higher = better).
+PLAYMAKING_REBOUNDING_COLS = ("AST_PCT", "AST_TO", "AST_RATIO", "OREB_PCT", "DREB_PCT", "REB_PCT")
+
+
+def league_playmaking_rebounding(db: Database, season: str) -> pd.DataFrame:
+    """Team playmaking/rebounding profile with league percentile columns."""
+    columns = ", ".join(PLAYMAKING_REBOUNDING_COLS)
+    league = db.query_df(
+        f"SELECT TEAM_ID, {columns} FROM advanced_team_stats WHERE season = ?",
+        [season],
+    )
+    for column in PLAYMAKING_REBOUNDING_COLS:
+        league[f"{column}_PCTL"] = percentile_rank(league[column])
+    return league
+
+
 def league_ratings(db: Database, season: str) -> pd.DataFrame:
     """Endpoint-provided team ratings for one season, with league percentiles.
 

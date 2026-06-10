@@ -14,16 +14,23 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import plotly.express as px  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from dashboard.components.alert_panel import render_alert_panel  # noqa: E402
-from dashboard.components.data_access import get_database  # noqa: E402
+from dashboard.components.data_access import get_database, reference_team_index  # noqa: E402
 from dashboard.components.live_kpi_strip import render_kpi_strip  # noqa: E402
+from dashboard.components.shot_chart import render_shot_chart  # noqa: E402
 from hoops_lab.config import ENVIRONMENT  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
 from hoops_lab.live.alert_engine import evaluate_alerts  # noqa: E402
-from hoops_lab.live.game_state import GameState  # noqa: E402
+from hoops_lab.live.game_state import GameState, shot_frame_from_events  # noqa: E402
 from hoops_lab.live.live_vs_historical import comparison_table, get_baselines  # noqa: E402
+from hoops_lab.models.win_probability import (  # noqa: E402
+    build_states_from_db,
+    train_win_probability,
+    wp_curve,
+)
 
 st.set_page_config(page_title="Live Command Center", page_icon="🏀", layout="wide")
 st.title("📡 Live Command Center")
@@ -32,6 +39,15 @@ database = get_database()
 if database.table_rows("play_by_play") == 0:
     st.warning("No play-by-play loaded — run the downloader and the seeder first (see README).")
     st.stop()
+
+
+@st.cache_resource
+def _wp_model(excluded_game: str):
+    """Win probability model trained on every OTHER sampled game (no leakage)."""
+    states = build_states_from_db(database)
+    train = states.loc[states["game_id"] != excluded_game]
+    return train_win_probability(train) if len(train) else None
+
 
 st.sidebar.header("🔍 Source")
 modes = ["Replay simulation"]
@@ -72,8 +88,25 @@ if mode == "Live (nba_api)":
     home_abbr = game["homeTeam"]["teamTricode"]
     away_abbr = game["awayTeam"]["teamTricode"]
     season = database.query_df("SELECT max(season) AS s FROM seasons").iloc[0]["s"]
+    current_game_id = str(game["gameId"])
     st.button("🔄 Refresh")
 else:
+    replay_teams = database.query_df(
+        """
+        SELECT DISTINCT t.team_id, t.full_name
+        FROM play_by_play AS p
+        JOIN games AS g ON g.game_id = p.gameId
+        JOIN teams AS t ON t.team_id = g.home_team_id OR t.team_id = g.away_team_id
+        ORDER BY t.full_name
+        """
+    )
+    replay_team_name = st.sidebar.selectbox(
+        "Team", replay_teams["full_name"].tolist(), index=reference_team_index(replay_teams)
+    )
+    replay_team_id = int(
+        replay_teams.loc[replay_teams["full_name"] == replay_team_name, "team_id"].iloc[0]
+    )
+
     replay_games = database.query_df(
         """
         SELECT DISTINCT p.gameId AS game_id, g.season, g.game_date,
@@ -83,8 +116,10 @@ else:
         JOIN games AS g ON g.game_id = p.gameId
         JOIN teams AS th ON th.team_id = g.home_team_id
         JOIN teams AS ta ON ta.team_id = g.away_team_id
+        WHERE g.home_team_id = ? OR g.away_team_id = ?
         ORDER BY g.game_date DESC
-        """
+        """,
+        [replay_team_id, replay_team_id],
     )
     labels = [
         f"{r.away_abbr} @ {r.home_abbr} — {r.game_date} ({r.season})"
@@ -95,6 +130,7 @@ else:
     home_id, away_id = int(row["home_team_id"]), int(row["away_team_id"])
     home_abbr, away_abbr = row["home_abbr"], row["away_abbr"]
     season = row["season"]
+    current_game_id = str(row["game_id"])
 
     all_events = sort_chronological(
         database.query_df("SELECT * FROM play_by_play WHERE gameId = ?", [row["game_id"]])
@@ -145,6 +181,48 @@ with compare_col:
 
 with alerts_col:
     render_alert_panel(evaluate_alerts(state, baselines))
+
+st.divider()
+
+# ---- Win probability + shot map ----------------------------------------------
+wp_col, shotmap_col = st.columns(2)
+
+with wp_col:
+    st.subheader(f"📈 Win probability — {home_abbr}")
+    wp_model = _wp_model(current_game_id)
+    curve = wp_curve(wp_model, events) if wp_model is not None else None
+    if curve is None or curve.empty:
+        st.info("Waiting for the first scoring update.")
+    else:
+        fig = px.line(curve.reset_index(drop=True), y="wp_home")
+        fig.add_hline(y=0.5, line_dash="dot", line_color="#888")
+        fig.update_layout(
+            height=360,
+            yaxis=dict(range=[0, 1], title=f"P({home_abbr} win)"),
+            xaxis_title="Scoring events processed",
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption(f"Current: {curve['wp_home'].iloc[-1]:.0%} — model excludes this game.")
+
+with shotmap_col:
+    st.subheader("🎯 Shot map — from events")
+    shot_frame = shot_frame_from_events(events)
+    if shot_frame.empty:
+        st.info("No shots with coordinates yet.")
+    else:
+        side = st.radio("Show", ["Both", home_abbr, away_abbr], horizontal=True)
+        if side == home_abbr:
+            shot_frame = shot_frame.loc[shot_frame["TEAM_ID"] == home_id]
+        elif side == away_abbr:
+            shot_frame = shot_frame.loc[shot_frame["TEAM_ID"] == away_id]
+        render_shot_chart(shot_frame)
+        made = int(shot_frame["SHOT_MADE_FLAG"].sum())
+        assisted = int(shot_frame["ASSISTED"].sum())
+        if made:
+            st.caption(
+                f"{len(shot_frame)} shots · {made} made, {assisted} assisted "
+                f"({assisted / made:.0%} of makes)."
+            )
 
 st.divider()
 st.subheader("🕒 Timeline — last events")

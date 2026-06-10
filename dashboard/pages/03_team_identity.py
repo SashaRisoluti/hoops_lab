@@ -18,6 +18,7 @@ from dashboard.components.data_access import (  # noqa: E402
 )
 from dashboard.components.radar_chart import render_radar_chart  # noqa: E402
 from hoops_lab.analytics.team_identity import (  # noqa: E402
+    league_playmaking_rebounding,
     league_ratings,
     league_team_factors,
     team_game_factors,
@@ -104,6 +105,57 @@ with table_col:
                 "league pctl", min_value=0, max_value=100, format="%.0f"
             )
         },
+    )
+
+st.divider()
+
+# ---- Playmaking & rebounding --------------------------------------------------
+st.subheader("🤝 Playmaking & Rebounding")
+playmaking = league_playmaking_rebounding(database, season)
+team_pmr = playmaking.loc[playmaking["TEAM_ID"] == team_id].iloc[0]
+
+pmr_cols = st.columns(6)
+for col, (label, column, fmt) in zip(
+    pmr_cols,
+    (
+        ("AST%", "AST_PCT", "{:.1%}"),
+        ("AST/TO", "AST_TO", "{:.2f}"),
+        ("AST ratio", "AST_RATIO", "{:.1f}"),
+        ("OREB%", "OREB_PCT", "{:.1%}"),
+        ("DREB%", "DREB_PCT", "{:.1%}"),
+        ("REB%", "REB_PCT", "{:.1%}"),
+    ),
+    strict=True,
+):
+    col.metric(
+        label,
+        fmt.format(team_pmr[column]),
+        f"{team_pmr[f'{column}_PCTL']:.0f}th pctl",
+        delta_color="off",
+    )
+
+ast_col, reb_col = st.columns(2)
+with ast_col:
+    st.markdown("**Assist leaders**")
+    st.dataframe(
+        database.query_df(
+            "SELECT PLAYER_NAME, AST, AST_PCT, AST_TO FROM player_season_full "
+            "WHERE TEAM_ID = ? AND season = ? AND MIN >= 15 ORDER BY AST DESC LIMIT 5",
+            [team_id, season],
+        ),
+        hide_index=True,
+        use_container_width=True,
+    )
+with reb_col:
+    st.markdown("**Rebound leaders**")
+    st.dataframe(
+        database.query_df(
+            "SELECT PLAYER_NAME, REB, OREB, DREB, REB_PCT FROM player_season_full "
+            "WHERE TEAM_ID = ? AND season = ? AND MIN >= 15 ORDER BY REB DESC LIMIT 5",
+            [team_id, season],
+        ),
+        hide_index=True,
+        use_container_width=True,
     )
 
 st.divider()

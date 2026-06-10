@@ -89,6 +89,19 @@ def recent_team_game_ids(team_box: pd.DataFrame, team_id: int, n: int) -> list[s
     return games["GAME_ID"].head(n).astype(str).tolist()
 
 
+def sample_game_ids_per_team(team_box: pd.DataFrame, per_team: int) -> list[str]:
+    """Union of every team's most recent ``per_team`` GAME_IDs (sorted).
+
+    Shared games (each game involves two teams) appear once — the cheap way
+    to build a league-wide play-by-play sample with guaranteed per-team
+    coverage.
+    """
+    ids: set[str] = set()
+    for team_id in team_box["TEAM_ID"].unique():
+        ids.update(recent_team_game_ids(team_box, int(team_id), per_team))
+    return sorted(ids)
+
+
 class HistoricalDownloader:
     """Downloads historical NBA data and stores it as Parquet in ``raw_dir``.
 
@@ -207,7 +220,19 @@ class HistoricalDownloader:
             season_type_all_star=season_type,
             context_measure_simple="FGA",
         )
-        return self._save(df, "shot_chart", season)
+        # Team id in the name so every team's file coexists in data/raw.
+        return self._save(df, f"shot_chart_{team_id}", season)
+
+    def download_league_shot_charts(
+        self,
+        season: str,
+        season_type: SeasonType = "Regular Season",
+    ) -> list[DownloadResult]:
+        """Download every team's shot chart for one season (30 throttled calls)."""
+        return [
+            self.download_shot_chart(season, team_id=team["id"], season_type=season_type)
+            for team in static_teams.get_teams()
+        ]
 
     def download_play_by_play(self, game_ids: list[str], season: str) -> DownloadResult:
         """Download play-by-play for a sample of games, merged into one file.

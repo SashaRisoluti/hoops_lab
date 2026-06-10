@@ -35,6 +35,37 @@ class TeamLiveStats:
         return (self.fgm + 0.5 * self.fg3m) / self.fga
 
 
+def _column_or_na(events: pd.DataFrame, name: str) -> pd.Series:
+    """A column if present, else an all-NA series aligned to the index."""
+    if name in events.columns:
+        return events[name]
+    return pd.Series(pd.NA, index=events.index)
+
+
+def shot_frame_from_events(events: pd.DataFrame) -> pd.DataFrame:
+    """Shot-chart-shaped frame (LOC_X/LOC_Y/...) from PBP-format events.
+
+    Rows without legacy coordinates are dropped; ``ASSISTED`` is derived from
+    the play-by-play description ("... (Irving 4 AST)") on made shots.
+    """
+    shots = events.loc[events["actionType"].isin(["Made Shot", "Missed Shot"])]
+    made = shots["actionType"] == "Made Shot"
+    frame = pd.DataFrame(
+        {
+            "LOC_X": pd.to_numeric(_column_or_na(shots, "xLegacy"), errors="coerce"),
+            "LOC_Y": pd.to_numeric(_column_or_na(shots, "yLegacy"), errors="coerce"),
+            "SHOT_MADE_FLAG": made.astype(int),
+            "PLAYER_NAME": _column_or_na(shots, "playerName").astype(str),
+            "SHOT_DISTANCE": pd.to_numeric(_column_or_na(shots, "shotDistance"), errors="coerce"),
+            "ACTION_TYPE": _column_or_na(shots, "subType").astype(str),
+            "ASSISTED": made
+            & _column_or_na(shots, "description").astype(str).str.contains(" AST)", regex=False),
+            "TEAM_ID": _column_or_na(shots, "teamId"),
+        }
+    )
+    return frame.dropna(subset=["LOC_X", "LOC_Y"]).reset_index(drop=True)
+
+
 @dataclass
 class GameState:
     """Snapshot of a game after N events."""
