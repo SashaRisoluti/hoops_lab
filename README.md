@@ -112,7 +112,7 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 - [x] Phase 1 — Historical dashboard (ingestion, DuckDB, filters, stats table, percentile histogram)
 - [x] Phase 2 — Advanced player analytics (player cards, percentile radar, on/off)
 - [x] Phase 3 — Team identity & opponent scouting (Four Factors, Matchup Leverage Index, shot map)
-- [ ] Phase 4 — Lineup & possession analytics
+- [x] Phase 4 — Lineup & possession analytics (lineup explorer, exact combinations, possession parser)
 - [ ] Phase 5 — Live command center (polling, live vs historical, tactical alerts)
 - [ ] Phase 6 — Predictive models (win probability, shot quality, lineup recommender) & auto reports
 
