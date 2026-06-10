@@ -101,6 +101,22 @@ class NBAApiClient:
             f"{endpoint_cls.__name__} failed after {self.max_retries} attempts"
         ) from last_error
 
+    def fetch_df(self, endpoint_cls: type, dataset_index: int = 0, **params: Any) -> pd.DataFrame:
+        """Call an endpoint and return one of its result sets as a DataFrame.
+
+        Parameters
+        ----------
+        endpoint_cls:
+            An endpoint class from ``nba_api.stats.endpoints``.
+        dataset_index:
+            Which of the endpoint's result sets to return (most endpoints
+            expose the main one at index 0).
+        **params:
+            Keyword arguments forwarded to the endpoint constructor.
+        """
+        endpoint = self._call(endpoint_cls, **params)
+        return endpoint.get_data_frames()[dataset_index]
+
     @staticmethod
     def team_id_from_name(full_name: str) -> int:
         """Resolve an NBA team id from its full name (offline, static data).
@@ -147,13 +163,12 @@ class NBAApiClient:
         -------
         One row per player with base box-score stats (GP, MIN, PTS, REB, AST, ...).
         """
-        endpoint = self._call(
+        df = self.fetch_df(
             leaguedashplayerstats.LeagueDashPlayerStats,
             season=season,
             season_type_all_star=season_type,
             per_mode_detailed=per_mode,
         )
-        df = endpoint.get_data_frames()[0]
         logger.info("LeagueDashPlayerStats %s: %d rows x %d cols", season, *df.shape)
         return df
 

@@ -51,3 +51,17 @@ def test_team_id_from_name_resolves_reference_team() -> None:
 def test_team_id_from_name_rejects_unknown_team() -> None:
     with pytest.raises(ValueError, match="No NBA team matches"):
         NBAApiClient.team_id_from_name("Springfield Tigers")
+
+
+def test_fetch_df_returns_selected_dataframe() -> None:
+    fake_endpoint = MagicMock()
+    fake_endpoint.get_data_frames.return_value = [
+        pd.DataFrame({"A": [1]}),
+        pd.DataFrame({"B": [2, 3]}),
+    ]
+    client = NBAApiClient(delay=0)
+    with patch.object(client, "_call", return_value=fake_endpoint):
+        df = client.fetch_df(object, dataset_index=1)
+
+    assert list(df.columns) == ["B"]
+    assert len(df) == 2
