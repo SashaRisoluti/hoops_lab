@@ -60,6 +60,22 @@ def _clock_seconds(clock: pd.Series) -> pd.Series:
     )
 
 
+def sort_chronological(game: pd.DataFrame) -> pd.DataFrame:
+    """Order one game's events chronologically.
+
+    Raw feeds occasionally contain late-inserted rows with out-of-order
+    actionNumbers (events from a previous period in the middle of the next
+    one), which would make the cumulative score go backwards. True order is
+    period asc, game clock desc, actionNumber as the tiebreak.
+    """
+    ordered = game.sort_values("actionNumber").reset_index(drop=True)
+    ordered["_clock_sec"] = _clock_seconds(ordered["clock"]).ffill().fillna(720.0)
+    ordered = ordered.sort_values(
+        ["period", "_clock_sec", "actionNumber"], ascending=[True, False, True]
+    )
+    return ordered.drop(columns="_clock_sec").reset_index(drop=True)
+
+
 def _and_one_pending(game: pd.DataFrame, index: int, team: int) -> bool:
     """True when a '1 of 1' free throw by ``team`` follows a made shot."""
     for j in range(index + 1, min(index + 8, len(game))):
@@ -180,15 +196,7 @@ def build_possessions(pbp: pd.DataFrame) -> pd.DataFrame:
     results: list[dict] = []
 
     for game_id, game in pbp.groupby("gameId", sort=False):
-        # Raw feeds occasionally contain late-inserted rows with out-of-order
-        # actionNumbers (events from a previous period in the middle of the
-        # next one), which would make the cumulative score go backwards.
-        # Chronological order = period asc, game clock desc, actionNumber.
-        game = game.sort_values("actionNumber").reset_index(drop=True)
-        game["_clock_sec"] = _clock_seconds(game["clock"]).ffill().fillna(720.0)
-        game = game.sort_values(
-            ["period", "_clock_sec", "actionNumber"], ascending=[True, False, True]
-        ).reset_index(drop=True)
+        game = sort_chronological(game)
 
         home_rows = game.loc[(game["location"] == "h") & (game["teamId"].fillna(0) > 0)]
         if home_rows.empty:
