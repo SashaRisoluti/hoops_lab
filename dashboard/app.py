@@ -10,9 +10,9 @@ if str(ROOT) not in sys.path:
 
 import streamlit as st  # noqa: E402
 
+from dashboard.components.data_access import get_database  # noqa: E402
 from hoops_lab import __version__  # noqa: E402
 from hoops_lab.config import DEMO_SEASONS, ENVIRONMENT, REFERENCE_TEAM  # noqa: E402
-from hoops_lab.storage.database import Database  # noqa: E402
 
 st.set_page_config(page_title="Hoops Lab", page_icon="🏀", layout="wide")
 
@@ -41,14 +41,6 @@ Use the **sidebar** to navigate the analysis sections:
 | 📝 Post-Game Review | Phase 6 |
 """
 )
-
-
-@st.cache_resource
-def get_database() -> Database:
-    """Open the analytical DB, rebuilding it from Parquet if needed (HF Spaces)."""
-    db = Database()
-    db.ensure_db_ready()
-    return db
 
 
 database = get_database()

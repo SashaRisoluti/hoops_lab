@@ -24,6 +24,35 @@ from hoops_lab.storage.models import PARQUET_TABLES
 
 logger = logging.getLogger(__name__)
 
+#: Advanced columns exposed by the player_season_full view (when present in
+#: the ingested data and not already part of the base table).
+ADVANCED_VIEW_COLUMNS: tuple[str, ...] = (
+    "OFF_RATING",
+    "DEF_RATING",
+    "NET_RATING",
+    "AST_PCT",
+    "AST_TO",
+    "AST_RATIO",
+    "OREB_PCT",
+    "DREB_PCT",
+    "REB_PCT",
+    "TM_TOV_PCT",
+    "EFG_PCT",
+    "TS_PCT",
+    "USG_PCT",
+    "PACE",
+    "PIE",
+    "POSS",
+)
+
+
+def _column_names(db: Database, table: str) -> set[str]:
+    """Column names of a table, from the information schema."""
+    rows = db.query_df(
+        "SELECT column_name FROM information_schema.columns WHERE table_name = ?", [table]
+    )
+    return set(rows["column_name"])
+
 
 def _sql_glob(raw_dir: Path, pattern: str) -> str:
     """Build a single-quote-safe, forward-slash glob for read_parquet()."""
@@ -143,6 +172,21 @@ def derive_core_tables(db: Database) -> dict[str, int]:
         counts["players"] = db.table_rows("players")
     else:
         logger.warning("player_season_stats missing — players not derived")
+
+    if db.has_table("player_season_stats") and db.has_table("advanced_player_stats"):
+        base_cols = _column_names(db, "player_season_stats")
+        advanced_cols = _column_names(db, "advanced_player_stats")
+        extras = [c for c in ADVANCED_VIEW_COLUMNS if c in advanced_cols and c not in base_cols]
+        extra_select = "".join(f', a."{c}"' for c in extras)
+        db.execute(
+            "CREATE OR REPLACE VIEW player_season_full AS "
+            f"SELECT b.*{extra_select} FROM player_season_stats AS b "
+            "LEFT JOIN advanced_player_stats AS a "
+            "ON a.PLAYER_ID = b.PLAYER_ID AND a.season = b.season"
+        )
+        counts["player_season_full"] = db.table_rows("player_season_full")
+    else:
+        logger.warning("base/advanced player stats missing — player_season_full view not created")
 
     return counts
 

@@ -55,9 +55,14 @@ def _write_fixture_parquets(raw_dir: Path) -> None:
                 "TEAM_ABBREVIATION": ["AAA" if team_id == 1 else "BBB"],
                 "AGE": [age],
                 "GP": [70],
+                "PTS": [25.0],
             }
         )
         player_stats.to_parquet(raw_dir / f"player_stats_{season}.parquet", index=False)
+
+    # Advanced stats only for 2023-24 (the view must LEFT-join gracefully).
+    player_advanced = pd.DataFrame({"PLAYER_ID": [10], "TS_PCT": [0.6], "USG_PCT": [0.31]})
+    player_advanced.to_parquet(raw_dir / "player_advanced_2023-24.parquet", index=False)
 
 
 def _make_db(tmp_path: Path) -> tuple[Database, Path]:
@@ -138,6 +143,19 @@ def test_missing_parquet_datasets_are_skipped(tmp_path) -> None:
     # No lineups/shots/play-by-play fixtures on disk: tables simply absent.
     assert not db.has_table("lineups")
     assert not db.has_table("shots")
+
+
+def test_player_season_full_view_joins_advanced(tmp_path) -> None:
+    db, raw_dir = _make_db(tmp_path)
+    db.ensure_db_ready(raw_dir=raw_dir)
+
+    row = db.query_df(
+        "SELECT PLAYER_NAME, PTS, TS_PCT FROM player_season_full "
+        "WHERE PLAYER_ID = 10 AND season = '2023-24'"
+    ).iloc[0]
+
+    assert row["PTS"] == 25.0  # from the base table
+    assert row["TS_PCT"] == 0.6  # joined from advanced stats
 
 
 def test_migrations_create_structural_tables_and_are_idempotent(tmp_path) -> None:

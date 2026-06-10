@@ -10,6 +10,7 @@ import duckdb
 import pandas as pd
 
 from hoops_lab.config import DB_PATH
+from hoops_lab.storage.models import DERIVED_TABLES
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +131,8 @@ class Database:
         from hoops_lab.storage.seed import seed_database  # local import: avoid cycle
 
         self.run_migrations()
-        if not force and self.table_rows("games") > 0:
+        ready = self.table_rows("games") > 0 and all(self.has_table(t) for t in DERIVED_TABLES)
+        if not force and ready:
             return False
         seed_database(self, raw_dir=raw_dir)
         return True

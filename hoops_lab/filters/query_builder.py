@@ -35,6 +35,7 @@ class BaseTable:
 
 #: Whitelisted base tables exposed to the filter engine.
 BASE_TABLES: dict[str, BaseTable] = {
+    "player_season_full": BaseTable("player_season_full"),
     "player_season": BaseTable("player_season_stats"),
     "player_advanced": BaseTable("advanced_player_stats"),
     "team_season": BaseTable("team_season_stats"),
@@ -44,6 +45,7 @@ BASE_TABLES: dict[str, BaseTable] = {
 }
 
 BaseName = Literal[
+    "player_season_full",
     "player_season",
     "player_advanced",
     "team_season",

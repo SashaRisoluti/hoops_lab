@@ -109,7 +109,7 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 ## Roadmap
 
 - [x] Phase 0 — project scaffold, rate-limited nba_api client
-- [ ] Phase 1 — Historical dashboard (ingestion, DuckDB, filters, stats table, percentile histogram)
+- [x] Phase 1 — Historical dashboard (ingestion, DuckDB, filters, stats table, percentile histogram)
 - [ ] Phase 2 — Advanced player analytics (player cards, percentile radar, on/off)
 - [ ] Phase 3 — Team identity & opponent scouting (Four Factors, Matchup Leverage Index)
 - [ ] Phase 4 — Lineup & possession analytics

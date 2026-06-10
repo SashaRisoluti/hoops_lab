@@ -27,8 +27,9 @@ PARQUET_TABLES: dict[str, str] = {
     "play_by_play": "play_by_play_sample_*.parquet",
 }
 
-#: Tables derived by the seeder from other tables / static data.
-DERIVED_TABLES: tuple[str, ...] = ("teams", "players", "seasons", "games")
+#: Tables/views derived by the seeder from other tables / static data.
+#: player_season_full is a view joining base + advanced player season stats.
+DERIVED_TABLES: tuple[str, ...] = ("teams", "players", "seasons", "games", "player_season_full")
 
 #: Empty tables owned by the SQL migrations, filled in later phases.
 STRUCTURAL_TABLES: tuple[str, ...] = (

@@ -6,6 +6,7 @@ polars>=1.0
 duckdb>=1.0
 streamlit>=1.35
 plotly>=5.20
+matplotlib>=3.8
 scikit-learn>=1.4
 pydantic>=2.6
 pyarrow>=15
