@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Secrets & local config
+.env
+.streamlit/secrets.toml
+
+# Data: raw downloads and local DuckDB files are rebuilt from code.
+# data/processed/ (Parquet) IS versioned — it feeds the HuggingFace Spaces demo.
+data/raw/*
+!data/raw/.gitkeep
+data/db/*
+!data/db/.gitkeep
+*.duckdb

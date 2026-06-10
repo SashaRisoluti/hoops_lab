@@ -1,0 +1,24 @@
+# Mirrors `main` to the HuggingFace Space on every push.
+# Setup (once):
+#   1. Create the Space on HuggingFace (SDK: Streamlit).
+#   2. Replace <HF_USERNAME> below with your HF username (or org).
+#   3. Add a GitHub Actions secret named HF_TOKEN (HF token with write access).
+name: Sync to HuggingFace Spaces
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      - name: Push to HuggingFace
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/<HF_USERNAME>/hoops-lab
+          git push hf main --force
