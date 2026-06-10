@@ -114,7 +114,7 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 - [x] Phase 3 — Team identity & opponent scouting (Four Factors, Matchup Leverage Index, shot map)
 - [x] Phase 4 — Lineup & possession analytics (lineup explorer, exact combinations, possession parser)
 - [x] Phase 5 — Live command center (replay simulation + live polling, live vs historical, tactical alerts)
-- [ ] Phase 6 — Predictive models (win probability, shot quality, lineup recommender) & auto reports
+- [x] Phase 6 — Predictive models (win probability, shot quality, lineup recommender, run detector) & auto post-game reports
 
 ## Testing
 
