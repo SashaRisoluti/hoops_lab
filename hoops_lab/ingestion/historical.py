@@ -25,6 +25,7 @@ from nba_api.stats.endpoints import (
     playbyplayv3,
     shotchartdetail,
 )
+from nba_api.stats.static import teams as static_teams
 
 from hoops_lab.config import DEMO_SEASONS, REFERENCE_TEAM
 from hoops_lab.ingestion.nba_api_client import RAW_DATA_DIR, NBAApiClient
@@ -61,15 +62,10 @@ LEAGUE_DATASETS: dict[str, DatasetSpec] = {
         leaguedashteamstats.LeagueDashTeamStats,
         {"per_mode_detailed": "PerGame", "measure_type_detailed_defense": "Advanced"},
     ),
-    "lineups": DatasetSpec(
-        leaguedashlineups.LeagueDashLineups,
-        {
-            "group_quantity": 5,
-            "per_mode_detailed": "Totals",
-            "measure_type_detailed_defense": "Base",
-        },
-    ),
 }
+# NOTE: lineups are intentionally NOT a league dataset — the league-wide
+# LeagueDashLineups response is capped at 2000 rows server-side, so they are
+# downloaded with one query per team (see HistoricalDownloader.download_lineups).
 
 
 def recent_team_game_ids(team_box: pd.DataFrame, team_id: int, n: int) -> list[str]:
@@ -165,6 +161,32 @@ class HistoricalDownloader:
         """Download every league-level dataset for one season."""
         return [self.download_dataset(name, season, season_type) for name in LEAGUE_DATASETS]
 
+    def download_lineups(
+        self,
+        season: str,
+        season_type: SeasonType = "Regular Season",
+    ) -> DownloadResult:
+        """Download 5-man lineup stats with one query per NBA team.
+
+        The league-wide LeagueDashLineups endpoint caps its response at 2000
+        rows; querying team by team (30 throttled calls per season) returns
+        the complete lineup population instead.
+        """
+        frames = [
+            self.client.fetch_df(
+                leaguedashlineups.LeagueDashLineups,
+                season=season,
+                season_type_all_star=season_type,
+                team_id_nullable=team["id"],
+                group_quantity=5,
+                per_mode_detailed="Totals",
+                measure_type_detailed_defense="Base",
+            )
+            for team in static_teams.get_teams()
+        ]
+        df = pd.concat(frames, ignore_index=True)
+        return self._save(df, "lineups", season)
+
     def download_shot_chart(
         self,
         season: str,
@@ -222,6 +244,7 @@ def run_demo_download(
     for season in request.seasons:
         bundle = downloader.download_season_bundle(season, request.season_type)
         results.extend(bundle)
+        results.append(downloader.download_lineups(season, request.season_type))
         results.append(downloader.download_shot_chart(season, team_id=team_id))
 
         team_box = next(r for r in bundle if r.dataset == "team_box")

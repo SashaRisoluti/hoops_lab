@@ -79,6 +79,27 @@ def test_download_shot_chart_passes_team_id(tmp_path) -> None:
     assert client.fetch_df.call_args.kwargs.get("team_id") == 1610612742
 
 
+def test_download_lineups_queries_each_team(tmp_path) -> None:
+    client = MagicMock()
+    client.fetch_df.return_value = pd.DataFrame({"GROUP_ID": ["-1-2-3-4-5-"], "MIN": [10.0]})
+    downloader = HistoricalDownloader(client=client, raw_dir=tmp_path)
+
+    result = downloader.download_lineups("2023-24")
+
+    assert client.fetch_df.call_count == 30  # one query per NBA team
+    team_ids = {call.kwargs["team_id_nullable"] for call in client.fetch_df.call_args_list}
+    assert len(team_ids) == 30
+    assert 1610612742 in team_ids  # Dallas Mavericks
+    assert result.dataset == "lineups"
+    assert result.rows == 30
+
+
+def test_lineups_removed_from_league_datasets() -> None:
+    # Lineups are downloaded per team (the league-wide endpoint is capped at
+    # 2000 rows server-side), so they must not be in the one-call-per-season set.
+    assert "lineups" not in LEAGUE_DATASETS
+
+
 def test_recent_team_game_ids_filters_sorts_and_limits() -> None:
     team_box = pd.DataFrame(
         {
