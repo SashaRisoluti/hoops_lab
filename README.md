@@ -110,7 +110,7 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 
 - [x] Phase 0 — project scaffold, rate-limited nba_api client
 - [x] Phase 1 — Historical dashboard (ingestion, DuckDB, filters, stats table, percentile histogram)
-- [ ] Phase 2 — Advanced player analytics (player cards, percentile radar, on/off)
+- [x] Phase 2 — Advanced player analytics (player cards, percentile radar, on/off)
 - [ ] Phase 3 — Team identity & opponent scouting (Four Factors, Matchup Leverage Index)
 - [ ] Phase 4 — Lineup & possession analytics
 - [ ] Phase 5 — Live command center (polling, live vs historical, tactical alerts)
