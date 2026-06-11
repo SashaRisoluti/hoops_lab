@@ -20,9 +20,12 @@ from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.filters_sidebar import render_filters_sidebar  # noqa: E402
 from dashboard.components.percentile_histogram import render_percentile_histogram  # noqa: E402
 from dashboard.components.stats_table import render_stats_table  # noqa: E402
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.filters.query_builder import run_query  # noqa: E402
 
 st.set_page_config(page_title="Historical Stats Explorer", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Explorer")
 st.title("📊 Historical Stats Explorer")
 
 database = get_database()

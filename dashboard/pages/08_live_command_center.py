@@ -21,6 +21,7 @@ from dashboard.components.alert_panel import render_alert_panel  # noqa: E402
 from dashboard.components.data_access import get_database, reference_team_index  # noqa: E402
 from dashboard.components.live_kpi_strip import render_kpi_strip  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart  # noqa: E402
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.config import ENVIRONMENT  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
 from hoops_lab.live.alert_engine import evaluate_alerts  # noqa: E402
@@ -33,6 +34,8 @@ from hoops_lab.models.win_probability import (  # noqa: E402
 )
 
 st.set_page_config(page_title="Live Command Center", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Live")
 st.title("📡 Live Command Center")
 
 database = get_database()

@@ -17,6 +17,18 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+def test_overview_home_renders_kpis_rail_and_cards() -> None:
+    from streamlit.testing.v1 import AppTest
+
+    at = AppTest.from_file("dashboard/app.py", default_timeout=180)
+    at.run()
+
+    assert not at.exception, f"home raised: {at.exception}"
+    assert len(at.button) >= 30, "team rail missing"
+    # KPI strip, band, flags, factors are markdown/html; charts are plotly.
+    assert len(at.selectbox) >= 1, "season selector missing"
+
+
 def test_explorer_page_renders_table_and_histogram() -> None:
     from streamlit.testing.v1 import AppTest
 

@@ -19,6 +19,7 @@ from dashboard.components.data_access import (  # noqa: E402
     reference_team_index,
     team_options,
 )
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.opponent_scouting import (  # noqa: E402
     strengths_weaknesses,
     top_lineups,
@@ -27,6 +28,8 @@ from hoops_lab.analytics.opponent_scouting import (  # noqa: E402
 from hoops_lab.analytics.team_identity import league_ratings, league_team_factors  # noqa: E402
 
 st.set_page_config(page_title="Opponent Scouting", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Scouting")
 st.title("🔎 Opponent Scouting")
 
 database = get_database()

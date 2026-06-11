@@ -17,6 +17,7 @@ from dashboard.components.data_access import (  # noqa: E402
     team_options,
 )
 from dashboard.components.radar_chart import render_radar_chart  # noqa: E402
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.team_identity import (  # noqa: E402
     league_playmaking_rebounding,
     league_ratings,
@@ -37,6 +38,8 @@ RADAR_SHORT_LABELS = {
 }
 
 st.set_page_config(page_title="Team Identity", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Team")
 st.title("🛡️ Team Identity")
 
 database = get_database()

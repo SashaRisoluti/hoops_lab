@@ -20,10 +20,13 @@ from dashboard.components.data_access import (  # noqa: E402
     reference_team_index,
     team_options,
 )
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.matchup import matchup_leverage, matchup_table  # noqa: E402
 from hoops_lab.analytics.team_identity import league_team_factors  # noqa: E402
 
 st.set_page_config(page_title="Matchup Analysis", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Matchup")
 st.title("⚔️ Matchup Analysis")
 
 database = get_database()

@@ -21,6 +21,7 @@ from dashboard.components.data_access import (  # noqa: E402
     reference_team_index,
     team_options,
 )
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.lineup_explorer import (  # noqa: E402
     enrich_lineups,
     filter_lineups_by_players,
@@ -40,6 +41,8 @@ LINEUP_COLUMNS = {
 }
 
 st.set_page_config(page_title="Lineup Explorer", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Lineups")
 st.title("🧩 Lineup Explorer")
 
 database = get_database()

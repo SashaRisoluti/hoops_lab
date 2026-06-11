@@ -18,6 +18,7 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.radar_chart import render_radar_chart  # noqa: E402
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.player_profile import player_on_off, radar_percentiles  # noqa: E402
 from hoops_lab.features.percentiles import percentile_rank  # noqa: E402
 from hoops_lab.filters.entity import EntityFilter  # noqa: E402
@@ -37,6 +38,8 @@ CARD_METRICS: dict[str, tuple[str, str, bool]] = {
 }
 
 st.set_page_config(page_title="Player Analyzer", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Players")
 st.title("🧬 Player Analyzer")
 
 database = get_database()

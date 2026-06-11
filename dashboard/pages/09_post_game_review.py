@@ -21,6 +21,7 @@ from dashboard.components.data_access import (  # noqa: E402
     reference_team_index,
     team_options,
 )
+from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.features.four_factors import FACTOR_LABELS  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
 from hoops_lab.models.shot_quality_model import train_shot_quality  # noqa: E402
@@ -39,6 +40,8 @@ from hoops_lab.reports.post_game import (  # noqa: E402
 )
 
 st.set_page_config(page_title="Post-Game Review", page_icon="🏀", layout="wide")
+inject_theme()
+render_command_bar("Reports")
 st.title("📝 Post-Game Review")
 
 database = get_database()
