@@ -18,11 +18,15 @@ from pathlib import Path
 import pandas as pd
 from nba_api.stats.static import teams as static_teams
 
+from hoops_lab.features.possession import build_possessions
 from hoops_lab.ingestion.nba_api_client import RAW_DATA_DIR
 from hoops_lab.storage.database import Database
 from hoops_lab.storage.models import PARQUET_TABLES
 
 logger = logging.getLogger(__name__)
+
+#: Versioned demo parquet (used when data/raw is empty, e.g. on HF Spaces).
+PROCESSED_DATA_DIR = Path("data/processed")
 
 #: Advanced columns exposed by the player_season_full view (when present in
 #: the ingested data and not already part of the base table).
@@ -191,8 +195,12 @@ def derive_core_tables(db: Database) -> dict[str, int]:
     return counts
 
 
-def seed_database(db: Database, raw_dir: str | Path | None = None) -> dict[str, int]:
-    """Full seed: Parquet-backed tables first, derived tables second.
+def seed_database(
+    db: Database,
+    raw_dir: str | Path | None = None,
+    fallback_dir: str | Path | None = None,
+) -> dict[str, int]:
+    """Full seed: Parquet-backed tables, derived tables, then possessions.
 
     Parameters
     ----------
@@ -200,14 +208,30 @@ def seed_database(db: Database, raw_dir: str | Path | None = None) -> dict[str, 
         Target database (migrations are expected to have run already).
     raw_dir:
         Directory with the raw Parquet files (default: ``RAW_DATA_DIR``).
+    fallback_dir:
+        Used when ``raw_dir`` holds no parquet at all — on HF Spaces the raw
+        downloads are gitignored and the versioned demo parquet live in
+        ``data/processed`` (default).
 
     Returns
     -------
     Mapping of table name to row count for everything that was (re)built.
     """
     raw_path = Path(raw_dir) if raw_dir is not None else RAW_DATA_DIR
+    fallback_path = Path(fallback_dir) if fallback_dir is not None else PROCESSED_DATA_DIR
+    if not any(raw_path.glob("*.parquet")) and any(fallback_path.glob("*.parquet")):
+        logger.info("No parquet in %s — falling back to %s", raw_path, fallback_path)
+        raw_path = fallback_path
+
     counts = load_parquet_tables(db, raw_path)
     counts.update(derive_core_tables(db))
+
+    if db.has_table("play_by_play") and db.table_rows("play_by_play") > 0:
+        possessions = build_possessions(db.query_df("SELECT * FROM play_by_play"))
+        db.connect().register("possessions_src", possessions)
+        db.execute("CREATE OR REPLACE TABLE possessions AS SELECT * FROM possessions_src")
+        counts["possessions"] = db.table_rows("possessions")
+
     logger.info("Seed complete: %d tables", len(counts))
     return counts
 

@@ -109,7 +109,12 @@ class Database:
             logger.info("Applied migration %s", sql_file.name)
         return newly_applied
 
-    def ensure_db_ready(self, raw_dir: str | Path | None = None, force: bool = False) -> bool:
+    def ensure_db_ready(
+        self,
+        raw_dir: str | Path | None = None,
+        force: bool = False,
+        fallback_dir: str | Path | None = None,
+    ) -> bool:
         """Make sure the database exists and is seeded; rebuild it if not.
 
         Called at dashboard startup: HuggingFace Spaces has an ephemeral
@@ -134,5 +139,5 @@ class Database:
         ready = self.table_rows("games") > 0 and all(self.has_table(t) for t in DERIVED_TABLES)
         if not force and ready:
             return False
-        seed_database(self, raw_dir=raw_dir)
+        seed_database(self, raw_dir=raw_dir, fallback_dir=fallback_dir)
         return True

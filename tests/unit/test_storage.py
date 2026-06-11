@@ -64,6 +64,24 @@ def _write_fixture_parquets(raw_dir: Path) -> None:
     player_advanced = pd.DataFrame({"PLAYER_ID": [10], "TS_PCT": [0.6], "USG_PCT": [0.31]})
     player_advanced.to_parquet(raw_dir / "player_advanced_2023-24.parquet", index=False)
 
+    # Minimal play-by-play (one made shot) — the seeder must build possessions.
+    pbp = pd.DataFrame(
+        {
+            "gameId": ["0022300001"] * 3,
+            "actionNumber": [1, 2, 3],
+            "period": [1, 1, 1],
+            "clock": ["PT12M00.00S", "PT06M00.00S", "PT00M00.00S"],
+            "teamId": [0, 1, 0],
+            "location": ["", "h", ""],
+            "actionType": ["period", "Made Shot", "period"],
+            "subType": ["start", "Jump Shot", "end"],
+            "description": ["", "Shot", ""],
+            "scoreHome": ["", "2", ""],
+            "scoreAway": ["", "0", ""],
+        }
+    )
+    pbp.to_parquet(raw_dir / "play_by_play_sample_2023-24.parquet", index=False)
+
 
 def _make_db(tmp_path: Path) -> tuple[Database, Path]:
     raw_dir = tmp_path / "raw"
@@ -156,6 +174,33 @@ def test_player_season_full_view_joins_advanced(tmp_path) -> None:
 
     assert row["PTS"] == 25.0  # from the base table
     assert row["TS_PCT"] == 0.6  # joined from advanced stats
+
+
+def test_seed_builds_possessions_from_play_by_play(tmp_path) -> None:
+    db, raw_dir = _make_db(tmp_path)
+    db.ensure_db_ready(raw_dir=raw_dir)
+
+    # The fixture game has exactly one possession (a made shot worth 2).
+    assert db.table_rows("possessions") == 1
+    possession = db.query_df("SELECT * FROM possessions").iloc[0]
+    assert possession["points"] == 2
+    assert possession["ended_by"] == "made_fg"
+
+
+def test_seed_falls_back_to_processed_dir_when_raw_is_empty(tmp_path) -> None:
+    # HF Spaces scenario: data/raw is gitignored (empty), the versioned demo
+    # parquet live in the processed directory instead.
+    processed = tmp_path / "processed"
+    _write_fixture_parquets(processed)
+    empty_raw = tmp_path / "raw"
+    empty_raw.mkdir()
+
+    db = Database(path=tmp_path / "db" / "test.duckdb")
+    seeded = db.ensure_db_ready(raw_dir=empty_raw, fallback_dir=processed)
+
+    assert seeded is True
+    assert db.table_rows("games") == 2
+    assert db.table_rows("possessions") == 1
 
 
 def test_migrations_create_structural_tables_and_are_idempotent(tmp_path) -> None:

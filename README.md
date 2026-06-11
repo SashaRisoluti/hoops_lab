@@ -14,7 +14,7 @@ license: mit
 
 Modular NBA data-science framework — **historical analysis**, **pre-game scouting** and **live game intelligence** — built as a professional sports-analytics portfolio project.
 
-**Live demo**: `https://huggingface.co/spaces/<HF_USERNAME>/hoops-lab` *(placeholder — updated once the Space is created)*
+**Live demo**: [huggingface.co/spaces/srisoluti/hoops-lab](https://huggingface.co/spaces/srisoluti/hoops-lab)
 
 ## What it does
 
@@ -128,7 +128,8 @@ Unit tests never hit the network; every advanced-stat formula is validated again
 
 - Root [`app.py`](app.py) launches the Streamlit dashboard on port 7860 (HF standard).
 - `requirements.txt` (flat deps) and `packages.txt` (apt deps) live at the repo root as HF expects.
-- [`.github/workflows/sync_to_hf.yml`](.github/workflows/sync_to_hf.yml) force-pushes `main` to the Space on every push. Setup: create the Space, add `HF_TOKEN` as a GitHub Actions secret, replace `<HF_USERNAME>` in the workflow.
+- [`.github/workflows/sync_to_hf.yml`](.github/workflows/sync_to_hf.yml) force-pushes `main` to the Space on every push. Setup: add a write-scoped `HF_TOKEN` as a GitHub Actions secret.
+- The Space rebuilds the DuckDB at boot from the versioned demo parquet in `data/processed/` (set `ENVIRONMENT=production` as a Space variable to disable live-API features).
 
 ## License
 
