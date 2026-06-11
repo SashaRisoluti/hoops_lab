@@ -15,6 +15,10 @@ dist/
 .env
 .streamlit/secrets.toml
 
+# IDE preview exports
+README.html
+README_files/
+
 # Data: raw downloads and local DuckDB files are rebuilt from code.
 # data/processed/ (Parquet) IS versioned — it feeds the HuggingFace Spaces demo.
 data/raw/*
