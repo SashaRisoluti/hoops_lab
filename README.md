@@ -1,7 +1,7 @@
 ---
 title: Hoops Lab
 emoji: 🏀
-colorFrom: orange
+colorFrom: red
 colorTo: indigo
 sdk: streamlit
 sdk_version: "1.58.0"
