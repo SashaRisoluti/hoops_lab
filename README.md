@@ -91,7 +91,7 @@ All settings are environment variables with safe defaults, read exclusively thro
 | `DB_PATH` | `data/db/hoops_lab.duckdb` | DuckDB database file |
 | `ENVIRONMENT` | `development` | `production` disables live-API features in the demo |
 | `REFERENCE_TEAM` | `Dallas Mavericks` | Your team for tests and scouting comparisons |
-| `DEMO_SEASONS` | `2023-24,2024-25,2025-26` | Seasons preloaded for the public demo |
+| `DEMO_SEASONS` | `2021-22,...,2025-26` | Seasons preloaded for the public demo |
 
 ### Changing the reference team
 
@@ -102,7 +102,7 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 
 ## Data strategy (public demo)
 
-- Last **3 NBA regular seasons** (2023-24 → 2025-26) preloaded.
+- Last **5 NBA regular seasons** (2021-22 → 2025-26) preloaded.
 - League-wide player box scores and advanced stats; shot charts and play-by-play for a representative sample of games.
 - Pre-computed Parquet files in `data/processed/` are versioned in the repo (kept under ~500 MB); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because HF Spaces has an ephemeral filesystem.
 

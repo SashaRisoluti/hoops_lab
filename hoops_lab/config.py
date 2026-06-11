@@ -35,5 +35,7 @@ REFERENCE_TEAM: str = os.getenv("REFERENCE_TEAM", "Dallas Mavericks")
 
 #: Seasons preloaded for the public demo (comma-separated in the env var).
 DEMO_SEASONS: list[str] = [
-    s.strip() for s in os.getenv("DEMO_SEASONS", "2023-24,2024-25,2025-26").split(",") if s.strip()
+    s.strip()
+    for s in os.getenv("DEMO_SEASONS", "2021-22,2022-23,2023-24,2024-25,2025-26").split(",")
+    if s.strip()
 ]

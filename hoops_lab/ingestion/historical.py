@@ -4,7 +4,8 @@ League-wide datasets are downloaded with a single endpoint call per season;
 shot charts and play-by-play are downloaded for the reference team and a
 sample of its games, per the public-demo data strategy (README).
 
-Run as a module to download the full demo bundle (3 seasons by default)::
+Run as a module to download the full demo bundle (DEMO_SEASONS by default;
+use ``scripts/extend_seasons.py`` to add league-wide extras for a season)::
 
     python -m hoops_lab.ingestion.historical
 """
