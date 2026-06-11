@@ -13,10 +13,10 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def _run(page: str):
+def _run(page: str, timeout: int = 120):
     from streamlit.testing.v1 import AppTest
 
-    at = AppTest.from_file(f"dashboard/pages/{page}", default_timeout=120)
+    at = AppTest.from_file(f"dashboard/pages/{page}", default_timeout=timeout)
     at.run()
     assert not at.exception, f"{page} raised: {at.exception}"
     return at
@@ -28,8 +28,14 @@ def test_team_identity_page() -> None:
 
 
 def test_opponent_scouting_page() -> None:
-    at = _run("04_opponent_scouting.py")
+    # Longer timeout: the Shot Archetypes section profiles ~220k league shots
+    # and fits KMeans + SOM on the first (uncached) run.
+    at = _run("04_opponent_scouting.py", timeout=300)
     assert len(at.dataframe) >= 2, "top players / lineups tables missing"
+    # Shot Archetypes section: controls + archetype/closest-players tables.
+    assert len(at.slider) >= 2, "min_attempts / n_clusters sliders missing"
+    assert len(at.dataframe) >= 4, "archetype summary / closest players tables missing"
+    assert len(at.metric) >= 6, "data summary metrics missing"
 
 
 def test_matchup_page() -> None:

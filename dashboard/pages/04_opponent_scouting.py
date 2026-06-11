@@ -18,6 +18,9 @@ from dashboard.components.data_access import (  # noqa: E402
     get_database,
     team_options,
 )
+from dashboard.components.shot_archetypes_section import (  # noqa: E402
+    render_shot_archetypes_section,
+)
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.opponent_scouting import (  # noqa: E402
@@ -109,3 +112,8 @@ st.caption(
     "play-type tendencies (isolation, pick-and-roll, ...) arrive with the "
     "possession data in Phase 4+."
 )
+
+st.divider()
+
+# ---- Shot archetypes (league-wide unsupervised shot-profile analysis) ---------
+render_shot_archetypes_section(database, opponent_id, team_abbr, season)

@@ -106,6 +106,43 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 - League-wide player box scores and advanced stats; shot charts and play-by-play for a representative sample of games.
 - Pre-computed Parquet files in `data/processed/` are versioned in the repo (kept under ~500 MB); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because HF Spaces has an ephemeral filesystem.
 
+## Shot Profile Visual Analytics
+
+The Opponent Scouting page hosts a **Shot Archetypes** section built on two
+complementary visual layers (Plotly stays in place for the existing
+interactive charts):
+
+- **Altair / Vega-Lite** ([`hoops_lab/visuals/altair_charts.py`](hoops_lab/visuals/altair_charts.py)) — declarative,
+  report-friendly chart blocks (Four Factors comparison, percentile bars,
+  recent form, zone shot profile, cluster distribution, centroid profiles,
+  SOM map). Pure functions: DataFrame in, serializable `alt.Chart` out.
+- **Matplotlib court visuals** ([`hoops_lab/visuals/`](hoops_lab/visuals/)) — a hand-drawn NBA half
+  court in ShotChartDetail coordinates plus shot scatter maps, density and
+  efficiency heatmaps (with a `min_attempts` mask) and archetype centroid
+  heatmaps, all `st.pyplot`-compatible.
+
+How the analysis works:
+
+1. **All shots of the selected season** (league-wide, ~220k per season) are
+   aggregated into **player-season shot-profile vectors**
+   ([`hoops_lab/features/shot_spatial_features.py`](hoops_lab/features/shot_spatial_features.py)): zone frequencies and
+   FG%, average distance, points per shot, spatial-bin frequencies, shot
+   entropy and zone diversity. Individual shots are never clustered.
+2. **KMeans** ([`hoops_lab/models/shot_archetypes.py`](hoops_lab/models/shot_archetypes.py)) extracts discrete
+   archetypes from the standardized profiles. Each **centroid is the average
+   profile of its archetype — not a real player**; the UI translates
+   centroids into readable labels, feature drivers, court heatmaps and the
+   closest real example players.
+3. A **Self-Organizing Map** ([`hoops_lab/models/shot_som.py`](hoops_lab/models/shot_som.py), MiniSom)
+   projects the same vectors onto a 2-D grid that preserves similarity —
+   a complementary view for continuity, hybrid profiles and outliers.
+
+The results are **descriptive, not predictive** — the models show which shot
+diets exist and who shares them; they do not forecast performance or prove
+causality. Profiles aggregate per team as well, and the feature builders
+accept a multi-season window (`build_team_window_profile`, default 3
+seasons, ready for a 5-season extension).
+
 ## Roadmap
 
 - [x] Phase 0 — project scaffold, rate-limited nba_api client
