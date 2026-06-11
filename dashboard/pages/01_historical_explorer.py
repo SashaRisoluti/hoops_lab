@@ -20,6 +20,7 @@ from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.filters_sidebar import render_filters_sidebar  # noqa: E402
 from dashboard.components.percentile_histogram import render_percentile_histogram  # noqa: E402
 from dashboard.components.stats_table import render_stats_table  # noqa: E402
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.filters.query_builder import run_query  # noqa: E402
 
@@ -34,6 +35,8 @@ if database.table_rows("seasons") == 0:
     st.warning("No data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
+team_id, team_abbr, season = render_team_rail(database)
+
 season_options = database.query_df("SELECT season FROM seasons ORDER BY season")["season"].tolist()
 
 try:
@@ -41,6 +44,11 @@ try:
 except ValidationError as exc:
     st.error(f"Invalid filter combination:\n\n{exc}")
     st.stop()
+
+if st.sidebar.checkbox(f"Limit to {team_abbr} (rail team)", value=False):
+    request = request.model_copy(
+        update={"entity": request.entity.model_copy(update={"team_ids": [team_id]})}
+    )
 
 with st.spinner("Querying DuckDB…"):
     results = run_query(database, request)

@@ -67,6 +67,7 @@ def team_band(
     last5: list[str],
     last_game: str,
     abbr: str,
+    logo: str | None = None,
 ) -> str:
     """Team identity band: accent stripe + gradient, logo ring, last-5 chips."""
     chips = ""
@@ -81,13 +82,17 @@ def team_band(
             f"border:1px solid {border};color:{color};font-size:11px;font-weight:700;"
             f'display:flex;align-items:center;justify-content:center;">{result}</div>'
         )
+    badge = (
+        f'<img src="{logo}" alt="{abbr}" style="width:40px;height:40px;">'
+        if logo
+        else f'<span style="font-family:{FONT_MONO};font-size:14px;font-weight:700;color:{accent};">{abbr}</span>'
+    )
     return f"""<div style="display:flex;align-items:center;gap:22px;padding:20px 24px;
   border:1px solid {BORDER};border-radius:10px;
   background:linear-gradient(90deg,{hex_to_rgba(accent, 0.16)},rgba(0,0,0,0) 55%),{BG_CARD};
   box-shadow:inset 0 3px 0 {accent};">
   <div style="width:58px;height:58px;border-radius:50%;border:2px solid {accent};background:#161B23;
-    display:flex;align-items:center;justify-content:center;font-family:{FONT_MONO};
-    font-size:14px;font-weight:700;color:{accent};">{abbr}</div>
+    display:flex;align-items:center;justify-content:center;">{badge}</div>
   <div>
     <div style="font-family:{FONT_DISPLAY};font-size:32px;font-weight:700;letter-spacing:0.05em;line-height:1;color:{TEXT};">{name.upper()}</div>
     <div style="font-size:13px;color:{TEXT_MUTED};font-weight:500;">{subtitle}</div>

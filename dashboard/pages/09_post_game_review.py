@@ -18,9 +18,8 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import (  # noqa: E402
     get_database,
-    reference_team_index,
-    team_options,
 )
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.features.four_factors import FACTOR_LABELS  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
@@ -49,13 +48,9 @@ if database.table_rows("games") == 0:
     st.warning("No data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
-teams = team_options(database)
-st.sidebar.header("🔍 Selection")
-team_name = st.sidebar.selectbox(
-    "Team", teams["full_name"].tolist(), index=reference_team_index(teams)
-)
-team_id = int(teams.loc[teams["full_name"] == team_name, "team_id"].iloc[0])
+team_id, team_abbr, season = render_team_rail(database)
 
+st.sidebar.header("🔍 Selection")
 games = database.query_df(
     """
     SELECT g.game_id, g.season, g.game_date,
@@ -65,10 +60,10 @@ games = database.query_df(
     JOIN teams AS th ON th.team_id = g.home_team_id
     JOIN teams AS ta ON ta.team_id = g.away_team_id
     LEFT JOIN (SELECT DISTINCT game_id FROM possessions) AS pp ON pp.game_id = g.game_id
-    WHERE g.home_team_id = ? OR g.away_team_id = ?
+    WHERE g.season = ? AND (g.home_team_id = ? OR g.away_team_id = ?)
     ORDER BY g.game_date DESC
     """,
-    [team_id, team_id],
+    [season, team_id, team_id],
 )
 labels = [
     f"{'📊 ' if r.has_pbp else ''}{r.away_abbr} @ {r.home_abbr} — {r.game_date} ({r.season})"

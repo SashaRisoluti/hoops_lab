@@ -18,6 +18,7 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart, zone_efficiency  # noqa: E402
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.shot_context import assisted_summary  # noqa: E402
 
@@ -31,6 +32,8 @@ if database.table_rows("shots") == 0:
     st.warning("No shot data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
+team_id, team_abbr, season = render_team_rail(database)
+
 teams_with_shots = database.query_df(
     """
     SELECT DISTINCT s.TEAM_ID, t.full_name
@@ -40,14 +43,7 @@ teams_with_shots = database.query_df(
     """
 )
 
-st.sidebar.header("🔍 Filters")
-team_name = st.sidebar.selectbox("Team", teams_with_shots["full_name"].tolist())
-team_id = int(teams_with_shots.loc[teams_with_shots["full_name"] == team_name, "TEAM_ID"].iloc[0])
-
-season_options = database.query_df(
-    "SELECT DISTINCT season FROM shots WHERE TEAM_ID = ? ORDER BY season DESC", [team_id]
-)["season"].tolist()
-season = st.sidebar.selectbox("Season", season_options)
+st.sidebar.header("🔍 Filters")  # team and season come from the shared rail
 
 player_options = database.query_df(
     "SELECT DISTINCT PLAYER_NAME FROM shots WHERE season = ? AND TEAM_ID = ? ORDER BY PLAYER_NAME",

@@ -18,9 +18,9 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import (  # noqa: E402
     get_database,
-    reference_team_index,
     team_options,
 )
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.lineup_explorer import (  # noqa: E402
     enrich_lineups,
@@ -50,17 +50,12 @@ if database.table_rows("lineups") == 0:
     st.warning("No lineup data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
-season_options = database.query_df("SELECT season FROM seasons ORDER BY season DESC")[
-    "season"
-].tolist()
+team_id, team_abbr, season = render_team_rail(database)
+
 teams = team_options(database)
+team_name = teams.loc[teams["team_id"] == team_id, "full_name"].iloc[0]
 
 st.sidebar.header("🔍 Selection")
-season = st.sidebar.selectbox("Season", season_options)
-team_name = st.sidebar.selectbox(
-    "Team", teams["full_name"].tolist(), index=reference_team_index(teams)
-)
-team_id = int(teams.loc[teams["full_name"] == team_name, "team_id"].iloc[0])
 
 roster = database.query_df(
     "SELECT PLAYER_ID, PLAYER_NAME FROM player_season_full "

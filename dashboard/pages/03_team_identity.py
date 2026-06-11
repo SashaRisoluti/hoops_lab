@@ -13,10 +13,10 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import (  # noqa: E402
     get_database,
-    reference_team_index,
     team_options,
 )
 from dashboard.components.radar_chart import render_radar_chart  # noqa: E402
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.team_identity import (  # noqa: E402
     league_playmaking_rebounding,
@@ -47,17 +47,10 @@ if database.table_rows("seasons") == 0:
     st.warning("No data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
-season_options = database.query_df("SELECT season FROM seasons ORDER BY season DESC")[
-    "season"
-].tolist()
-teams = team_options(database)
+team_id, team_abbr, season = render_team_rail(database)
 
-st.sidebar.header("🔍 Selection")
-season = st.sidebar.selectbox("Season", season_options)
-team_name = st.sidebar.selectbox(
-    "Team", teams["full_name"].tolist(), index=reference_team_index(teams)
-)
-team_id = int(teams.loc[teams["full_name"] == team_name, "team_id"].iloc[0])
+teams = team_options(database)
+team_name = teams.loc[teams["team_id"] == team_id, "full_name"].iloc[0]
 
 # ---- Ratings ----------------------------------------------------------------
 ratings = league_ratings(database, season)

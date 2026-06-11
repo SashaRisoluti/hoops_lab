@@ -16,9 +16,9 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import (  # noqa: E402
     get_database,
-    reference_team_index,
     team_options,
 )
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.opponent_scouting import (  # noqa: E402
     strengths_weaknesses,
@@ -37,18 +37,11 @@ if database.table_rows("seasons") == 0:
     st.warning("No data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
-season_options = database.query_df("SELECT season FROM seasons ORDER BY season DESC")[
-    "season"
-].tolist()
-teams = team_options(database)
+team_id, team_abbr, season = render_team_rail(database)
 
-st.sidebar.header("🔍 Selection")
-season = st.sidebar.selectbox("Season", season_options)
-default_opponent = (reference_team_index(teams) + 1) % len(teams)
-opponent_name = st.sidebar.selectbox(
-    "Opponent", teams["full_name"].tolist(), index=default_opponent
-)
-opponent_id = int(teams.loc[teams["full_name"] == opponent_name, "team_id"].iloc[0])
+teams = team_options(database)
+opponent_id = team_id  # the rail selects the team being scouted
+opponent_name = teams.loc[teams["team_id"] == opponent_id, "full_name"].iloc[0]
 
 # ---- Identity snapshot -------------------------------------------------------
 ratings = league_ratings(database, season)

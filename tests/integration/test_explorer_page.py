@@ -24,8 +24,9 @@ def test_overview_home_renders_kpis_rail_and_cards() -> None:
     at.run()
 
     assert not at.exception, f"home raised: {at.exception}"
-    assert len(at.button) >= 30, "team rail missing"
-    # KPI strip, band, flags, factors are markdown/html; charts are plotly.
+    # The rail renders 30 clickable logo chips as HTML markdown.
+    rail_html = "".join(str(m.value) for m in at.markdown)
+    assert rail_html.count("cdn.nba.com/logos") >= 30, "team rail logos missing"
     assert len(at.selectbox) >= 1, "season selector missing"
 
 

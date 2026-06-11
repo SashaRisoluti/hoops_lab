@@ -18,6 +18,7 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.radar_chart import render_radar_chart  # noqa: E402
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.player_profile import player_on_off, radar_percentiles  # noqa: E402
 from hoops_lab.features.percentiles import percentile_rank  # noqa: E402
@@ -48,12 +49,9 @@ if database.table_rows("seasons") == 0:
     st.warning("No data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
-season_options = database.query_df("SELECT season FROM seasons ORDER BY season DESC")[
-    "season"
-].tolist()
+team_id, team_abbr, season = render_team_rail(database)
 
 st.sidebar.header("🔍 Comparison population")
-season = st.sidebar.selectbox("Season", season_options)
 min_minutes = st.sidebar.slider("Min minutes per game", 0.0, 40.0, 15.0, 1.0)
 min_games = st.sidebar.slider("Min games played", 0, 82, 30, 1)
 st.sidebar.caption("Every percentile on this page refers to this population.")
@@ -72,7 +70,12 @@ if population.empty:
     st.info("No players match the current population filters.")
     st.stop()
 
-player_name = st.selectbox("Player", population["PLAYER_NAME"].tolist())
+team_players = population.loc[population["TEAM_ID"] == team_id, "PLAYER_NAME"].tolist()
+player_name = st.selectbox(
+    "Player",
+    team_players or population["PLAYER_NAME"].tolist(),
+    help="Roster of the rail-selected team; percentiles stay league-wide.",
+)
 row_idx = int(population.index[population["PLAYER_NAME"] == player_name][0])
 player = population.iloc[row_idx]
 

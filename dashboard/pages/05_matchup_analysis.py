@@ -17,9 +17,9 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import (  # noqa: E402
     get_database,
-    reference_team_index,
     team_options,
 )
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.matchup import matchup_leverage, matchup_table  # noqa: E402
 from hoops_lab.analytics.team_identity import league_team_factors  # noqa: E402
@@ -34,19 +34,15 @@ if database.table_rows("seasons") == 0:
     st.warning("No data loaded — run the downloader and the seeder first (see README).")
     st.stop()
 
-season_options = database.query_df("SELECT season FROM seasons ORDER BY season DESC")[
-    "season"
-].tolist()
+team_id, team_abbr, season = render_team_rail(database)
+
 teams = team_options(database)
-names = teams["full_name"].tolist()
+team_a = team_id  # rail = my team
+team_a_name = teams.loc[teams["team_id"] == team_a, "full_name"].iloc[0]
 
 st.sidebar.header("🔍 Selection")
-season = st.sidebar.selectbox("Season", season_options)
-index_a = reference_team_index(teams)
-team_a_name = st.sidebar.selectbox("My team", names, index=index_a)
-team_b_name = st.sidebar.selectbox("Opponent", names, index=(index_a + 1) % len(names))
-
-team_a = int(teams.loc[teams["full_name"] == team_a_name, "team_id"].iloc[0])
+opponent_options = [n for n in teams["full_name"].tolist() if n != team_a_name]
+team_b_name = st.sidebar.selectbox("Opponent", opponent_options)
 team_b = int(teams.loc[teams["full_name"] == team_b_name, "team_id"].iloc[0])
 
 if team_a == team_b:

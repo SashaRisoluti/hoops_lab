@@ -20,12 +20,11 @@ import streamlit as st  # noqa: E402
 from dashboard.components import overview_cards as cards  # noqa: E402
 from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart  # noqa: E402
+from dashboard.components.team_rail import logo_url, render_team_rail  # noqa: E402
 from dashboard.components.theme import (  # noqa: E402
-    CONFERENCES,
     ORANGE,
     TEAM_ACCENTS,
     TEXT_FAINT,
-    hex_to_rgba,
     inject_theme,
     render_command_bar,
 )
@@ -35,7 +34,6 @@ from hoops_lab.analytics.overview import (  # noqa: E402
     zone_bucket,
 )
 from hoops_lab.analytics.team_identity import league_team_factors, team_game_factors  # noqa: E402
-from hoops_lab.config import REFERENCE_TEAM  # noqa: E402
 from hoops_lab.features.percentiles import percentile_rank  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
 from hoops_lab.models.win_probability import (  # noqa: E402
@@ -59,52 +57,11 @@ if database.table_rows("seasons") == 0:
     st.stop()
 
 teams = database.query_df("SELECT team_id, full_name, abbreviation FROM teams ORDER BY full_name")
-abbr_to_id = dict(zip(teams["abbreviation"], teams["team_id"], strict=True))
 id_to_name = dict(zip(teams["team_id"], teams["full_name"], strict=True))
-season_options = database.query_df("SELECT season FROM seasons ORDER BY season DESC")[
-    "season"
-].tolist()
 
-reference_abbr = teams.loc[teams["full_name"] == REFERENCE_TEAM, "abbreviation"]
-if "overview_team" not in st.session_state:
-    st.session_state.overview_team = reference_abbr.iloc[0] if len(reference_abbr) else "DAL"
-
-# ---- Team rail (Option B) ----------------------------------------------------
-selected_abbr = st.session_state.overview_team
+# ---- Team rail (Option B, shared shell) ----------------------------------------
+team_id, selected_abbr, season = render_team_rail(database)
 accent = TEAM_ACCENTS.get(selected_abbr, ORANGE)
-st.markdown(
-    f"""<style>
-.st-key-rail_{selected_abbr} button, .st-key-rail_{selected_abbr} button:hover {{
-  width: 40px; height: 40px; min-height: 40px;
-  border: 2px solid {accent}; box-shadow: 0 0 0 3px {hex_to_rgba(accent, 0.22)};
-  color: {accent}; font-weight: 700; font-size: 10px;
-}}
-</style>""",
-    unsafe_allow_html=True,
-)
-
-rail = st.columns([0.55] + [0.4] * 15 + [0.18] + [0.55] + [0.4] * 15 + [1.25])
-rail[0].markdown(
-    f'<div style="font-family:ui-monospace,monospace;font-size:9px;letter-spacing:0.12em;'
-    f'color:{TEXT_FAINT};padding-top:10px;">WEST</div>',
-    unsafe_allow_html=True,
-)
-for i, tricode in enumerate(CONFERENCES["WEST"]):
-    if rail[1 + i].button(tricode, key=f"rail_{tricode}"):
-        st.session_state.overview_team = tricode
-        st.rerun()
-rail[17].markdown(
-    f'<div style="font-family:ui-monospace,monospace;font-size:9px;letter-spacing:0.12em;'
-    f'color:{TEXT_FAINT};padding-top:10px;">EAST</div>',
-    unsafe_allow_html=True,
-)
-for i, tricode in enumerate(CONFERENCES["EAST"]):
-    if rail[18 + i].button(tricode, key=f"rail_{tricode}"):
-        st.session_state.overview_team = tricode
-        st.rerun()
-season = rail[33].selectbox("Season", season_options, label_visibility="collapsed")
-
-team_id = int(abbr_to_id[selected_abbr])
 team_name = id_to_name[team_id]
 
 # ---- Data assembly ------------------------------------------------------------
@@ -146,6 +103,7 @@ st.markdown(
         last5=games["WL"].tail(5).tolist(),
         last_game=last_game,
         abbr=selected_abbr,
+        logo=logo_url(team_id),
     ),
     unsafe_allow_html=True,
 )

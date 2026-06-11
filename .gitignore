@@ -19,6 +19,10 @@ dist/
 README.html
 README_files/
 
+# Locally downloaded team logos (the app hotlinks the NBA CDN instead;
+# trademarked assets stay out of the public repo)
+logos/
+
 # Data: raw downloads and local DuckDB files are rebuilt from code.
 # data/processed/ (Parquet) IS versioned — it feeds the HuggingFace Spaces demo.
 data/raw/*

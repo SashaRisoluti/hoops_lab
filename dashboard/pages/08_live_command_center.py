@@ -18,9 +18,10 @@ import plotly.express as px  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from dashboard.components.alert_panel import render_alert_panel  # noqa: E402
-from dashboard.components.data_access import get_database, reference_team_index  # noqa: E402
+from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.live_kpi_strip import render_kpi_strip  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart  # noqa: E402
+from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.config import ENVIRONMENT  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
@@ -42,6 +43,8 @@ database = get_database()
 if database.table_rows("play_by_play") == 0:
     st.warning("No play-by-play loaded — run the downloader and the seeder first (see README).")
     st.stop()
+
+team_id, team_abbr, season = render_team_rail(database)
 
 
 @st.cache_resource
@@ -94,22 +97,7 @@ if mode == "Live (nba_api)":
     current_game_id = str(game["gameId"])
     st.button("🔄 Refresh")
 else:
-    replay_teams = database.query_df(
-        """
-        SELECT DISTINCT t.team_id, t.full_name
-        FROM play_by_play AS p
-        JOIN games AS g ON g.game_id = p.gameId
-        JOIN teams AS t ON t.team_id = g.home_team_id OR t.team_id = g.away_team_id
-        ORDER BY t.full_name
-        """
-    )
-    replay_team_name = st.sidebar.selectbox(
-        "Team", replay_teams["full_name"].tolist(), index=reference_team_index(replay_teams)
-    )
-    replay_team_id = int(
-        replay_teams.loc[replay_teams["full_name"] == replay_team_name, "team_id"].iloc[0]
-    )
-
+    # Team and season come from the shared rail.
     replay_games = database.query_df(
         """
         SELECT DISTINCT p.gameId AS game_id, g.season, g.game_date,
@@ -119,11 +107,14 @@ else:
         JOIN games AS g ON g.game_id = p.gameId
         JOIN teams AS th ON th.team_id = g.home_team_id
         JOIN teams AS ta ON ta.team_id = g.away_team_id
-        WHERE g.home_team_id = ? OR g.away_team_id = ?
+        WHERE g.season = ? AND (g.home_team_id = ? OR g.away_team_id = ?)
         ORDER BY g.game_date DESC
         """,
-        [replay_team_id, replay_team_id],
+        [season, team_id, team_id],
     )
+    if replay_games.empty:
+        st.info(f"No play-by-play sampled for {team_abbr} in {season}.")
+        st.stop()
     labels = [
         f"{r.away_abbr} @ {r.home_abbr} — {r.game_date} ({r.season})"
         for r in replay_games.itertuples()
