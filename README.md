@@ -5,7 +5,7 @@ colorFrom: red
 colorTo: indigo
 sdk: streamlit
 sdk_version: "1.58.0"
-app_file: app.py
+app_file: dashboard/app.py
 pinned: true
 license: mit
 ---
@@ -126,7 +126,7 @@ Unit tests never hit the network; every advanced-stat formula is validated again
 
 ## Deployment (HuggingFace Spaces)
 
-- Root [`app.py`](app.py) launches the Streamlit dashboard on port 7860 (HF standard).
+- With `sdk: streamlit`, the Space runs `streamlit run` itself on `app_file: dashboard/app.py` (the root [`app.py`](app.py) is a local-convenience launcher only).
 - `requirements.txt` (flat deps) and `packages.txt` (apt deps) live at the repo root as HF expects.
 - [`.github/workflows/sync_to_hf.yml`](.github/workflows/sync_to_hf.yml) force-pushes `main` to the Space on every push. Setup: add a write-scoped `HF_TOKEN` as a GitHub Actions secret.
 - The Space rebuilds the DuckDB at boot from the versioned demo parquet in `data/processed/` (set `ENVIRONMENT=production` as a Space variable to disable live-API features).

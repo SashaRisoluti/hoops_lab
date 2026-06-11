@@ -1,8 +1,9 @@
-"""HuggingFace Spaces entry point — thin wrapper that launches the dashboard.
+"""Local convenience launcher for the dashboard.
 
-HF Spaces requires an `app.py` at the repository root; the real Streamlit
-application lives in `dashboard/app.py`. Running through `python -m streamlit`
-keeps the repo root on sys.path so the `hoops_lab` package is importable.
+NOT used on HuggingFace Spaces: with `sdk: streamlit` the Space runs
+`streamlit run` itself on the README's `app_file` (dashboard/app.py).
+Running through `python -m streamlit` keeps the repo root on sys.path so
+the `hoops_lab` package is importable.
 """
 
 import subprocess
