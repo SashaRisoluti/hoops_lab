@@ -31,3 +31,18 @@ def test_search_select_switches_selection() -> None:
     at = AppTest.from_function(_picker_app).run()
     at.selectbox[0].select("LAL").run()
     assert at.selectbox[0].value == "LAL"
+
+
+def _empty_picker_app() -> None:
+    import streamlit as st
+
+    from dashboard.components.search_select import search_select
+
+    choice = search_select("Team", ["BOS", "DAL", "LAL"], key="pick_team_empty", index=None)
+    st.write(choice)
+
+
+def test_search_select_index_none_starts_empty() -> None:
+    at = AppTest.from_function(_empty_picker_app).run()
+    assert not at.exception
+    assert at.selectbox[0].value is None

@@ -25,9 +25,9 @@ def search_select(
     options: Sequence[T],
     format_func: Callable[[T], str] = str,
     key: str | None = None,
-    index: int = 0,
+    index: int | None = 0,
     help_text: str | None = None,
-) -> T:
+) -> T | None:
     """Searchable selectbox with the shared picker semantics.
 
     Args:
@@ -35,11 +35,13 @@ def search_select(
         options: Selectable values (ids or plain strings).
         format_func: Maps an option to its display label (use entity_label).
         key: Session-state key (pages prefix with their page name).
-        index: Default selected index.
+        index: Default selected index; None starts empty and shows the
+            placeholder.
         help_text: Optional help tooltip.
 
     Returns:
-        The selected option.
+        The selected option, or None when index=None and nothing is
+        chosen yet.
     """
     return st.selectbox(
         label,
