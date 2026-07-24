@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from dashboard.components.theme import COLOR_PRIMARY_SOFT, TEXT, plotly_layout
 from hoops_lab.features.percentiles import percentile_rank
 
 
@@ -35,15 +36,21 @@ def render_percentile_histogram(df: pd.DataFrame, stat_options: list[str]) -> No
     percentile = percentile_rank(series).iloc[row_idx]
 
     fig = px.histogram(df, x=stat, nbins=30)
+    fig.update_traces(marker_color=COLOR_PRIMARY_SOFT)
     fig.add_vline(
         x=float(value),
         line_width=3,
-        line_color="crimson",
+        line_color=TEXT,
         annotation_text=f"{percentile:.0f}th pctl",
         annotation_position="top",
     )
     fig.update_layout(
-        showlegend=False, bargap=0.05, height=420, xaxis_title=stat, yaxis_title="Players"
+        **plotly_layout(),
+        showlegend=False,
+        bargap=0.05,
+        height=420,
+        xaxis_title=stat,
+        yaxis_title="Players",
     )
     st.plotly_chart(fig, use_container_width=True)
 
