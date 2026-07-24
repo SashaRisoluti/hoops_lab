@@ -8,18 +8,21 @@ import plotly.graph_objects as go
 from dashboard.components.theme import (
     BG_CARD,
     BG_TILE,
-    BLUE,
-    BLUE_TEXT,
     BORDER,
+    COLOR_GOOD,
+    COLOR_MID,
+    COLOR_PRIMARY,
+    COLOR_PRIMARY_SOFT,
+    COLOR_WEAK,
+    COLOR_WEAK_SOFT,
     FONT_DISPLAY,
     FONT_MONO,
     GRID,
-    ORANGE,
-    RED,
-    RED_TEXT,
+    PLOTLY_TEMPLATE,
     TEXT,
     TEXT_FAINT,
     TEXT_MUTED,
+    TEXT_SOFT,
     hex_to_rgba,
     pctl_color,
     pctl_text_color,
@@ -28,12 +31,7 @@ from dashboard.components.theme import (
 _CARD = f"background:{BG_CARD};border:1px solid {BORDER};border-radius:10px;padding:14px 16px 12px;"
 _EYEBROW = f"font-family:{FONT_MONO};font-size:10px;letter-spacing:0.12em;color:{TEXT_MUTED};"
 
-_PLOTLY_BASE = dict(
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="Barlow, sans-serif", color=TEXT),
-    margin=dict(l=10, r=10, t=10, b=10),
-)
+_PLOTLY_BASE = dict(PLOTLY_TEMPLATE)
 
 
 def card_title(title: str, right: str = "") -> str:
@@ -74,9 +72,11 @@ def team_band(
     for result in last5:
         won = result == "W"
         color, bg = (
-            (ORANGE, hex_to_rgba(ORANGE, 0.18)) if won else (RED_TEXT, hex_to_rgba(RED, 0.14))
+            (COLOR_GOOD, hex_to_rgba(COLOR_GOOD, 0.18))
+            if won
+            else (COLOR_WEAK_SOFT, hex_to_rgba(COLOR_WEAK, 0.14))
         )
-        border = ORANGE if won else RED
+        border = COLOR_GOOD if won else COLOR_WEAK
         chips += (
             f'<div style="width:24px;height:24px;border-radius:6px;background:{bg};'
             f"border:1px solid {border};color:{color};font-size:11px;font-weight:700;"
@@ -113,9 +113,9 @@ def team_band(
 def flag_box(severity: str, message: str) -> str:
     """Tactical flag row (HIGH red / MED orange / LOW blue)."""
     palette = {
-        "HIGH": (RED, RED_TEXT, 0.10, 0.45),
-        "MED": (ORANGE, ORANGE, 0.08, 0.40),
-        "LOW": (BLUE, BLUE_TEXT, 0.08, 0.40),
+        "HIGH": (COLOR_WEAK, COLOR_WEAK_SOFT, 0.10, 0.45),
+        "MED": (COLOR_MID, COLOR_MID, 0.08, 0.40),
+        "LOW": (COLOR_PRIMARY, COLOR_PRIMARY_SOFT, 0.08, 0.40),
     }
     base, text_color, bg_a, border_a = palette.get(severity, palette["LOW"])
     return (
@@ -151,7 +151,7 @@ def factor_rows(rows: list[tuple[str, str, float]]) -> str:
         html += (
             '<div style="display:grid;grid-template-columns:86px 52px 1fr 28px;gap:8px;'
             'align-items:center;font-size:12px;margin-bottom:6px;">'
-            f'<div style="color:#C7CDD9;">{label}</div>'
+            f'<div style="color:{TEXT_SOFT};">{label}</div>'
             f'<div style="font-weight:600;text-align:right;color:{TEXT};">{value}</div>'
             f'<div style="height:5px;border-radius:3px;background:{BORDER};overflow:hidden;">'
             f'<div style="width:{pctl:.0f}%;height:100%;background:{pctl_color(pctl)};border-radius:3px;"></div></div>'
@@ -172,14 +172,14 @@ def tricolor_legend() -> str:
 
     return (
         f'<div style="font-size:10px;font-family:{FONT_MONO};color:{TEXT_FAINT};margin-top:4px;">'
-        f"{chip(ORANGE, '≥66TH')}{chip(BLUE, '33–66TH')}{chip(RED, '&lt;33RD')}</div>"
+        f"{chip(COLOR_GOOD, '≥66TH')}{chip(COLOR_MID, '33–66TH')}{chip(COLOR_WEAK, '&lt;33RD')}</div>"
     )
 
 
 def zone_tile(label: str, fg_pct: float, is_three: bool) -> str:
     """Zone efficiency tile, value colored by sensible FG% thresholds."""
     good, bad = (0.38, 0.33) if is_three else (0.58, 0.45)
-    color = ORANGE if fg_pct >= good else (RED_TEXT if fg_pct < bad else TEXT)
+    color = COLOR_GOOD if fg_pct >= good else (COLOR_WEAK_SOFT if fg_pct < bad else TEXT)
     return (
         f'<div style="background:{BG_TILE};border:1px solid {BORDER};border-radius:7px;'
         'padding:8px 10px;text-align:center;">'
@@ -209,9 +209,9 @@ def radar_figure(values: dict[str, float]) -> go.Figure:
             r=radii + radii[:1],
             theta=categories + categories[:1],
             fill="toself",
-            fillcolor="rgba(46,95,183,0.32)",
-            line=dict(color=BLUE_TEXT, width=2),
-            marker=dict(color=ORANGE, size=7),
+            fillcolor=hex_to_rgba(COLOR_PRIMARY, 0.32),
+            line=dict(color=COLOR_PRIMARY_SOFT, width=2),
+            marker=dict(color=COLOR_GOOD, size=7),
             hovertemplate="%{theta}: %{r:.0f}th pctl<extra></extra>",
         )
     )
@@ -241,9 +241,9 @@ def wp_figure(curve: pd.DataFrame) -> go.Figure:
         go.Scatter(
             y=y,
             mode="lines",
-            line=dict(color=BLUE_TEXT, width=2.5),
+            line=dict(color=COLOR_PRIMARY_SOFT, width=2.5),
             fill="tozeroy",
-            fillcolor="rgba(46,95,183,0.18)",
+            fillcolor=hex_to_rgba(COLOR_PRIMARY, 0.18),
             hovertemplate="%{y:.0%}<extra></extra>",
         )
     )
@@ -252,7 +252,7 @@ def wp_figure(curve: pd.DataFrame) -> go.Figure:
             x=[len(y) - 1],
             y=[y.iloc[-1]],
             mode="markers",
-            marker=dict(color=ORANGE, size=9),
+            marker=dict(color=COLOR_GOOD, size=9),
             hoverinfo="skip",
         )
     )
@@ -278,7 +278,7 @@ def form_figure(games: pd.DataFrame) -> go.Figure:
             games["is_home"], games["OPP_ABBREVIATION"], margins, strict=True
         )
     ]
-    colors = [ORANGE if m > 0 else RED for m in margins]
+    colors = [COLOR_GOOD if m > 0 else COLOR_WEAK for m in margins]
     positions = list(range(len(margins)))  # explicit ticks: labels can repeat
     fig = go.Figure(
         go.Bar(
