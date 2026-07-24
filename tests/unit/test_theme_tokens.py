@@ -5,14 +5,11 @@ from __future__ import annotations
 import json
 
 from dashboard.components.theme import (
-    BLUE,
     COLOR_GOOD,
     COLOR_MID,
     COLOR_PRIMARY,
     COLOR_WEAK,
     COLOR_WEAK_SOFT,
-    ORANGE,
-    RED,
     TOKENS,
     pctl_color,
     pctl_text_color,
@@ -49,13 +46,6 @@ def test_pctl_text_color_boundaries() -> None:
     assert pctl_text_color(65.9) == COLOR_MID
     assert pctl_text_color(33) == COLOR_MID
     assert pctl_text_color(32.9) == COLOR_WEAK_SOFT
-
-
-def test_legacy_aliases_point_at_new_tokens() -> None:
-    # Phase A aliases keep unmigrated pages on the new palette; deleted in Phase B.
-    assert ORANGE == COLOR_GOOD
-    assert BLUE == COLOR_MID
-    assert RED == COLOR_WEAK
 
 
 def test_tokens_json_roundtrip() -> None:

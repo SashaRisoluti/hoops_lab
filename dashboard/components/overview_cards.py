@@ -24,7 +24,6 @@ from dashboard.components.theme import (
     TEXT_SOFT,
     hex_to_rgba,
     pctl_color,
-    pctl_text_color,
     plotly_layout,
 )
 
@@ -42,20 +41,6 @@ def card_title(title: str, right: str = "") -> str:
         f'letter-spacing:0.05em;text-transform:uppercase;color:{TEXT};">{title}</span>'
         f'<span style="{_EYEBROW}">{right}</span></div>'
     )
-
-
-def kpi_card(label: str, value: str, pctl: float, value_color: str | None = None) -> str:
-    """KPI tile: big condensed number, percentile label, tricolor bar."""
-    return f"""<div style="{_CARD}display:flex;flex-direction:column;gap:6px;">
-  <div style="{_EYEBROW}">{label}</div>
-  <div style="display:flex;align-items:baseline;gap:8px;">
-    <div style="font-family:{FONT_DISPLAY};font-size:38px;font-weight:700;line-height:1;color:{value_color or TEXT};">{value}</div>
-    <div style="font-size:11px;font-weight:600;color:{pctl_text_color(pctl)};">{pctl:.0f}th pctl</div>
-  </div>
-  <div style="height:4px;border-radius:2px;background:{BORDER};overflow:hidden;">
-    <div style="width:{pctl:.0f}%;height:100%;border-radius:2px;background:{pctl_color(pctl)};"></div>
-  </div>
-</div>"""
 
 
 def team_band(
@@ -189,7 +174,7 @@ def zone_tile(label: str, fg_pct: float, is_three: bool) -> str:
     )
 
 
-def stat_tile(label: str, value: str, color: str = TEXT) -> str:
+def mini_tile(label: str, value: str, color: str = TEXT) -> str:
     """Small mono-label stat tile (NET RTG L10 / HOME / ROAD)."""
     return (
         f'<div style="background:{BG_TILE};border:1px solid {BORDER};border-radius:7px;'

@@ -40,13 +40,6 @@ COLOR_SPECIAL = "#a855f7"  # model/AI-derived flags
 COLOR_PRIMARY_SOFT = "#4d7fff"  # readable primary for small text / thin lines
 COLOR_WEAK_SOFT = "#ff5a63"  # readable weak for small text
 
-# ---- Legacy aliases (Phase A only — deleted in Phase B) ---------------------
-ORANGE = COLOR_GOOD
-BLUE = COLOR_MID
-BLUE_TEXT = COLOR_PRIMARY_SOFT
-RED = COLOR_WEAK
-RED_TEXT = COLOR_WEAK_SOFT
-
 FONT_BODY = "Inter, sans-serif"
 FONT_DISPLAY = "'Inter Tight', sans-serif"
 FONT_MONO = "ui-monospace, monospace"

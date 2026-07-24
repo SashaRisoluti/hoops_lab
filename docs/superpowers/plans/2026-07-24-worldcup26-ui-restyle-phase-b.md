@@ -215,8 +215,8 @@ from dashboard.components.theme import COLOR_PRIMARY, COLOR_PRIMARY_SOFT, hex_to
 Replace line 22-23:
 
 ```python
-        line_color=COLOR_PRIMARY_SOFT,
-        fillcolor=hex_to_rgba(COLOR_PRIMARY, 0.25),
+line_color = (COLOR_PRIMARY_SOFT,)
+fillcolor = (hex_to_rgba(COLOR_PRIMARY, 0.25),)
 ```
 
 Change the `fig.update_layout(` call (lines 27-33) to spread the template first, keeping every existing kwarg:
@@ -340,7 +340,9 @@ from dashboard.components.search_select import search_select
 - Replace `st.title("🧬 Player Analyzer")` (line 44) with:
 
 ```python
-render_page_header("Player Analyzer", subtitle="Percentile profile, advanced stats and on/off impact")
+render_page_header(
+    "Player Analyzer", subtitle="Percentile profile, advanced stats and on/off impact"
+)
 ```
 
 - Replace the `st.selectbox("Player", ...)` call (lines 74-78) with a `search_select` call carrying the SAME options and help arguments, e.g.:
@@ -411,7 +413,9 @@ fig.update_layout(**plotly_layout(), height=320, xaxis_title="", yaxis_title="Av
 - Line 36: `st.title("🔎 Opponent Scouting")` →
 
 ```python
-render_page_header("Opponent Scouting", subtitle="Identity, strengths and shot archetypes of the next opponent")
+render_page_header(
+    "Opponent Scouting", subtitle="Identity, strengths and shot archetypes of the next opponent"
+)
 ```
 
 - [ ] **Step 3: Page 05**
@@ -495,13 +499,15 @@ from dashboard.components.theme import (
 - Line 46: `st.title("🧩 Lineup Explorer")` →
 
 ```python
-render_page_header("Lineup Explorer", subtitle="Five-man units — complete population, minimum-sample filtered")
+render_page_header(
+    "Lineup Explorer", subtitle="Five-man units — complete population, minimum-sample filtered"
+)
 ```
 
 - In the `px.scatter(...)` call (lines 99-107): `color_continuous_scale="RdYlGn"` →
 
 ```python
-color_continuous_scale=[(0.0, COLOR_WEAK), (0.5, COLOR_MID), (1.0, COLOR_GOOD)],
+color_continuous_scale = ([(0.0, COLOR_WEAK), (0.5, COLOR_MID), (1.0, COLOR_GOOD)],)
 ```
 
 - Line 108: `line_color="#888"` → `line_color=GRID`.
@@ -587,7 +593,9 @@ from dashboard.components.theme import GRID, inject_theme, plotly_layout, render
 - Line 44: `st.title("📝 Post-Game Review")` →
 
 ```python
-render_page_header("Post-Game Review", subtitle="Full-game story: score, factors and win probability")
+render_page_header(
+    "Post-Game Review", subtitle="Full-game story: score, factors and win probability"
+)
 ```
 
 - Line 72: `st.sidebar.selectbox("Game (📊 = play-by-play available)", labels)` →

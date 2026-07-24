@@ -314,10 +314,10 @@ with row_b[2]:
     road_l = int(((~games["is_home"]) & (games["WL"] == "L")).sum())
     tiles = st.columns(3)
     tiles[0].markdown(
-        cards.stat_tile(
+        cards.mini_tile(
             "NET / 100 L10", f"{net100:+.1f}", COLOR_GOOD if net100 > 0 else COLOR_WEAK_SOFT
         ),
         unsafe_allow_html=True,
     )
-    tiles[1].markdown(cards.stat_tile("HOME", f"{home_w}–{home_l}"), unsafe_allow_html=True)
-    tiles[2].markdown(cards.stat_tile("ROAD", f"{road_w}–{road_l}"), unsafe_allow_html=True)
+    tiles[1].markdown(cards.mini_tile("HOME", f"{home_w}–{home_l}"), unsafe_allow_html=True)
+    tiles[2].markdown(cards.mini_tile("ROAD", f"{road_w}–{road_l}"), unsafe_allow_html=True)
