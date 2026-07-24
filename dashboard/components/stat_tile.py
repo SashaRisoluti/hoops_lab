@@ -84,6 +84,8 @@ def stat_tile_html(
 
 def render_stat_tile_row(tiles: list[dict], columns: int | None = None) -> None:
     """Render tiles side by side; each dict holds :func:`stat_tile_html` kwargs."""
+    if not tiles:
+        return
     cols = st.columns(columns or len(tiles))
     for col, tile in zip(cols, tiles, strict=False):
         col.markdown(stat_tile_html(**tile), unsafe_allow_html=True)

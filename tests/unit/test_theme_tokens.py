@@ -44,6 +44,13 @@ def test_pctl_text_color_readable_variants() -> None:
     assert pctl_text_color(10) == COLOR_WEAK_SOFT
 
 
+def test_pctl_text_color_boundaries() -> None:
+    assert pctl_text_color(66) == COLOR_GOOD
+    assert pctl_text_color(65.9) == COLOR_MID
+    assert pctl_text_color(33) == COLOR_MID
+    assert pctl_text_color(32.9) == COLOR_WEAK_SOFT
+
+
 def test_legacy_aliases_point_at_new_tokens() -> None:
     # Phase A aliases keep unmigrated pages on the new palette; deleted in Phase B.
     assert ORANGE == COLOR_GOOD

@@ -16,9 +16,11 @@ import pandas as pd
 import streamlit as st
 
 from dashboard.components.theme import (
+    BG_CARD,
+    BORDER,
     BORDER_SOFT,
+    COLOR_PRIMARY,
     CONFERENCES,
-    ORANGE,
     TEAM_ACCENTS,
     TEXT_FAINT,
     hex_to_rgba,
@@ -36,7 +38,7 @@ def logo_url(team_id: int) -> str:
 
 def build_rail_html(abbr_to_id: dict[str, int], selected: str) -> str:
     """The 30-chip rail as clickable HTML (pure; selection drives the accent)."""
-    accent = TEAM_ACCENTS.get(selected, ORANGE)
+    accent = TEAM_ACCENTS.get(selected, COLOR_PRIMARY)
 
     def chip(abbr: str) -> str:
         url = logo_url(abbr_to_id[abbr])
@@ -51,7 +53,7 @@ def build_rail_html(abbr_to_id: dict[str, int], selected: str) -> str:
             img = f'<img src="{url}" alt="{abbr}" style="width:20px;height:20px;opacity:0.85;">'
         return (
             f'<a href="?team={abbr}" target="_self" title="{abbr}" '
-            f'style="{style}border-radius:50%;background:#14171D;display:inline-flex;'
+            f'style="{style}border-radius:50%;background:{BG_CARD};display:inline-flex;'
             'align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;">'
             f"{img}</a>"
         )
@@ -64,7 +66,7 @@ def build_rail_html(abbr_to_id: dict[str, int], selected: str) -> str:
             f'<span style="display:inline-flex;gap:5px;align-items:center;">{chips}</span>'
         )
 
-    divider = '<span style="width:1px;height:28px;background:#242A36;margin:0 8px;"></span>'
+    divider = f'<span style="width:1px;height:28px;background:{BORDER};margin:0 8px;"></span>'
     return (
         '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0 2px;">'
         f"{group('WEST', CONFERENCES['WEST'])}{divider}{group('EAST', CONFERENCES['EAST'])}</div>"

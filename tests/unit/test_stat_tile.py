@@ -55,3 +55,14 @@ def test_render_row_draws_without_exception() -> None:
     at = AppTest.from_function(_row_app).run()
     assert not at.exception
     assert len(at.columns) == 2
+
+
+def _empty_row_app() -> None:
+    from dashboard.components.stat_tile import render_stat_tile_row
+
+    render_stat_tile_row([])
+
+
+def test_render_row_empty_list_is_noop() -> None:
+    at = AppTest.from_function(_empty_row_app).run()
+    assert not at.exception

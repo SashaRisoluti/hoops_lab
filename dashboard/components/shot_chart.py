@@ -6,6 +6,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from dashboard.components.theme import COLOR_GOOD, COLOR_WEAK, COURT_LINE
+
 
 def zone_efficiency(shots: pd.DataFrame) -> pd.DataFrame:
     """Aggregate attempts, FG% and points-per-shot by basic shot zone.
@@ -33,7 +35,7 @@ def zone_efficiency(shots: pd.DataFrame) -> pd.DataFrame:
 
 def _court_shapes() -> list[dict]:
     """Minimal half-court geometry in stats.nba.com coordinates (hoop at 0,0)."""
-    line = {"line_color": "#3A4254", "line_width": 1.5}
+    line = {"line_color": COURT_LINE, "line_width": 1.5}
     return [
         # Hoop and backboard.
         dict(type="circle", x0=-7.5, y0=-7.5, x1=7.5, y1=7.5, **line),
@@ -59,11 +61,11 @@ def render_shot_chart(shots: pd.DataFrame) -> None:
         st.info("No shots match the current filters.")
         return
 
-    # Design tricolor language: made = solid orange, missed = open red.
+    # Design data-color language: made = solid good/green, missed = open weak/red.
     fig = go.Figure()
     for made, name, color, symbol in (
-        (1, "Made", "#F0703A", "circle"),
-        (0, "Missed", "#D2243C", "circle-open"),
+        (1, "Made", COLOR_GOOD, "circle"),
+        (0, "Missed", COLOR_WEAK, "circle-open"),
     ):
         subset = shots.loc[shots["SHOT_MADE_FLAG"] == made]
         fig.add_trace(
