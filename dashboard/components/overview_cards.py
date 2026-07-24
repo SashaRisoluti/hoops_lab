@@ -18,7 +18,6 @@ from dashboard.components.theme import (
     FONT_DISPLAY,
     FONT_MONO,
     GRID,
-    PLOTLY_TEMPLATE,
     TEXT,
     TEXT_FAINT,
     TEXT_MUTED,
@@ -26,12 +25,13 @@ from dashboard.components.theme import (
     hex_to_rgba,
     pctl_color,
     pctl_text_color,
+    plotly_layout,
 )
 
 _CARD = f"background:{BG_CARD};border:1px solid {BORDER};border-radius:10px;padding:14px 16px 12px;"
 _EYEBROW = f"font-family:{FONT_MONO};font-size:10px;letter-spacing:0.12em;color:{TEXT_MUTED};"
 
-_PLOTLY_BASE = dict(PLOTLY_TEMPLATE)
+_PLOTLY_BASE = plotly_layout()
 
 
 def card_title(title: str, right: str = "") -> str:

@@ -10,6 +10,7 @@ data-color language never changes.
 
 from __future__ import annotations
 
+import copy
 import json
 
 import streamlit as st
@@ -174,13 +175,21 @@ def tokens_json() -> str:
     return json.dumps(TOKENS, indent=2)
 
 
-#: Shared Plotly layout kwargs — every figure calls update_layout(**PLOTLY_TEMPLATE).
-PLOTLY_TEMPLATE: dict = dict(
+_PLOTLY_LAYOUT: dict = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(family=FONT_BODY, color=TEXT),
     margin=dict(l=10, r=10, t=10, b=10),
 )
+
+
+def plotly_layout() -> dict:
+    """Fresh copy of the shared Plotly layout kwargs.
+
+    Returns:
+        A deep copy — callers may mutate it without affecting other figures.
+    """
+    return copy.deepcopy(_PLOTLY_LAYOUT)
 
 
 def hex_to_rgba(hex_color: str, alpha: float) -> str:

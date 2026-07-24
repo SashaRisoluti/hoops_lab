@@ -12,11 +12,11 @@ from dashboard.components.theme import (
     COLOR_WEAK,
     COLOR_WEAK_SOFT,
     ORANGE,
-    PLOTLY_TEMPLATE,
     RED,
     TOKENS,
     pctl_color,
     pctl_text_color,
+    plotly_layout,
     tokens_json,
 )
 
@@ -65,6 +65,16 @@ def test_tokens_json_roundtrip() -> None:
     assert payload["good"] == "#16c47f"
 
 
-def test_plotly_template_uses_inter_on_transparent_paper() -> None:
-    assert "Inter" in PLOTLY_TEMPLATE["font"]["family"]
-    assert PLOTLY_TEMPLATE["paper_bgcolor"] == "rgba(0,0,0,0)"
+def test_plotly_layout_uses_inter_on_transparent_paper() -> None:
+    layout = plotly_layout()
+    assert "Inter" in layout["font"]["family"]
+    assert layout["paper_bgcolor"] == "rgba(0,0,0,0)"
+
+
+def test_plotly_layout_returns_isolated_copies() -> None:
+    first = plotly_layout()
+    first["font"]["family"] = "Comic Sans"
+    first["margin"]["l"] = 999
+    second = plotly_layout()
+    assert second["font"]["family"].startswith("Inter")
+    assert second["margin"]["l"] == 10
