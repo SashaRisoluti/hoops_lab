@@ -15,9 +15,15 @@ from dashboard.components.data_access import (  # noqa: E402
     get_database,
     team_options,
 )
+from dashboard.components.page_header import render_page_header  # noqa: E402
 from dashboard.components.radar_chart import render_radar_chart  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
-from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
+from dashboard.components.theme import (  # noqa: E402
+    GRID,
+    inject_theme,
+    plotly_layout,
+    render_command_bar,
+)
 from hoops_lab.analytics.team_identity import (  # noqa: E402
     league_playmaking_rebounding,
     league_ratings,
@@ -40,7 +46,7 @@ RADAR_SHORT_LABELS = {
 st.set_page_config(page_title="Team Identity", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Team")
-st.title("🛡️ Team Identity")
+render_page_header("Team Identity", subtitle="Ratings, Four Factors and playmaking trends")
 
 database = get_database()
 if database.table_rows("seasons") == 0:
@@ -161,7 +167,7 @@ st.subheader("📉 Recent form — rolling 5-game point differential")
 games = team_game_factors(database, team_id, season)
 games["NET_5G"] = games["PLUS_MINUS"].rolling(5).mean()
 fig = px.line(games, x="GAME_DATE", y="NET_5G")
-fig.add_hline(y=0, line_dash="dot", line_color="#888")
-fig.update_layout(height=320, xaxis_title="", yaxis_title="Avg +/- (last 5)")
+fig.add_hline(y=0, line_dash="dot", line_color=GRID)
+fig.update_layout(**plotly_layout(), height=320, xaxis_title="", yaxis_title="Avg +/- (last 5)")
 st.plotly_chart(fig, use_container_width=True)
 st.caption(f"{len(games)} games · season point differential {games['PLUS_MINUS'].sum():+.0f}.")

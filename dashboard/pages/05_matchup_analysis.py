@@ -19,6 +19,8 @@ from dashboard.components.data_access import (  # noqa: E402
     get_database,
     team_options,
 )
+from dashboard.components.page_header import render_page_header  # noqa: E402
+from dashboard.components.search_select import search_select  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.matchup import matchup_leverage, matchup_table  # noqa: E402
@@ -27,7 +29,7 @@ from hoops_lab.analytics.team_identity import league_team_factors  # noqa: E402
 st.set_page_config(page_title="Matchup Analysis", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Matchup")
-st.title("⚔️ Matchup Analysis")
+render_page_header("Matchup Analysis", subtitle="Side-by-side Four Factors and leverage")
 
 database = get_database()
 if database.table_rows("seasons") == 0:
@@ -42,7 +44,8 @@ team_a_name = teams.loc[teams["team_id"] == team_a, "full_name"].iloc[0]
 
 st.sidebar.header("🔍 Selection")
 opponent_options = [n for n in teams["full_name"].tolist() if n != team_a_name]
-team_b_name = st.sidebar.selectbox("Opponent", opponent_options)
+with st.sidebar:
+    team_b_name = search_select("Opponent", opponent_options, key="matchup_opponent")
 team_b = int(teams.loc[teams["full_name"] == team_b_name, "team_id"].iloc[0])
 
 if team_a == team_b:

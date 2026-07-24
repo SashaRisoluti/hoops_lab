@@ -18,6 +18,7 @@ from dashboard.components.data_access import (  # noqa: E402
     get_database,
     team_options,
 )
+from dashboard.components.page_header import render_page_header  # noqa: E402
 from dashboard.components.shot_archetypes_section import (  # noqa: E402
     render_shot_archetypes_section,
 )
@@ -33,7 +34,9 @@ from hoops_lab.analytics.team_identity import league_ratings, league_team_factor
 st.set_page_config(page_title="Opponent Scouting", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Scouting")
-st.title("🔎 Opponent Scouting")
+render_page_header(
+    "Opponent Scouting", subtitle="Identity, strengths and shot archetypes of the next opponent"
+)
 
 database = get_database()
 if database.table_rows("seasons") == 0:
