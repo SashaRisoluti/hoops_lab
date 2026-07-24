@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import get_database  # noqa: E402
+from dashboard.components.page_header import render_page_header  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart, zone_efficiency  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
@@ -25,7 +26,7 @@ from hoops_lab.analytics.shot_context import assisted_summary  # noqa: E402
 st.set_page_config(page_title="Shot Map", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Shots")
-st.title("🎯 Shot Map")
+render_page_header("Shot Map", subtitle="Half-court locations and zone efficiency")
 
 database = get_database()
 if database.table_rows("shots") == 0:

@@ -20,8 +20,17 @@ from dashboard.components.data_access import (  # noqa: E402
     get_database,
     team_options,
 )
+from dashboard.components.page_header import render_page_header  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
-from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
+from dashboard.components.theme import (  # noqa: E402
+    COLOR_GOOD,
+    COLOR_MID,
+    COLOR_WEAK,
+    GRID,
+    inject_theme,
+    plotly_layout,
+    render_command_bar,
+)
 from hoops_lab.analytics.lineup_explorer import (  # noqa: E402
     enrich_lineups,
     filter_lineups_by_players,
@@ -43,7 +52,9 @@ LINEUP_COLUMNS = {
 st.set_page_config(page_title="Lineup Explorer", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Lineups")
-st.title("🧩 Lineup Explorer")
+render_page_header(
+    "Lineup Explorer", subtitle="Five-man units — complete population, minimum-sample filtered"
+)
 
 database = get_database()
 if database.table_rows("lineups") == 0:
@@ -103,11 +114,18 @@ with five_man_tab:
             size="MIN",
             hover_name="GROUP_NAME",
             color="ORTG_EST",
-            color_continuous_scale="RdYlGn",
+            color_continuous_scale=[
+                (0.0, COLOR_WEAK),
+                (0.5, COLOR_MID),
+                (1.0, COLOR_GOOD),
+            ],
         )
-        fig.add_hline(y=0, line_dash="dot", line_color="#888")
+        fig.add_hline(y=0, line_dash="dot", line_color=GRID)
         fig.update_layout(
-            height=420, xaxis_title="Estimated possessions", yaxis_title="+/- per 48'"
+            **plotly_layout(),
+            height=420,
+            xaxis_title="Estimated possessions",
+            yaxis_title="+/- per 48'",
         )
         st.plotly_chart(fig, use_container_width=True)
 
