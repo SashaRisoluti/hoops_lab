@@ -7,10 +7,10 @@ import tomllib
 from pathlib import Path
 
 from dashboard.components import theme
-from hoops_lab.visuals import altair_charts, court, shot_maps
+from hoops_lab.visuals import altair_charts, court, heatmaps, shot_maps
 
 REPO = Path(__file__).resolve().parents[2]
-HEX_RE = re.compile(r"#[0-9a-fA-F]{6}\b")
+HEX_RE = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 
 
 def test_no_hex_literals_in_dashboard_outside_theme() -> None:
@@ -36,6 +36,13 @@ def test_visuals_mirror_matches_theme_tokens() -> None:
     assert court.COURT_LINE == theme.COURT_LINE
     assert shot_maps.MADE_COLOR == theme.COLOR_GOOD
     assert shot_maps.MISS_COLOR == theme.COLOR_WEAK
+    assert heatmaps.RAMP_COLD == theme.COLOR_PRIMARY
+    assert heatmaps.RAMP_HOT == theme.COLOR_MID
+    assert heatmaps.EFF_WEAK == theme.COLOR_WEAK
+    assert heatmaps.EFF_MID == theme.COLOR_MID
+    assert heatmaps.EFF_GOOD == theme.COLOR_GOOD
+    assert heatmaps.TEXT_SOFT == theme.TEXT_SOFT
+    assert heatmaps.TEXT_MAIN == theme.TEXT
 
 
 def test_streamlit_config_matches_tokens() -> None:

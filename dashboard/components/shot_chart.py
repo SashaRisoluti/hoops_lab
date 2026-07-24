@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from dashboard.components.theme import COLOR_GOOD, COLOR_WEAK, COURT_LINE
+from dashboard.components.theme import COLOR_GOOD, COLOR_WEAK, COURT_LINE, plotly_layout
 
 
 def zone_efficiency(shots: pd.DataFrame) -> pd.DataFrame:
@@ -81,13 +81,14 @@ def render_shot_chart(shots: pd.DataFrame) -> None:
                 ),
             )
         )
+    layout = plotly_layout()
+    layout["margin"]["t"] = 30
     fig.update_layout(
+        **layout,
         shapes=_court_shapes(),
         xaxis=dict(range=[-260, 260], visible=False, fixedrange=True),
         yaxis=dict(range=[-60, 440], visible=False, scaleanchor="x", scaleratio=1),
         height=620,
         legend=dict(orientation="h", yanchor="bottom", y=1.0),
-        margin=dict(l=10, r=10, t=30, b=10),
-        plot_bgcolor="rgba(0,0,0,0)",
     )
     st.plotly_chart(fig, use_container_width=True)

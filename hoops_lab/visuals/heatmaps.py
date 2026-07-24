@@ -16,11 +16,21 @@ from matplotlib.figure import Figure
 from hoops_lab.features.shot_spatial_features import COURT_BOUNDS, build_spatial_bins
 from hoops_lab.visuals.court import COURT_BG, draw_court
 
+#: Hex literals mirrored from ``dashboard.components.theme`` tokens (no dashboard
+#: import here — ``hoops_lab`` must never import from ``dashboard``).
+RAMP_COLD = "#0052ff"
+RAMP_HOT = "#ffd100"
+EFF_WEAK = "#e0262c"
+EFF_MID = "#ffd100"
+EFF_GOOD = "#16c47f"
+TEXT_SOFT = "#9ca3af"
+TEXT_MAIN = "#f1f5f9"
+
 #: Navy-to-yellow ramp for frequency/density surfaces (cold -> hot).
-DENSITY_CMAP = LinearSegmentedColormap.from_list("hoops_density", [COURT_BG, "#0052ff", "#ffd100"])
+DENSITY_CMAP = LinearSegmentedColormap.from_list("hoops_density", [COURT_BG, RAMP_COLD, RAMP_HOT])
 #: Red-yellow-green ramp for efficiency surfaces (weak -> mid -> good).
 EFFICIENCY_CMAP = LinearSegmentedColormap.from_list(
-    "hoops_efficiency", ["#e0262c", "#ffd100", "#16c47f"]
+    "hoops_efficiency", [EFF_WEAK, EFF_MID, EFF_GOOD]
 )
 
 
@@ -31,9 +41,9 @@ def _grid_extent() -> tuple[float, float, float, float]:
 
 def _empty_court(title: str | None) -> Figure:
     fig, ax = draw_court()
-    ax.text(0, 200, "No shots to plot", ha="center", color="#9ca3af", fontsize=11)
+    ax.text(0, 200, "No shots to plot", ha="center", color=TEXT_SOFT, fontsize=11)
     if title:
-        ax.set_title(title, color="#9ca3af")
+        ax.set_title(title, color=TEXT_SOFT)
     return fig
 
 
@@ -78,7 +88,7 @@ def shot_density_heatmap(
         zorder=0,
     )
     if title:
-        ax.set_title(title, color="#f1f5f9")
+        ax.set_title(title, color=TEXT_MAIN)
     return fig
 
 
@@ -171,10 +181,10 @@ def shot_efficiency_heatmap(
         zorder=0,
     )
     colorbar = fig.colorbar(image, ax=ax, fraction=0.04, pad=0.02)
-    colorbar.ax.tick_params(colors="#9ca3af", labelsize=8)
-    colorbar.set_label("FG%", color="#9ca3af", fontsize=8)
+    colorbar.ax.tick_params(colors=TEXT_SOFT, labelsize=8)
+    colorbar.set_label("FG%", color=TEXT_SOFT, fontsize=8)
     if title:
-        ax.set_title(title, color="#f1f5f9")
+        ax.set_title(title, color=TEXT_MAIN)
     return fig
 
 
@@ -215,5 +225,5 @@ def centroid_heatmap(
         zorder=0,
     )
     if title:
-        ax.set_title(title, color="#f1f5f9")
+        ax.set_title(title, color=TEXT_MAIN)
     return fig
