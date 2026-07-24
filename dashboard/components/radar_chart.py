@@ -31,7 +31,14 @@ def render_radar_chart(values: dict[str, float], title: str = "") -> None:
     fig.update_layout(
         **plotly_layout(),
         title=title,
-        polar=dict(radialaxis=dict(range=[0, 100], showticklabels=True, ticks="")),
+        polar=dict(
+            radialaxis=dict(
+                range=[0, 100],
+                tickvals=[25, 50, 75, 100],
+                showticklabels=True,
+                ticks="",
+            )
+        ),
         showlegend=False,
         height=430,
     )
