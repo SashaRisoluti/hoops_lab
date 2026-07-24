@@ -56,14 +56,14 @@ def stat_tile_html(
         HTML string for one tile.
     """
     delta_html = ""
-    if delta is not None:
+    if delta is not None and not math.isnan(delta):
         color = COLOR_GOOD if delta >= 0 else COLOR_WEAK_SOFT
         delta_html = (
             f'<span style="font-size:11px;font-weight:600;color:{color};">{delta:+.1f}</span>'
         )
     sub_html = f'<div style="font-size:11px;color:{TEXT_MUTED};">{sub}</div>' if sub else ""
     pctl_html = ""
-    if pctl is not None:
+    if pctl is not None and not math.isnan(pctl):
         pctl_html = (
             f'<div style="font-size:11px;font-weight:600;color:{pctl_text_color(pctl)};">'
             f"{pctl:.0f}th pctl</div>"

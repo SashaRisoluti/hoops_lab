@@ -66,3 +66,9 @@ def _empty_row_app() -> None:
 def test_render_row_empty_list_is_noop() -> None:
     at = AppTest.from_function(_empty_row_app).run()
     assert not at.exception
+
+
+def test_nan_delta_and_pctl_are_omitted() -> None:
+    html = stat_tile_html("PACE", "99.1", delta=float("nan"), pctl=float("nan"))
+    assert "nan" not in html.lower()
+    assert "th pctl" not in html
