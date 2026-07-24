@@ -19,8 +19,15 @@ import streamlit as st  # noqa: E402
 from dashboard.components.data_access import (  # noqa: E402
     get_database,
 )
+from dashboard.components.page_header import render_page_header  # noqa: E402
+from dashboard.components.search_select import search_select  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
-from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
+from dashboard.components.theme import (  # noqa: E402
+    GRID,
+    inject_theme,
+    plotly_layout,
+    render_command_bar,
+)
 from hoops_lab.features.four_factors import FACTOR_LABELS  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
 from hoops_lab.models.shot_quality_model import train_shot_quality  # noqa: E402
@@ -41,7 +48,9 @@ from hoops_lab.reports.post_game import (  # noqa: E402
 st.set_page_config(page_title="Post-Game Review", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Reports")
-st.title("📝 Post-Game Review")
+render_page_header(
+    "Post-Game Review", subtitle="Full-game story: score, factors and win probability"
+)
 
 database = get_database()
 if database.table_rows("games") == 0:
@@ -69,7 +78,8 @@ labels = [
     f"{'📊 ' if r.has_pbp else ''}{r.away_abbr} @ {r.home_abbr} — {r.game_date} ({r.season})"
     for r in games.itertuples()
 ]
-chosen = st.sidebar.selectbox("Game (📊 = play-by-play available)", labels)
+with st.sidebar:
+    chosen = search_select("Game (📊 = play-by-play available)", labels, key="review_game_pick")
 selected_game = games.iloc[labels.index(chosen)]
 game_id = str(selected_game["game_id"])
 has_pbp = bool(selected_game["has_pbp"])
@@ -137,8 +147,9 @@ with wp_col:
         st.info("Not enough data for the win probability curve.")
     else:
         fig = px.line(scoring.reset_index(drop=True), y="wp_home")
-        fig.add_hline(y=0.5, line_dash="dot", line_color="#888")
+        fig.add_hline(y=0.5, line_dash="dot", line_color=GRID)
         fig.update_layout(
+            **plotly_layout(),
             height=320,
             yaxis=dict(range=[0, 1], title="P(home win)"),
             xaxis_title="Scoring events",

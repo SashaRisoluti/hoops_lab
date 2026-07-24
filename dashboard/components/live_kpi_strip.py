@@ -6,6 +6,7 @@ import re
 
 import streamlit as st
 
+from dashboard.components.stat_tile import stat_tile_html
 from hoops_lab.live.game_state import GameState
 
 _CLOCK = re.compile(r"PT(\d+)M([\d.]+)S")
@@ -33,10 +34,35 @@ def render_kpi_strip(state: GameState, home_label: str, away_label: str) -> None
     pace = state.pace_estimate
 
     cols = st.columns(7)
-    cols[0].metric(f"{home_label} eFG%", f"{home.efg_pct:.1%}" if home.efg_pct is not None else "—")
-    cols[1].metric(f"{home_label} PPP", f"{home_ppp:.2f}" if home_ppp is not None else "—")
-    cols[2].metric(f"{home_label} TOV", home.tov)
-    cols[3].metric("Pace", f"{pace:.1f}" if pace is not None else "—")
-    cols[4].metric(f"{away_label} eFG%", f"{away.efg_pct:.1%}" if away.efg_pct is not None else "—")
-    cols[5].metric(f"{away_label} PPP", f"{away_ppp:.2f}" if away_ppp is not None else "—")
-    cols[6].metric(f"{away_label} TOV", away.tov)
+    cols[0].markdown(
+        stat_tile_html(
+            f"{home_label} eFG%", f"{home.efg_pct:.1%}" if home.efg_pct is not None else "—"
+        ),
+        unsafe_allow_html=True,
+    )
+    cols[1].markdown(
+        stat_tile_html(f"{home_label} PPP", f"{home_ppp:.2f}" if home_ppp is not None else "—"),
+        unsafe_allow_html=True,
+    )
+    cols[2].markdown(
+        stat_tile_html(f"{home_label} TOV", home.tov),
+        unsafe_allow_html=True,
+    )
+    cols[3].markdown(
+        stat_tile_html("Pace", f"{pace:.1f}" if pace is not None else "—"),
+        unsafe_allow_html=True,
+    )
+    cols[4].markdown(
+        stat_tile_html(
+            f"{away_label} eFG%", f"{away.efg_pct:.1%}" if away.efg_pct is not None else "—"
+        ),
+        unsafe_allow_html=True,
+    )
+    cols[5].markdown(
+        stat_tile_html(f"{away_label} PPP", f"{away_ppp:.2f}" if away_ppp is not None else "—"),
+        unsafe_allow_html=True,
+    )
+    cols[6].markdown(
+        stat_tile_html(f"{away_label} TOV", away.tov),
+        unsafe_allow_html=True,
+    )

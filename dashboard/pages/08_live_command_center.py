@@ -20,9 +20,16 @@ import streamlit as st  # noqa: E402
 from dashboard.components.alert_panel import render_alert_panel  # noqa: E402
 from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.live_kpi_strip import render_kpi_strip  # noqa: E402
+from dashboard.components.page_header import render_page_header  # noqa: E402
+from dashboard.components.search_select import search_select  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
-from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
+from dashboard.components.theme import (  # noqa: E402
+    GRID,
+    inject_theme,
+    plotly_layout,
+    render_command_bar,
+)
 from hoops_lab.config import ENVIRONMENT  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
 from hoops_lab.live.alert_engine import evaluate_alerts  # noqa: E402
@@ -37,7 +44,7 @@ from hoops_lab.models.win_probability import (  # noqa: E402
 st.set_page_config(page_title="Live Command Center", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Live")
-st.title("📡 Live Command Center")
+render_page_header("Live Command Center", subtitle="Live KPIs, alerts and win probability")
 
 database = get_database()
 if database.table_rows("play_by_play") == 0:
@@ -82,7 +89,7 @@ if mode == "Live (nba_api)":
     labels = {
         f"{g['awayTeam']['teamTricode']} @ {g['homeTeam']['teamTricode']}": g for g in in_progress
     }
-    chosen = st.selectbox("Live game", list(labels))
+    chosen = search_select("Live game", list(labels), key="live_game_pick")
     game = labels[chosen]
     from hoops_lab.ingestion.live import adapt_live_actions
 
@@ -119,7 +126,8 @@ else:
         f"{r.away_abbr} @ {r.home_abbr} — {r.game_date} ({r.season})"
         for r in replay_games.itertuples()
     ]
-    chosen = st.sidebar.selectbox("Game", labels)
+    with st.sidebar:
+        chosen = search_select("Game", labels, key="replay_game_pick")
     row = replay_games.iloc[labels.index(chosen)]
     home_id, away_id = int(row["home_team_id"]), int(row["away_team_id"])
     home_abbr, away_abbr = row["home_abbr"], row["away_abbr"]
@@ -189,8 +197,9 @@ with wp_col:
         st.info("Waiting for the first scoring update.")
     else:
         fig = px.line(curve.reset_index(drop=True), y="wp_home")
-        fig.add_hline(y=0.5, line_dash="dot", line_color="#888")
+        fig.add_hline(y=0.5, line_dash="dot", line_color=GRID)
         fig.update_layout(
+            **plotly_layout(),
             height=360,
             yaxis=dict(range=[0, 1], title=f"P({home_abbr} win)"),
             xaxis_title="Scoring events processed",

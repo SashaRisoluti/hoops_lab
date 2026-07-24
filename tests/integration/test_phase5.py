@@ -20,5 +20,8 @@ def test_live_command_center_replay_renders() -> None:
     at.run()
 
     assert not at.exception, f"page raised: {at.exception}"
-    assert len(at.metric) >= 4, "live KPI strip missing"
+    # Live KPI strip renders StatTile HTML via st.markdown, not st.metric.
+    strip_html = "".join(m.value for m in at.markdown)
+    assert "eFG%" in strip_html, "live KPI strip missing"
+    assert "PPP" in strip_html, "live KPI strip missing"
     assert len(at.dataframe) >= 1, "timeline / comparison tables missing"
