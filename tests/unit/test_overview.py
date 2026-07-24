@@ -5,10 +5,10 @@ from __future__ import annotations
 import pandas as pd
 
 from dashboard.components.theme import (
-    BLUE,
+    COLOR_GOOD,
+    COLOR_MID,
+    COLOR_WEAK,
     CONFERENCES,
-    ORANGE,
-    RED,
     TEAM_ACCENTS,
     pctl_color,
 )
@@ -19,13 +19,13 @@ from hoops_lab.analytics.overview import (
 )
 
 
-def test_pctl_color_tricolor_buckets() -> None:
-    # Design rule: orange = good (>=66th), blue = mid (33-66), red = weak (<33rd).
-    assert pctl_color(82) == ORANGE
-    assert pctl_color(66) == ORANGE
-    assert pctl_color(50) == BLUE
-    assert pctl_color(33) == BLUE
-    assert pctl_color(20) == RED
+def test_pctl_color_semantic_buckets() -> None:
+    # Design rule: green = good (>=66th), yellow = mid (33-66), red = weak (<33rd).
+    assert pctl_color(82) == COLOR_GOOD
+    assert pctl_color(66) == COLOR_GOOD
+    assert pctl_color(50) == COLOR_MID
+    assert pctl_color(33) == COLOR_MID
+    assert pctl_color(20) == COLOR_WEAK
 
 
 def test_team_maps_cover_all_30_franchises() -> None:

@@ -1,40 +1,53 @@
-"""Design system from the Claude Design handoff (Hoops Lab Dashboard v2).
+"""Design system — Worldcup26 restyle (spec docs/superpowers/specs/2026-07-24).
 
-Dark broadcast look in NBA tricolor with a fixed data-color language:
-**orange = good (>=66th pctl), blue = mid (33rd-66th), red = weak (<33rd)** —
+Deep navy surfaces with a fixed data-color language:
+**green = good (>=66th pctl), yellow = mid (33rd-66th), red = weak (<33rd)** —
 the same semantics on every chart so any reader decodes them instantly.
+Electric blue is the primary/interactive color (selection, nav active).
 Team accents re-theme the rail ring, header stripe and logo only; the
-tricolor data language never changes.
+data-color language never changes.
 """
 
 from __future__ import annotations
 
+import json
+
 import streamlit as st
 
-# ---- Tokens (verbatim from the design file) ---------------------------------
-BG_PAGE = "#101214"
-BG_FRAME = "#0C0E12"
-BG_BAR = "#0E1117"
-BG_CARD = "#14171D"
-BG_TILE = "#0E1117"
-BORDER_DARK = "#20252F"
-BORDER = "#242A36"
-BORDER_SOFT = "#2A3140"
-GRID = "#222834"
-COURT_LINE = "#3A4254"
-TEXT = "#EDEFF3"
-TEXT_SOFT = "#C7CDD9"
-TEXT_MUTED = "#8B93A3"
-TEXT_FAINT = "#6B7384"
+# ---- Surfaces (Worldcup26 navy family) --------------------------------------
+BG_PAGE = "#070b14"
+BG_FRAME = "#0b0f19"
+BG_BAR = "#0b0f19"
+BG_CARD = "#0f172a"
+BG_TILE = "#141c2e"
+BORDER_DARK = "#0e1320"
+BORDER = "#111829"
+BORDER_SOFT = "#1a2338"
+GRID = "#1c2740"
+COURT_LINE = "#33415e"
+TEXT = "#f1f5f9"
+TEXT_SOFT = "#9ca3af"
+TEXT_MUTED = "#64748b"
+TEXT_FAINT = "#475569"
 
-ORANGE = "#F0703A"
-BLUE = "#2E5FB7"
-BLUE_TEXT = "#5B8AE0"
-RED = "#D2243C"
-RED_TEXT = "#E25A6E"
+# ---- Data semantics ---------------------------------------------------------
+COLOR_GOOD = "#16c47f"  # >=66th percentile
+COLOR_MID = "#ffd100"  # 33rd-66th percentile
+COLOR_WEAK = "#e0262c"  # <33rd percentile
+COLOR_PRIMARY = "#0052ff"  # selection, nav active, interactive elements
+COLOR_SPECIAL = "#a855f7"  # model/AI-derived flags
+COLOR_PRIMARY_SOFT = "#4d7fff"  # readable primary for small text / thin lines
+COLOR_WEAK_SOFT = "#ff5a63"  # readable weak for small text
 
-FONT_BODY = "Barlow, sans-serif"
-FONT_DISPLAY = "'Barlow Condensed', sans-serif"
+# ---- Legacy aliases (Phase A only — deleted in Phase B) ---------------------
+ORANGE = COLOR_GOOD
+BLUE = COLOR_MID
+BLUE_TEXT = COLOR_PRIMARY_SOFT
+RED = COLOR_WEAK
+RED_TEXT = COLOR_WEAK_SOFT
+
+FONT_BODY = "Inter, sans-serif"
+FONT_DISPLAY = "'Inter Tight', sans-serif"
 FONT_MONO = "ui-monospace, monospace"
 
 #: Franchise accent per tricode (readable on the dark background).
@@ -111,21 +124,63 @@ CONFERENCES: dict[str, list[str]] = {
 
 
 def pctl_color(percentile: float) -> str:
-    """Bar/marker color for a league percentile (design tricolor rule)."""
+    """Bar/marker color for a league percentile (fixed data-color rule)."""
     if percentile >= 66:
-        return ORANGE
+        return COLOR_GOOD
     if percentile >= 33:
-        return BLUE
-    return RED
+        return COLOR_MID
+    return COLOR_WEAK
 
 
 def pctl_text_color(percentile: float) -> str:
     """Readable text variant of :func:`pctl_color`."""
     if percentile >= 66:
-        return ORANGE
+        return COLOR_GOOD
     if percentile >= 33:
-        return BLUE_TEXT
-    return RED_TEXT
+        return COLOR_MID
+    return COLOR_WEAK_SOFT
+
+
+#: Design tokens as one portable mapping (React/Tailwind port seed).
+TOKENS: dict[str, str] = {
+    "bg_page": BG_PAGE,
+    "bg_frame": BG_FRAME,
+    "bg_card": BG_CARD,
+    "bg_tile": BG_TILE,
+    "border": BORDER,
+    "border_dark": BORDER_DARK,
+    "border_soft": BORDER_SOFT,
+    "grid": GRID,
+    "court_line": COURT_LINE,
+    "text": TEXT,
+    "text_soft": TEXT_SOFT,
+    "text_muted": TEXT_MUTED,
+    "text_faint": TEXT_FAINT,
+    "good": COLOR_GOOD,
+    "mid": COLOR_MID,
+    "weak": COLOR_WEAK,
+    "primary": COLOR_PRIMARY,
+    "special": COLOR_SPECIAL,
+    "primary_soft": COLOR_PRIMARY_SOFT,
+    "weak_soft": COLOR_WEAK_SOFT,
+    "font_body": FONT_BODY,
+    "font_display": FONT_DISPLAY,
+    "font_mono": FONT_MONO,
+}
+
+
+def tokens_json() -> str:
+    """Serialize the design tokens to JSON (React/Tailwind port seed)."""
+    return json.dumps(TOKENS, indent=2)
+
+
+#: Shared Plotly layout kwargs — every figure calls update_layout(**PLOTLY_TEMPLATE).
+PLOTLY_TEMPLATE: dict = dict(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family=FONT_BODY, color=TEXT),
+    margin=dict(l=10, r=10, t=10, b=10),
+)
 
 
 def hex_to_rgba(hex_color: str, alpha: float) -> str:
