@@ -91,7 +91,7 @@ def team_band(
   border:1px solid {BORDER};border-radius:10px;
   background:linear-gradient(90deg,{hex_to_rgba(accent, 0.16)},rgba(0,0,0,0) 55%),{BG_CARD};
   box-shadow:inset 0 3px 0 {accent};">
-  <div style="width:58px;height:58px;border-radius:50%;border:2px solid {accent};background:#161B23;
+  <div style="width:58px;height:58px;border-radius:50%;border:2px solid {accent};background:{BG_TILE};
     display:flex;align-items:center;justify-content:center;">{badge}</div>
   <div>
     <div style="font-family:{FONT_DISPLAY};font-size:32px;font-weight:700;letter-spacing:0.05em;line-height:1;color:{TEXT};">{name.upper()}</div>
@@ -111,7 +111,7 @@ def team_band(
 
 
 def flag_box(severity: str, message: str) -> str:
-    """Tactical flag row (HIGH red / MED orange / LOW blue)."""
+    """Tactical flag row (HIGH red / MED yellow / LOW blue)."""
     palette = {
         "HIGH": (COLOR_WEAK, COLOR_WEAK_SOFT, 0.10, 0.45),
         "MED": (COLOR_MID, COLOR_MID, 0.08, 0.40),
@@ -234,7 +234,7 @@ def radar_figure(values: dict[str, float]) -> go.Figure:
 
 
 def wp_figure(curve: pd.DataFrame) -> go.Figure:
-    """Win probability line: blue with gradient fill and an orange end dot."""
+    """Win probability line: blue with gradient fill and a green end dot."""
     y = curve["wp_home"].reset_index(drop=True)
     fig = go.Figure()
     fig.add_trace(
@@ -270,7 +270,7 @@ def wp_figure(curve: pd.DataFrame) -> go.Figure:
 
 
 def form_figure(games: pd.DataFrame) -> go.Figure:
-    """Last-10 diverging margin bars: wins up in orange, losses down in red."""
+    """Last-10 diverging margin bars: wins up in green, losses down in red."""
     margins = games["PLUS_MINUS"].astype(float).tolist()
     labels = [
         f"{'@' if not home else ''}{opp} {margin:+.0f}"
