@@ -4,8 +4,8 @@ Each builder accepts an already-prepared DataFrame and returns an
 ``alt.Chart`` — no database access, no network, no Streamlit. The dashboard
 renders them with ``st.altair_chart``; reports can serialize them via
 ``chart.to_dict()``. Colors mirror the design tokens in
-``dashboard/components/theme.py`` (tricolor data language: orange = good,
-blue = mid, red = weak).
+``dashboard/components/theme.py`` (tricolor data language: green = good,
+yellow = mid, red = weak).
 """
 
 from __future__ import annotations
@@ -15,17 +15,17 @@ import pandas as pd
 
 # Mirrors of the dashboard design tokens (hoops_lab must not import from
 # dashboard/, so the shared values are restated here).
-BG_CARD = "#14171D"
-GRID = "#222834"
-TEXT = "#EDEFF3"
-TEXT_MUTED = "#8B93A3"
-ORANGE = "#F0703A"
-BLUE = "#2E5FB7"
-RED = "#D2243C"
+BG_CARD = "#0f172a"
+GRID = "#1c2740"
+TEXT = "#f1f5f9"
+TEXT_MUTED = "#9ca3af"
+COLOR_GOOD = "#16c47f"
+COLOR_MID = "#ffd100"
+COLOR_WEAK = "#e0262c"
 
 #: Tricolor scale for percentile-driven encodings.
 TRICOLOR_DOMAIN = ["good", "mid", "weak"]
-TRICOLOR_RANGE = [ORANGE, BLUE, RED]
+TRICOLOR_RANGE = [COLOR_GOOD, COLOR_MID, COLOR_WEAK]
 
 
 def _require(data: pd.DataFrame, columns: list[str]) -> None:
@@ -69,7 +69,7 @@ def build_four_factors_chart(data: pd.DataFrame, title: str = "Four Factors") ->
         .encode(
             x=alt.X("side:N", title=None, axis=alt.Axis(labels=False, ticks=False)),
             y=alt.Y("value:Q", title=None),
-            color=alt.Color("side:N", scale=alt.Scale(range=[ORANGE, BLUE]), title=None),
+            color=alt.Color("side:N", scale=alt.Scale(range=[COLOR_GOOD, COLOR_MID]), title=None),
             column=alt.Column("factor:N", title=None, sort=["eFG%", "TOV%", "OREB%", "FTr"]),
             tooltip=["factor", "side", alt.Tooltip("value:Q", format=".3f")],
         )
@@ -86,7 +86,7 @@ def build_team_percentile_chart(data: pd.DataFrame, title: str = "League percent
         title: Chart title.
 
     Returns:
-        A serializable ``alt.Chart`` (orange >= 66, blue 33-66, red < 33).
+        A serializable ``alt.Chart`` (green >= 66, yellow 33-66, red < 33).
     """
     _require(data, ["metric", "percentile"])
     band = data.assign(
@@ -135,7 +135,7 @@ def build_recent_form_chart(
     _require(data, [x_col, y_col])
     chart = (
         alt.Chart(data, title=title)
-        .mark_line(color=ORANGE, point=alt.OverlayMarkDef(color=ORANGE, size=24))
+        .mark_line(color=COLOR_GOOD, point=alt.OverlayMarkDef(color=COLOR_GOOD, size=24))
         .encode(
             x=alt.X(f"{x_col}:Q", title=None),
             y=alt.Y(f"{y_col}:Q", title=None),
@@ -171,12 +171,12 @@ def build_shot_profile_chart(data: pd.DataFrame, title: str = "Shot profile") ->
             color=(
                 alt.Color(
                     "fg_pct:Q",
-                    scale=alt.Scale(range=[RED, BLUE, ORANGE]),
+                    scale=alt.Scale(range=[COLOR_WEAK, COLOR_MID, COLOR_GOOD]),
                     title="FG%",
                     legend=alt.Legend(format=".0%"),
                 )
                 if has_eff
-                else alt.value(BLUE)
+                else alt.value(COLOR_MID)
             ),
             tooltip=tooltip,
         )
@@ -200,7 +200,7 @@ def build_cluster_distribution_chart(
     _require(data, ["label", "players"])
     chart = (
         alt.Chart(data, title=title)
-        .mark_bar(color=ORANGE)
+        .mark_bar(color=COLOR_GOOD)
         .encode(
             x=alt.X("players:Q", title="players"),
             y=alt.Y("label:N", sort="-x", title=None),
@@ -257,7 +257,7 @@ def build_som_map_chart(
     color = (
         alt.Color(f"{color_col}:N", title="archetype")
         if color_col in data.columns
-        else alt.value(BLUE)
+        else alt.value(COLOR_MID)
     )
     chart = (
         alt.Chart(data, title=title)
@@ -300,7 +300,7 @@ def build_centroid_profile_chart(
         title: Chart title.
 
     Returns:
-        A serializable ``alt.Chart`` (positive z orange, negative red).
+        A serializable ``alt.Chart`` (positive z green, negative red).
     """
     _require(data, ["label", "feature", "value"])
     chart = (
@@ -309,7 +309,7 @@ def build_centroid_profile_chart(
         .encode(
             x=alt.X("value:Q", title="z-score"),
             y=alt.Y("feature:N", sort=None, title=None),
-            color=alt.condition(alt.datum.value > 0, alt.value(ORANGE), alt.value(RED)),
+            color=alt.condition(alt.datum.value > 0, alt.value(COLOR_GOOD), alt.value(COLOR_WEAK)),
             row=alt.Row("label:N", title=None, header=alt.Header(labelColor=TEXT)),
             tooltip=["label", "feature", alt.Tooltip("value:Q", format="+.2f")],
         )

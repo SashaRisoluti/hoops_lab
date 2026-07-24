@@ -52,7 +52,7 @@ def test_team_percentile_chart_uses_tricolor() -> None:
     )
     spec = _assert_serializable_chart(build_team_percentile_chart(data))
     text = str(spec)
-    assert "#F0703A" in text and "#2E5FB7" in text and "#D2243C" in text
+    assert "#16c47f" in text and "#ffd100" in text and "#e0262c" in text
 
 
 def test_recent_form_chart() -> None:

@@ -12,9 +12,9 @@ from matplotlib.figure import Figure
 
 from hoops_lab.visuals.court import draw_court
 
-MADE_COLOR = "#F0703A"
-MISS_COLOR = "#D2243C"
-TEXT_MUTED = "#8B93A3"
+MADE_COLOR = "#16c47f"
+MISS_COLOR = "#e0262c"
+TEXT_MUTED = "#9ca3af"
 
 
 def _require(df: pd.DataFrame, columns: list[str]) -> None:
@@ -95,7 +95,7 @@ def player_shot_map(
             edgecolors="none",
         )
     if title:
-        ax.set_title(title, color="#EDEFF3")
+        ax.set_title(title, color="#f1f5f9")
     return fig
 
 

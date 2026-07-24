@@ -16,8 +16,8 @@ from matplotlib.patches import Arc, Circle, Rectangle
 from hoops_lab.features.shot_spatial_features import COURT_BOUNDS
 
 #: Dark theme mirrors (see dashboard/components/theme.py).
-COURT_BG = "#14171D"
-COURT_LINE = "#3A4254"
+COURT_BG = "#0f172a"
+COURT_LINE = "#33415e"
 
 _BASELINE_Y = -47.5  # baseline sits 4.75 ft behind the hoop center
 

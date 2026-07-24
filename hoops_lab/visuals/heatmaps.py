@@ -16,11 +16,11 @@ from matplotlib.figure import Figure
 from hoops_lab.features.shot_spatial_features import COURT_BOUNDS, build_spatial_bins
 from hoops_lab.visuals.court import COURT_BG, draw_court
 
-#: Dark-to-orange ramp for frequency/density surfaces.
-DENSITY_CMAP = LinearSegmentedColormap.from_list("hoops_density", [COURT_BG, "#2E5FB7", "#F0703A"])
-#: Red-to-orange ramp for efficiency surfaces (weak -> good).
+#: Navy-to-yellow ramp for frequency/density surfaces (cold -> hot).
+DENSITY_CMAP = LinearSegmentedColormap.from_list("hoops_density", [COURT_BG, "#0052ff", "#ffd100"])
+#: Red-yellow-green ramp for efficiency surfaces (weak -> mid -> good).
 EFFICIENCY_CMAP = LinearSegmentedColormap.from_list(
-    "hoops_efficiency", ["#D2243C", "#2E5FB7", "#F0703A"]
+    "hoops_efficiency", ["#e0262c", "#ffd100", "#16c47f"]
 )
 
 
@@ -31,9 +31,9 @@ def _grid_extent() -> tuple[float, float, float, float]:
 
 def _empty_court(title: str | None) -> Figure:
     fig, ax = draw_court()
-    ax.text(0, 200, "No shots to plot", ha="center", color="#8B93A3", fontsize=11)
+    ax.text(0, 200, "No shots to plot", ha="center", color="#9ca3af", fontsize=11)
     if title:
-        ax.set_title(title, color="#8B93A3")
+        ax.set_title(title, color="#9ca3af")
     return fig
 
 
@@ -78,7 +78,7 @@ def shot_density_heatmap(
         zorder=0,
     )
     if title:
-        ax.set_title(title, color="#EDEFF3")
+        ax.set_title(title, color="#f1f5f9")
     return fig
 
 
@@ -171,10 +171,10 @@ def shot_efficiency_heatmap(
         zorder=0,
     )
     colorbar = fig.colorbar(image, ax=ax, fraction=0.04, pad=0.02)
-    colorbar.ax.tick_params(colors="#8B93A3", labelsize=8)
-    colorbar.set_label("FG%", color="#8B93A3", fontsize=8)
+    colorbar.ax.tick_params(colors="#9ca3af", labelsize=8)
+    colorbar.set_label("FG%", color="#9ca3af", fontsize=8)
     if title:
-        ax.set_title(title, color="#EDEFF3")
+        ax.set_title(title, color="#f1f5f9")
     return fig
 
 
@@ -215,5 +215,5 @@ def centroid_heatmap(
         zorder=0,
     )
     if title:
-        ax.set_title(title, color="#EDEFF3")
+        ax.set_title(title, color="#f1f5f9")
     return fig
