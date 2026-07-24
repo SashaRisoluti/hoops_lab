@@ -22,6 +22,12 @@ def test_delta_is_signed_and_colored() -> None:
     assert "-2.0" in down and COLOR_WEAK_SOFT in down
 
 
+def test_delta_zero_is_positive_signed_and_green() -> None:
+    html = stat_tile_html("PACE", "99.1", delta=0.0)
+    assert "+0.0" in html
+    assert COLOR_GOOD in html
+
+
 def test_pctl_adds_bar_and_label() -> None:
     html = stat_tile_html("OFF RATING", "118.4", pctl=80.0)
     assert "80th pctl" in html
