@@ -17,7 +17,9 @@ import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from dashboard.components.data_access import get_database  # noqa: E402
+from dashboard.components.page_header import render_page_header  # noqa: E402
 from dashboard.components.radar_chart import render_radar_chart  # noqa: E402
+from dashboard.components.search_select import search_select  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.player_profile import player_on_off, radar_percentiles  # noqa: E402
@@ -41,7 +43,9 @@ CARD_METRICS: dict[str, tuple[str, str, bool]] = {
 st.set_page_config(page_title="Player Analyzer", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Players")
-st.title("🧬 Player Analyzer")
+render_page_header(
+    "Player Analyzer", subtitle="Percentile profile, advanced stats and on/off impact"
+)
 
 database = get_database()
 
@@ -71,10 +75,11 @@ if population.empty:
     st.stop()
 
 team_players = population.loc[population["TEAM_ID"] == team_id, "PLAYER_NAME"].tolist()
-player_name = st.selectbox(
+player_name = search_select(
     "Player",
     team_players or population["PLAYER_NAME"].tolist(),
-    help="Roster of the rail-selected team; percentiles stay league-wide.",
+    key="player_pick",
+    help_text="Roster of the rail-selected team; percentiles stay league-wide.",
 )
 row_idx = int(population.index[population["PLAYER_NAME"] == player_name][0])
 player = population.iloc[row_idx]

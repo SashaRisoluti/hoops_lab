@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import pandas as pd
 import streamlit as st
+from matplotlib.colors import LinearSegmentedColormap
+
+from dashboard.components.theme import COLOR_GOOD, COLOR_MID, COLOR_WEAK
 
 #: Always-visible identity columns.
 IDENTITY_COLS = ["PLAYER_NAME", "TEAM_ABBREVIATION", "season"]
@@ -32,6 +35,11 @@ COLUMN_PRESETS: dict[str, list[str]] = {
 #: Above this many rows the colorscale is skipped (pandas Styler gets slow).
 MAX_STYLED_ROWS = 600
 
+#: weak -> mid -> good, matching the fixed data-color language.
+SEMANTIC_CMAP = LinearSegmentedColormap.from_list(
+    "hoops_semantic", [COLOR_WEAK, COLOR_MID, COLOR_GOOD]
+)
+
 
 def render_stats_table(df: pd.DataFrame) -> list[str]:
     """Render the preset selector, the stat multiselect and the styled table.
@@ -53,7 +61,7 @@ def render_stats_table(df: pd.DataFrame) -> list[str]:
     view = df[identity + selected]
 
     if selected and len(view) <= MAX_STYLED_ROWS:
-        styled = view.style.background_gradient(subset=selected, cmap="RdYlGn").format(
+        styled = view.style.background_gradient(subset=selected, cmap=SEMANTIC_CMAP).format(
             precision=2, subset=selected
         )
         st.dataframe(styled, hide_index=True, use_container_width=True)

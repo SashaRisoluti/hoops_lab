@@ -18,6 +18,8 @@ from pydantic import ValidationError  # noqa: E402
 
 from dashboard.components.data_access import get_database  # noqa: E402
 from dashboard.components.filters_sidebar import render_filters_sidebar  # noqa: E402
+from dashboard.components.info_tooltip import info_label_html  # noqa: E402
+from dashboard.components.page_header import render_page_header  # noqa: E402
 from dashboard.components.percentile_histogram import render_percentile_histogram  # noqa: E402
 from dashboard.components.stats_table import render_stats_table  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
@@ -27,7 +29,10 @@ from hoops_lab.filters.query_builder import run_query  # noqa: E402
 st.set_page_config(page_title="Historical Stats Explorer", page_icon="🏀", layout="wide")
 inject_theme()
 render_command_bar("Explorer")
-st.title("📊 Historical Stats Explorer")
+render_page_header(
+    "Historical Stats Explorer",
+    subtitle="Filter seasons, teams and stats — percentiles always follow the filtered population",
+)
 
 database = get_database()
 
@@ -64,4 +69,11 @@ if results.empty:
 
 selected_stats = render_stats_table(results)
 st.divider()
+st.markdown(
+    info_label_html(
+        "PERCENTILE",
+        "Rank within the filtered population, 0-100. Filters always define the population.",
+    ),
+    unsafe_allow_html=True,
+)
 render_percentile_histogram(results, selected_stats)
