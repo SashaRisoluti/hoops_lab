@@ -1,7 +1,7 @@
 """Hoops Lab — Overview dashboard (Claude Design handoff v2, Option B rail).
 
 Dark broadcast layout in NBA tricolor with a fixed data-color language
-(orange = good, blue = mid, red = weak), a 30-team rail switcher and a
+(green = good, yellow = mid, red = weak), a 30-team rail switcher and a
 team-accent band. All numbers are real: ratings/percentiles from the
 advanced team stats, factors from the opponent self-join, shots from the
 league-wide shot charts, win probability from the PBP sample.
@@ -19,10 +19,15 @@ import streamlit as st  # noqa: E402
 
 from dashboard.components import overview_cards as cards  # noqa: E402
 from dashboard.components.data_access import get_database  # noqa: E402
+from dashboard.components.page_header import render_page_header  # noqa: E402
 from dashboard.components.shot_chart import render_shot_chart  # noqa: E402
+from dashboard.components.stat_tile import render_stat_tile_row  # noqa: E402
 from dashboard.components.team_rail import logo_url, render_team_rail  # noqa: E402
 from dashboard.components.theme import (  # noqa: E402
-    ORANGE,
+    COLOR_GOOD,
+    COLOR_PRIMARY,
+    COLOR_WEAK,
+    COLOR_WEAK_SOFT,
     TEAM_ACCENTS,
     TEXT_FAINT,
     inject_theme,
@@ -61,7 +66,7 @@ id_to_name = dict(zip(teams["team_id"], teams["full_name"], strict=True))
 
 # ---- Team rail (Option B, shared shell) ----------------------------------------
 team_id, selected_abbr, season = render_team_rail(database)
-accent = TEAM_ACCENTS.get(selected_abbr, ORANGE)
+accent = TEAM_ACCENTS.get(selected_abbr, COLOR_PRIMARY)
 team_name = id_to_name[team_id]
 
 # ---- Data assembly ------------------------------------------------------------
@@ -92,6 +97,11 @@ last_game = (
     f"{'vs' if last['is_home'] else '@'} {last['OPP_ABBREVIATION']} · "
     f"{last['WL']} {last['PLUS_MINUS']:+.0f}"
 )
+render_page_header(
+    "Team Overview",
+    subtitle=f"{team_name} — every number is real data",
+    context_chips=[selected_abbr, season],
+)
 st.markdown(
     cards.team_band(
         accent=accent,
@@ -109,16 +119,35 @@ st.markdown(
 )
 
 # ---- KPI strip -----------------------------------------------------------------
-kpis = st.columns(5)
-kpi_specs = [
-    ("OFF RATING", f"{team_adv['OFF_RATING']:.1f}", team_adv["OFF_RATING_PCTL"], None),
-    ("DEF RATING", f"{team_adv['DEF_RATING']:.1f}", team_adv["DEF_RATING_PCTL"], None),
-    ("NET RATING", f"{team_adv['NET_RATING']:+.1f}", team_adv["NET_RATING_PCTL"], ORANGE),
-    ("PACE", f"{team_adv['PACE']:.1f}", team_adv["PACE_PCTL"], None),
-    ("TS%", f"{team_adv['TS_PCT'] * 100:.1f}", team_adv["TS_PCT_PCTL"], None),
-]
-for col, (label, value, pctl, color) in zip(kpis, kpi_specs, strict=True):
-    col.markdown(cards.kpi_card(label, value, float(pctl), color), unsafe_allow_html=True)
+render_stat_tile_row(
+    [
+        {
+            "label": "OFF RATING",
+            "value": f"{team_adv['OFF_RATING']:.1f}",
+            "pctl": float(team_adv["OFF_RATING_PCTL"]),
+        },
+        {
+            "label": "DEF RATING",
+            "value": f"{team_adv['DEF_RATING']:.1f}",
+            "pctl": float(team_adv["DEF_RATING_PCTL"]),
+        },
+        {
+            "label": "NET RATING",
+            "value": f"{team_adv['NET_RATING']:+.1f}",
+            "pctl": float(team_adv["NET_RATING_PCTL"]),
+        },
+        {
+            "label": "PACE",
+            "value": f"{team_adv['PACE']:.1f}",
+            "pctl": float(team_adv["PACE_PCTL"]),
+        },
+        {
+            "label": "TS%",
+            "value": f"{team_adv['TS_PCT'] * 100:.1f}",
+            "pctl": float(team_adv["TS_PCT_PCTL"]),
+        },
+    ]
+)
 
 # ---- Row A: radar / shot map / WP + flags ---------------------------------------
 league = league_team_factors(database, season)
@@ -243,9 +272,9 @@ with row_b[0]:
 with row_b[1]:
     st.markdown(cards.card_title("Team Leaders", "per game"), unsafe_allow_html=True)
     for eyebrow, column, color in (
-        ("ASSISTS / GM", "AST", "#2E5FB7"),
-        ("REBOUNDS / GM", "REB", ORANGE),
-        ("POINTS / GM", "PTS", "#D2243C"),
+        ("ASSISTS / GM", "AST", COLOR_PRIMARY),
+        ("REBOUNDS / GM", "REB", COLOR_GOOD),
+        ("POINTS / GM", "PTS", COLOR_WEAK),
     ):
         leaders = database.query_df(
             f"SELECT PLAYER_NAME, {column} FROM player_season_full "
@@ -285,7 +314,9 @@ with row_b[2]:
     road_l = int(((~games["is_home"]) & (games["WL"] == "L")).sum())
     tiles = st.columns(3)
     tiles[0].markdown(
-        cards.stat_tile("NET / 100 L10", f"{net100:+.1f}", ORANGE if net100 > 0 else "#E25A6E"),
+        cards.stat_tile(
+            "NET / 100 L10", f"{net100:+.1f}", COLOR_GOOD if net100 > 0 else COLOR_WEAK_SOFT
+        ),
         unsafe_allow_html=True,
     )
     tiles[1].markdown(cards.stat_tile("HOME", f"{home_w}–{home_l}"), unsafe_allow_html=True)
