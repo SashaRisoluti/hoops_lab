@@ -21,3 +21,13 @@ def test_subtitle_and_chips_render_when_given() -> None:
 def test_optional_parts_absent_by_default() -> None:
     html = page_header_html("Lineups")
     assert "border-radius:999px" not in html
+
+
+def test_explicit_none_subtitle_renders_no_subtitle_div() -> None:
+    html = page_header_html("Lineups", subtitle=None)
+    assert "font-size:13px" not in html
+
+
+def test_empty_chip_list_renders_no_pills() -> None:
+    html = page_header_html("Lineups", context_chips=[])
+    assert "border-radius:999px" not in html

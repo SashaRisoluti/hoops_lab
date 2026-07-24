@@ -59,5 +59,11 @@ def render_page_header(
     subtitle: str | None = None,
     context_chips: list[str] | None = None,
 ) -> None:
-    """Draw the page header into the current Streamlit container."""
+    """Draw the page header into the current Streamlit container.
+
+    Args:
+        title: Page title (Inter Tight display).
+        subtitle: Optional muted line under the title.
+        context_chips: Optional small mono pills on the right (season, team...).
+    """
     st.markdown(page_header_html(title, subtitle, context_chips), unsafe_allow_html=True)
