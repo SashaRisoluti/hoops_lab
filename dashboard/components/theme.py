@@ -15,6 +15,8 @@ import json
 
 import streamlit as st
 
+from hoops_lab.visuals.team_colors import resolve_accents
+
 # ---- Surfaces (Worldcup26 navy family) --------------------------------------
 BG_PAGE = "#070b14"
 BG_FRAME = "#0b0f19"
@@ -77,6 +79,11 @@ TEAM_ACCENTS: dict[str, str] = {
     "UTA": "#F9A01B",
     "WAS": "#E31837",
 }
+
+#: Franchise accents guaranteed to clear WCAG 3:1 against ``BG_PAGE``. Only the accents
+#: that actually fail are lightened — the rest pass through untouched, so team identity
+#: survives. This is what the UI paints.
+TEAM_ACCENTS_READABLE: dict[str, str] = resolve_accents(TEAM_ACCENTS, BG_PAGE)
 
 #: Conference grouping for the team rail (design order, West | East).
 CONFERENCES: dict[str, list[str]] = {

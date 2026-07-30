@@ -1,3 +1,13 @@
+## Web shell Phase 1 — Task 1: readable team accents (2026-07-30)
+
+- New `hoops_lab/visuals/team_colors.py`: WCAG contrast helpers, minimal-lift
+  `ensure_contrast()`, and `resolve_pair()` for franchises that share a hex.
+- `theme.TEAM_ACCENTS_READABLE` guarantees WCAG 3:1 against `BG_PAGE`; the team rail and the
+  app shell now paint it. Only SAC changes (`#5A2D81` → `#7f3fb6`, contrast 1.99 → 3.08) —
+  the other 29 official colours are preserved exactly.
+- A fixed 52% lightness floor was measured and rejected: it would have altered 18 accents that
+  already pass, turning Boston green neon.
+
 ## Worldcup26 UI restyle — Phase B (2026-07-24)
 
 - All 9 pages migrated to PageHeader; searchable pickers (player, opponent, games) via SearchSelect.

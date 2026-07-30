@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dashboard.components.team_rail import build_rail_html, logo_url
-from dashboard.components.theme import CONFERENCES, TEAM_ACCENTS
+from dashboard.components.theme import CONFERENCES, TEAM_ACCENTS_READABLE
 
 
 def _abbr_to_id() -> dict[str, int]:
@@ -30,7 +30,7 @@ def test_selected_chip_uses_team_accent_ring() -> None:
     mapping = _abbr_to_id()
     html = build_rail_html(mapping, selected="LAL")
 
-    accent = TEAM_ACCENTS["LAL"]
+    accent = TEAM_ACCENTS_READABLE["LAL"]
     assert accent in html  # accent ring + glow on the selected chip
     # The selected chip is enlarged (40px vs the 32px idle chips).
     assert "width:40px" in html.replace(" ", "")

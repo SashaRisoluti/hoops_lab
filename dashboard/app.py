@@ -28,7 +28,7 @@ from dashboard.components.theme import (  # noqa: E402
     COLOR_PRIMARY,
     COLOR_WEAK,
     COLOR_WEAK_SOFT,
-    TEAM_ACCENTS,
+    TEAM_ACCENTS_READABLE,
     TEXT_FAINT,
     inject_theme,
     render_command_bar,
@@ -66,7 +66,7 @@ id_to_name = dict(zip(teams["team_id"], teams["full_name"], strict=True))
 
 # ---- Team rail (Option B, shared shell) ----------------------------------------
 team_id, selected_abbr, season = render_team_rail(database)
-accent = TEAM_ACCENTS.get(selected_abbr, COLOR_PRIMARY)
+accent = TEAM_ACCENTS_READABLE.get(selected_abbr, COLOR_PRIMARY)
 team_name = id_to_name[team_id]
 
 # ---- Data assembly ------------------------------------------------------------

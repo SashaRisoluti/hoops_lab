@@ -21,7 +21,7 @@ from dashboard.components.theme import (
     BORDER_SOFT,
     COLOR_PRIMARY,
     CONFERENCES,
-    TEAM_ACCENTS,
+    TEAM_ACCENTS_READABLE,
     TEXT_FAINT,
     hex_to_rgba,
 )
@@ -38,7 +38,7 @@ def logo_url(team_id: int) -> str:
 
 def build_rail_html(abbr_to_id: dict[str, int], selected: str) -> str:
     """The 30-chip rail as clickable HTML (pure; selection drives the accent)."""
-    accent = TEAM_ACCENTS.get(selected, COLOR_PRIMARY)
+    accent = TEAM_ACCENTS_READABLE.get(selected, COLOR_PRIMARY)
 
     def chip(abbr: str) -> str:
         url = logo_url(abbr_to_id[abbr])

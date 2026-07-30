@@ -149,18 +149,38 @@ current values:
 | `#C8102E` | DET, LAC |
 | `#F9A01B` | MIA, UTA |
 
-A CHI–HOU or DET–LAC comparison is rendered in one colour today. The chart is not merely ugly, it
-is wrong — it shows two series the viewer cannot separate.
+This collision is **latent, not live**: as of Phase 1 no surface paints two team accents at once
+— both call sites (`app.py`, `team_rail.py`) render only the selected team. It becomes a real
+defect the moment Phase 3 ships head-to-head team pages, which is why `resolve_pair` exists now
+and is tested now, but is not yet wired to anything.
 
-**18 of 30 accents fall below 52% lightness**, the reference's readability floor on a dark
-surface: BOS 24%, CHA 27%, MIL 32%, SAC 34%, DAL 35%, PHI 36%, ORL 38%, OKC 38%, NOP 41%,
-DET 42%, LAC 42%, MIN 44%, and six more.
+### Correction: the lightness floor was wrong
 
-This is a real, demonstrable defect in the shipped product, not a theoretical one — which makes
-it the highest-value single item in this spec and worth doing in Phase 1 rather than later.
+The first draft of this spec claimed 18 of 30 accents were unreadable because they fall below the
+reference's 52% lightness floor. **Measurement against this project's own background disproved
+that.** `BG_PAGE` is `#070b14`, far darker than the reference's `#0a0f1c`, so most official
+accents already have ample contrast. Measured WCAG ratios against `BG_PAGE`:
 
-Implement in **Python** (`hoops_lab/visuals/team_colors.py`) so Streamlit and the web app both
-benefit, and export resolved pairs. Unit-tested against the known collision pairs above.
+| Threshold | Accents failing |
+|---|---|
+| 3.0 (WCAG AA, graphical objects and large text) | **1 of 30** — SAC at 1.99 |
+| 4.5 (WCAG AA, normal body text) | 15 of 30 |
+
+The accent is painted as a chip ring, a glow and a header stripe — graphical objects, so 3.0 is
+the governing threshold. Applying a 52% lightness floor would have "fixed" 18 colours that were
+never broken, pushing Boston's `#007A33` to `#0aff71` (contrast 14.58, a neon green) and
+destroying franchise identity for no accessibility gain.
+
+**Implemented instead:** `ensure_contrast(value, background, min_ratio=3.0)` lightens by the
+smallest step that clears the measured ratio, and returns the colour untouched when it already
+passes. Net effect on the palette: **1 of 30 changed**, SAC `#5A2D81` → `#7f3fb6` (1.99 → 3.08).
+
+The lesson generalises to the web app: verify contrast against the actual surface rather than
+importing another project's heuristic.
+
+Implemented in **Python** (`hoops_lab/visuals/team_colors.py`) so Streamlit and the web app both
+benefit; `dashboard/components/theme.py` exposes `TEAM_ACCENTS_READABLE` and both call sites use
+it.
 
 ## 6. SEO and accessibility
 

@@ -34,21 +34,31 @@ an hour of normal work.
 
 > Do not start Task 1 until this is done. Everything downstream assumes a stable filesystem.
 
-## Task 1 — Team colour resolver (Python)
+## Task 1 — Team colour resolver (Python) — ✅ DONE
 
-New `hoops_lab/visuals/team_colors.py`. Pure functions, no I/O.
+Delivered: `hoops_lab/visuals/team_colors.py` (42 tests), `TEAM_ACCENTS_READABLE` in `theme.py`,
+wired into both accent call sites (`dashboard/app.py`, `dashboard/components/team_rail.py`).
 
-- `hex_to_hsl` / `hsl_to_hex` round-trip helpers.
-- `lift_for_dark(hex, min_lightness=0.52)` — raise lightness only, preserve hue and saturation.
-- `resolve_pair(a, b)` — if Euclidean RGB distance < 90, or hue delta < 35° and distance < 160,
-  rotate `b` by +22° hue and return the adjusted pair.
-- `resolved_accents()` — `TEAM_ACCENTS` with `lift_for_dark` applied to all 30.
+**Two deviations from the original plan, both driven by measurement:**
 
-TDD: write the failing tests first, with hand-computed expectations.
+1. **The fixed 52% lightness floor was rejected.** Measured against the real `BG_PAGE` `#070b14`,
+   only 1 of 30 accents (SAC, 1.99) fails WCAG 3.0 for graphical objects — not 18. The floor
+   would have pushed BOS `#007A33` to a neon `#0aff71` at contrast 14.58 for no accessibility
+   gain. Replaced by `ensure_contrast(value, background, min_ratio=3.0)`, which lifts by the
+   smallest step that clears the measured ratio and returns the colour untouched otherwise.
+   Net palette change: 1 of 30 — SAC `#5A2D81` → `#7f3fb6` (1.99 → 3.08).
+2. **A single +22° rotation does not guarantee separation.** `#CE1141` sits near the red end of
+   the wheel where a small hue change barely moves the colour in RGB space; one step lands only
+   ~52 units away, under the 90 threshold. `resolve_pair` now steps repeatedly until the pair is
+   genuinely distinguishable.
 
-**Verify:** unit tests cover every exact-duplicate group (ATL/POR, CHI/HOU/TOR, CLE/IND, DET/LAC,
-MIA/UTA) and assert the resolved pair clears the distance threshold; all 30 resolved accents are
-≥52% lightness; hue is preserved within 1° by `lift_for_dark`; round-trip `hex→hsl→hex` is exact.
+`resolve_pair` is implemented and tested but has **no call site yet** — no surface paints two team
+accents at once until Phase 3 adds head-to-head pages. Kept deliberately, flagged deliberately.
+
+**Verified:** 256 unit + 14 integration tests green, ruff clean, dashboard boots HTTP 200. Tests
+cover every exact-duplicate group (ATL/POR, CHI/HOU/TOR, CLE/IND, DET/LAC, MIA/UTA), exact
+`hex→hsl→hex` round-tripping for all 30 accents, hue and saturation preservation under lift, and
+a regression guard asserting that no already-readable accent is modified.
 
 ## Task 2 — Token bridge
 
