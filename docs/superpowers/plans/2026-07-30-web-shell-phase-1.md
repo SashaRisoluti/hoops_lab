@@ -1,0 +1,134 @@
+# Phase 1 — Foundation and First Impression
+
+Spec: `docs/superpowers/specs/2026-07-30-web-shell-design.md`
+Branch: `feature/web-shell-phase-1`
+Status: not started
+
+## Outcome
+
+A statically generated Next.js site, deployed to Vercel on the custom domain, showing real NBA
+data with zero cold start. Home page and About page only. Streamlit untouched and still green.
+
+## Definition of done
+
+- `python scripts/export_web_data.py` produces `web/public/data/*.json` inside the 2 MB budget.
+- Tailwind tokens are generated from `theme.py`; a design gate fails if they drift.
+- Deployed URL scores ≥95 on all four Lighthouse categories.
+- Sharing the URL renders a correct Open Graph card.
+- First-load JS under 150 KB gzipped.
+- Existing Python suite still green: 228 tests, ruff clean, Streamlit boots 200.
+
+## Task 0 — Move the repo off OneDrive (blocking)
+
+Today's session lost `.git` plumbing and 20 source files to OneDrive conflict resolution. Adding
+`node_modules` — tens of thousands of small files — to a synced folder makes recurrence near
+certain and will also make every `npm install` crawl.
+
+1. Push the current commit `2cc9e69` to origin so nothing lives only on this machine.
+2. Clone fresh to `C:\dev\hoops-lab`.
+3. Recreate `.venv`, reinstall, confirm the suite is green in the new location.
+4. Keep the OneDrive copy read-only until Phase 1 lands, then delete it.
+
+**Verify:** `git status` clean in the new path; 228 tests pass; no `*-MLNKSO-*` file appears after
+an hour of normal work.
+
+> Do not start Task 1 until this is done. Everything downstream assumes a stable filesystem.
+
+## Task 1 — Team colour resolver (Python)
+
+New `hoops_lab/visuals/team_colors.py`. Pure functions, no I/O.
+
+- `hex_to_hsl` / `hsl_to_hex` round-trip helpers.
+- `lift_for_dark(hex, min_lightness=0.52)` — raise lightness only, preserve hue and saturation.
+- `resolve_pair(a, b)` — if Euclidean RGB distance < 90, or hue delta < 35° and distance < 160,
+  rotate `b` by +22° hue and return the adjusted pair.
+- `resolved_accents()` — `TEAM_ACCENTS` with `lift_for_dark` applied to all 30.
+
+TDD: write the failing tests first, with hand-computed expectations.
+
+**Verify:** unit tests cover every exact-duplicate group (ATL/POR, CHI/HOU/TOR, CLE/IND, DET/LAC,
+MIA/UTA) and assert the resolved pair clears the distance threshold; all 30 resolved accents are
+≥52% lightness; hue is preserved within 1° by `lift_for_dark`; round-trip `hex→hsl→hex` is exact.
+
+## Task 2 — Token bridge
+
+- `scripts/export_web_data.py` gains a `--tokens-only` mode writing `web/tokens.json` from
+  `theme.tokens_json()`.
+- New design gate in `tests/unit/test_design_gates.py`: parse `web/tokens.json`, assert it equals
+  `TOKENS` exactly. Fails loudly if either side changes alone.
+
+**Verify:** gate passes; mutating one token value in `theme.py` without re-exporting turns the
+gate red.
+
+## Task 3 — Data export
+
+`scripts/export_web_data.py` full implementation. Calls existing `hoops_lab.analytics` functions
+only — no new analytics.
+
+Writes `index.json`, `leaders/{season}.json`, `archetypes/{season}.json` for the demo seasons.
+Team and player detail files are deferred to Phase 3.
+
+Include `generatedAt` and `generatedFrom` stamps in `index.json`.
+
+**Verify:** new `tests/unit/test_web_export.py` runs the export against an in-memory `Database`
+seeded with fixture frames; asserts every emitted file parses as JSON, matches its expected key
+set, and that total bytes stay under 2 MB. Numbers for one known player are asserted equal to the
+values the Streamlit page shows for the same season.
+
+## Task 4 — Next.js skeleton
+
+`web/` — Next.js App Router, TypeScript, Tailwind. `tailwind.config.ts` imports `tokens.json`.
+
+- `AppShell`: topbar, desktop sidebar, mobile dropdown at ≤980 px.
+- `StatTile`, `PageHeader` ported from the Streamlit versions — same names, same props shape.
+- `app/layout.tsx` with base metadata; `app/sitemap.ts`; `app/robots.ts`.
+- `prefers-reduced-motion` block that also resets opacity and transform.
+
+**Verify:** `npm run build` succeeds with zero type errors; `npx serve` renders the shell; axe
+reports no violations on the shell; keyboard tab order reaches every nav item.
+
+## Task 5 — Home page
+
+Hero leads with real league data plus the signature archetype visual, per the confirmed brief.
+
+- Real current-season leaders and team ratings from `index.json` and `leaders/`.
+- A static preview of the archetype court map — the full interactive version lands in Phase 2.
+- Honest "Live dashboard" call-to-action noting the ~30 s wake time.
+- Footer showing `generatedAt` so data age is never hidden.
+
+**Verify:** no horizontal scroll at 360 px; numbers on the page match the export fixtures;
+Lighthouse ≥95 on all four categories locally.
+
+## Task 6 — About page
+
+Engineering story: architecture diagram, data flow, stack, test counts, links to GitHub and the
+Streamlit demo. JSON-LD `Person` and `Dataset`.
+
+**Verify:** structured data passes Google's Rich Results test; every outbound link resolves 200.
+
+## Task 7 — Deploy
+
+Vercel project with root directory `web/`, custom domain, HTTPS.
+
+**Verify:** deployed URL scores ≥95 across all four Lighthouse categories; the OG card renders
+correctly in a real link preview; first-load JS under 150 KB gzipped; the domain serves over
+HTTPS with a valid certificate.
+
+## Task 8 — Close
+
+Update `README.md` (the interface table still says "Phase 1" for the dashboard — stale),
+`CHANGELOG.md`, and `docs/superpowers/RESUME.md`.
+
+**Verify:** full Python suite green; ruff clean; Streamlit boots 200; `web/` builds clean.
+
+## Open items to resolve before Task 6
+
+- Actual domain (placeholder `hoopslab.dev` is in the metadata config).
+- LinkedIn URL; whether to display an email address.
+- Confirm product-branded naming with author credit, rather than personal branding.
+
+## Sequencing note
+
+Tasks 1–3 are Python-only and independently valuable — they improve Streamlit even if the web app
+is never built. Tasks 4–7 are the web app. If appetite drops after Task 3, stopping there still
+leaves the codebase better than it started.
