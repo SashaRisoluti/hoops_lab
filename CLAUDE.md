@@ -26,6 +26,9 @@ python -m hoops_lab.ingestion.nba_api_client    # 1. connectivity smoke test
 python -m hoops_lab.ingestion.historical        # 2. download demo bundle -> data/raw/*.parquet
 python -m hoops_lab.storage.seed                # 3. (re)build DuckDB from parquet
 python -m hoops_lab.features.possession         # 4. segment PBP into the possessions table
+
+# Extend the demo bundle with extra seasons (league data, per-team lineups/shots, PBP sample)
+python scripts/extend_seasons.py --seasons 2021-22 2022-23 [--skip-pbp]
 ```
 
 ## Development workflow
@@ -33,6 +36,7 @@ python -m hoops_lab.features.possession         # 4. segment PBP into the posses
 - **TDD is the default**: write the failing test first (exact hand-computed expected values for stat formulas), then implement. Unit tests never hit the network — mock `NBAApiClient` or register pandas frames into an in-memory `Database(path=":memory:")`.
 - Integration tests run against the real DB and include **quality gates** (possession score-reconstruction invariant, shot-model log-loss vs baseline on a temporal holdout, WP AUC on held-out games) plus Streamlit **AppTests** that execute real pages. They `skipif` when `data/db/hoops_lab.duckdb` is missing.
 - After UI changes, verify the dashboard actually boots (AppTest or a headless `streamlit run` + HTTP check), not just pytest.
+- **Design gates** (`tests/unit/test_design_gates.py`) are permanent lint-as-test rules: no hex literals in `dashboard/` outside `theme.py`, `hoops_lab/visuals` palette mirrors theme tokens, `.streamlit/config.toml` matches tokens, legacy names stay dead. Never weaken them to make a change pass — fix the change.
 
 ## Architecture
 
@@ -60,3 +64,14 @@ Data flow: `nba_api → data/raw/*.parquet → DuckDB (data/db/hoops_lab.duckdb)
 - Type hints everywhere; Pydantic v2 for external inputs (download requests, filters, alerts); docstrings on public functions.
 - Stat functions take a DataFrame and return an enriched **copy** (never mutate); division by zero yields NaN, never inf.
 - Minimum-sample filters (minutes, games, possessions) are mandatory in every analysis surface.
+
+## Repo environment cautions
+
+- **OneDrive sync conflicts** create `*-MLNKSO-NW1DRNQ.*` duplicates of source files and of `.git`
+  internals (`HEAD`, `index`, `refs/heads/main`). Duplicate pages appear in the Streamlit nav and
+  pytest collects duplicate tests. If `git log` fails or conflict copies appear, stop and surface
+  it to the user — never resolve `.git` conflict copies silently.
+- `requirements.txt` mirrors `[project.dependencies]` in `pyproject.toml` by hand (HF Spaces needs
+  the flat file) — update both together.
+- Session continuity: resume point in `docs/superpowers/RESUME.md`; SDD task ledger in
+  `.superpowers/sdd/progress.md` (gitignored).
