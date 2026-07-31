@@ -187,7 +187,25 @@ Hero leads with real league data plus the signature archetype visual, per the co
 **Verify:** no horizontal scroll at 360 px; numbers on the page match the export fixtures;
 Lighthouse ≥95 on all four categories locally.
 
-## Task 6 — About page
+## Task 6 — About page — ✅ DONE
+
+Delivered the engineering story (five pipeline stages plus a "how it is kept honest" section),
+JSON-LD `Person` and `Dataset`, the stack list, and GitHub / LinkedIn / dashboard links.
+
+Every number on the page is derived rather than typed: `index.json` gained `shots`,
+`possessions` and a `project` block that counts test functions and Python modules from the source
+tree. A hardcoded "300+ tests" would be wrong within a week; this cannot be.
+
+`opengraph-image.tsx` generates a real 1200×630 card at build time from the token palette and the
+live counts. Two Satori constraints bit during the build and are worth remembering: every element
+with more than one child needs an explicit `display: flex`, and `{value} label` counts as **two**
+children — it must be a single template string.
+
+**Verified:** OG route returns `image/png` (44 KB) and was visually inspected; JSON-LD contains
+both `Person` and `Dataset`; the page renders 1,091,329 shots and 305 tests from the export;
+Playwright clean at 1440px and 360px; 298 unit + 19 integration tests green; ruff clean.
+
+### Original plan text
 
 Engineering story: architecture diagram, data flow, stack, test counts, links to GitHub and the
 Streamlit demo. JSON-LD `Person` and `Dataset`.

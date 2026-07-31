@@ -1,3 +1,17 @@
+## Web shell Phase 1 — Task 6: About page (2026-07-31)
+
+- Engineering story: the five-stage pipeline (ingestion, storage, possession parser,
+  filter engine, models) and how correctness is enforced — score-reconstruction
+  invariants, model quality gates, and the design-token drift gate.
+- Every figure is derived, never written down: `index.json` now carries `shots`,
+  `possessions`, and a `project` block counting test functions and Python modules
+  straight from the source tree (1,091,329 shots, 77,299 possessions, 305 tests,
+  55 modules).
+- JSON-LD `Person` and `Dataset` graphs; LinkedIn and dashboard links.
+- `opengraph-image.tsx` generates a real 1200x630 card at build time from the token
+  palette and live counts, so shared links preview with actual numbers rather than the
+  blank card the reference site produces.
+
 ## Web shell Phase 1 — Task 5: home page (2026-07-31)
 
 - Hero renders real 2025-26 data: headline counts, league leaders with the

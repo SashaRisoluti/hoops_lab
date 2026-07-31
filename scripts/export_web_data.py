@@ -87,6 +87,33 @@ def _write_json(dest: Path, payload: dict) -> Path:
     return dest
 
 
+def _rows(db: Database, table: str) -> int:
+    """Row count for ``table``, or 0 when it has not been built yet."""
+    try:
+        return db.table_rows(table)
+    except Exception:
+        return 0
+
+
+def build_project_stats(root: Path) -> dict:
+    """Counts describing the codebase itself, for the About page.
+
+    Derived from the source tree rather than written down, so the page cannot quote a
+    number that stopped being true three commits ago.
+    """
+    tests = 0
+    for path in (root / "tests").rglob("test_*.py"):
+        tests += sum(
+            1
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.startswith("def test_")
+        )
+    modules = (
+        sum(1 for _ in (root / "hoops_lab").rglob("*.py")) if (root / "hoops_lab").exists() else 0
+    )
+    return {"tests": tests, "modules": modules}
+
+
 def build_index(db: Database) -> dict:
     """Build the small index every page loads: seasons, teams and headline counts."""
     teams = db.query_df("SELECT team_id, full_name, abbreviation FROM teams ORDER BY abbreviation")
@@ -109,11 +136,16 @@ def build_index(db: Database) -> dict:
         "summary": {
             "seasons": len(seasons),
             "teams": int(len(teams)),
-            "games": db.table_rows("games"),
+            "games": _rows(db, "games"),
             "players": int(
                 db.query_df("SELECT COUNT(DISTINCT PLAYER_ID) n FROM player_season_full")["n"][0]
-            ),
+            )
+            if _rows(db, "player_season_full")
+            else 0,
+            "shots": _rows(db, "shots"),
+            "possessions": _rows(db, "possessions"),
         },
+        "project": build_project_stats(ROOT),
     }
 
 

@@ -38,8 +38,9 @@ gate.
 **Progress:** Task 0 (repo relocation) done. Task 1 (team colour resolver) `338d976`. Task 2
 (token bridge + drift gate) `64b935e`. Task 3 (dataset export — 11 files, 87.6 KB) `1d7c463`.
 Task 4 (Next.js skeleton, 103 kB First Load JS, all routes static) `752a8d7`. Task 5 (home page:
-hero, `CourtZones` shot-efficiency court, leaders, team ratings) done.
-**Next: Task 6, the About page** — engineering story, architecture, JSON-LD, OG image.
+hero, `CourtZones` shot-efficiency court, leaders, team ratings) `b924457`. Task 6 (About page,
+JSON-LD, generated OG card) done.
+**Next: Task 7, the Vercel deploy** — the only remaining Phase 1 task.
 
 Confirmed by the user 2026-07-31: LinkedIn `https://www.linkedin.com/in/sasha-risoluti/`; the
 live dashboard is `https://hoopslab.streamlit.app/`. There is still **no custom domain** — note

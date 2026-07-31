@@ -18,6 +18,7 @@ from scripts.export_web_data import (
     MIN_ZONE_ATTEMPTS,
     build_index,
     build_leaders,
+    build_project_stats,
     build_shot_zones,
     build_team_ratings,
     export_dataset,
@@ -125,6 +126,47 @@ def test_index_summary_counts_the_real_rows() -> None:
     assert summary["teams"] == 3
     assert summary["seasons"] == 2
     assert summary["games"] == 3
+
+
+def test_index_summary_counts_the_shot_rows() -> None:
+    # The About page quotes these, so they must come from the database, not a literal.
+    assert build_index(_db())["summary"]["shots"] == 10
+
+
+def test_index_summary_reports_zero_for_a_table_that_is_absent() -> None:
+    db = Database(path=":memory:")
+    db.connect().register(
+        "teams", pd.DataFrame({"team_id": [], "full_name": [], "abbreviation": []})
+    )
+    db.connect().register("seasons", pd.DataFrame({"season": []}))
+    # A fresh database has no possessions table until the parser has run.
+    assert build_index(db)["summary"]["possessions"] == 0
+
+
+def test_project_stats_count_the_test_functions(tmp_path: Path) -> None:
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_a.py").write_text(
+        "def test_one() -> None:\n    pass\n\ndef test_two() -> None:\n    pass\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "tests" / "test_b.py").write_text("def test_three() -> None:\n    pass\n", "utf-8")
+    assert build_project_stats(tmp_path)["tests"] == 3
+
+
+def test_project_stats_ignore_helpers_that_are_not_tests(tmp_path: Path) -> None:
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_a.py").write_text(
+        "def _helper() -> None:\n    pass\n\ndef test_real() -> None:\n    pass\n",
+        encoding="utf-8",
+    )
+    assert build_project_stats(tmp_path)["tests"] == 1
+
+
+def test_project_stats_count_python_modules(tmp_path: Path) -> None:
+    (tmp_path / "hoops_lab").mkdir()
+    (tmp_path / "hoops_lab" / "a.py").write_text("", encoding="utf-8")
+    (tmp_path / "hoops_lab" / "b.py").write_text("", encoding="utf-8")
+    assert build_project_stats(tmp_path)["modules"] == 2
 
 
 def test_index_records_when_it_was_generated() -> None:

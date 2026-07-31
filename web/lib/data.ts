@@ -26,6 +26,13 @@ export type SiteIndex = {
     teams: number;
     games: number;
     players: number;
+    shots: number;
+    possessions: number;
+  };
+  /** Counts derived from the source tree, so the About page cannot quote a stale figure. */
+  project: {
+    tests: number;
+    modules: number;
   };
 };
 
