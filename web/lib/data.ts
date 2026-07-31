@@ -69,6 +69,22 @@ export type TeamRatings = {
   teams: TeamRating[];
 };
 
+export type ShotZone = {
+  zone: string;
+  attempts: number;
+  share: number;
+  fgPct: number;
+  pointsPerShot: number;
+  isThree: boolean;
+};
+
+export type ShotZones = {
+  season: string;
+  minAttempts: number;
+  totalAttempts: number;
+  zones: ShotZone[];
+};
+
 export const siteIndex = indexJson as SiteIndex;
 
 /** Readable franchise accents, already contrast-checked in Python. */
@@ -85,4 +101,15 @@ export async function getLeaderboards(season: string): Promise<Leaderboards> {
 
 export async function getTeamRatings(season: string): Promise<TeamRatings> {
   return (await import(`@/public/data/teams/${season}.json`)).default as TeamRatings;
+}
+
+export async function getShotZones(season: string): Promise<ShotZones> {
+  return (await import(`@/public/data/shot-zones/${season}.json`)).default as ShotZones;
+}
+
+/** Attempt-weighted league average points per shot, the baseline the court colours against. */
+export function leagueAveragePps(zones: ShotZone[]): number {
+  const attempts = zones.reduce((sum, z) => sum + z.attempts, 0);
+  if (attempts === 0) return 0;
+  return zones.reduce((sum, z) => sum + z.pointsPerShot * z.attempts, 0) / attempts;
 }

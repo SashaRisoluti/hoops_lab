@@ -1,0 +1,63 @@
+{
+  "season": "2021-22",
+  "minAttempts": 200,
+  "totalAttempts": 216722,
+  "zones": [
+    {
+      "zone": "Above the Break 3",
+      "attempts": 64447,
+      "share": 0.2973717481381678,
+      "fgPct": 0.3460052446196099,
+      "pointsPerShot": 1.0379226341024408,
+      "isThree": true
+    },
+    {
+      "zone": "Restricted Area",
+      "attempts": 62987,
+      "share": 0.2906350070597355,
+      "fgPct": 0.6531506501341546,
+      "pointsPerShot": 1.3063013002683093,
+      "isThree": false
+    },
+    {
+      "zone": "In The Paint (Non-RA)",
+      "attempts": 39668,
+      "share": 0.18303633225976135,
+      "fgPct": 0.42830493092669153,
+      "pointsPerShot": 0.8566098618533831,
+      "isThree": false
+    },
+    {
+      "zone": "Mid-Range",
+      "attempts": 27712,
+      "share": 0.12786888271610636,
+      "fgPct": 0.4064665127020785,
+      "pointsPerShot": 0.8153868360277137,
+      "isThree": false
+    },
+    {
+      "zone": "Left Corner 3",
+      "attempts": 11377,
+      "share": 0.052495824143372616,
+      "fgPct": 0.38419618528610355,
+      "pointsPerShot": 1.1525885558583107,
+      "isThree": true
+    },
+    {
+      "zone": "Right Corner 3",
+      "attempts": 10091,
+      "share": 0.046561954946890485,
+      "fgPct": 0.38202358537310477,
+      "pointsPerShot": 1.1460707561193142,
+      "isThree": true
+    },
+    {
+      "zone": "Backcourt",
+      "attempts": 440,
+      "share": 0.002030250735965892,
+      "fgPct": 0.025,
+      "pointsPerShot": 0.075,
+      "isThree": true
+    }
+  ]
+}

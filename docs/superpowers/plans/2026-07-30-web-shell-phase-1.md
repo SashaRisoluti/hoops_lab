@@ -147,7 +147,35 @@ no-hex gate, so neither surface can hardcode a colour outside the generated toke
 **Verify:** `npm run build` succeeds with zero type errors; `npx serve` renders the shell; axe
 reports no violations on the shell; keyboard tab order reaches every nav item.
 
-## Task 5 — Home page
+## Task 5 — Home page — ✅ DONE
+
+Delivered the hero (real counts, CTA with an honest wake-time warning), the signature `CourtZones`
+visual, league leaders and the top five teams by net rating. Site config now carries the real
+LinkedIn URL and points the dashboard CTA at `hoopslab.streamlit.app`.
+
+Deviation: the archetype preview was replaced by a **shot-zone efficiency court**. Archetype data
+does not exist until Phase 2, and a zone court answers the same question from data already in the
+database — 219,131 attempts, six zones, priced in points per shot. It required a new
+`shot-zones/{season}.json` export (16 files, 95.2 KB total, still far inside budget).
+
+**Two defects found and fixed during verification, neither visible to the test suite:**
+
+1. *Zone valuation.* Taking a zone's maximum shot type let 8 mislabelled 3PT rows out of 22,025
+   reprice every mid-range jumper at three points — points per shot read 1.25 instead of 0.83.
+   The unit fixture had perfectly homogeneous zones and passed happily; real data does not.
+   Fixed by valuing each shot on its own row, with a regression test using a contaminated zone.
+2. *Design-system violation.* Passing the team accent into `StatTile`'s value colour rendered
+   Detroit's +8.4 in red and Boston's +8.3 in green — identical quality, opposite meaning. This
+   contradicts the rule stated at the top of `theme.py`. The accent is now a marker beside the
+   label and values stay in neutral ink.
+
+Both were caught only by screenshotting the page in a real browser. Structural assertions
+(present classes, valid JSON, HTTP 200) passed throughout.
+
+**Verified:** Playwright at 1440px and 360px — no horizontal scroll, no console errors; 293 unit
++ 5 web integration tests green; ruff clean; `tsc --noEmit` clean; First Load JS 103 kB.
+
+### Original plan text
 
 Hero leads with real league data plus the signature archetype visual, per the confirmed brief.
 

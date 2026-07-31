@@ -49,6 +49,10 @@ MIN_MINUTES = 15.0
 #: How many players each leaderboard shows.
 TOP_N = 10
 
+#: Attempts a shot zone needs before it is published. Filters out the handful of
+#: backcourt heaves, which would otherwise show a wild efficiency on a tiny sample.
+MIN_ZONE_ATTEMPTS = 200
+
 #: Leaderboards published per season, as ``(column, label)``.
 LEADER_CATEGORIES: tuple[tuple[str, str], ...] = (
     ("PTS", "Points per game"),
@@ -186,6 +190,47 @@ def build_team_ratings(db: Database, season: str) -> dict:
     }
 
 
+def build_shot_zones(db: Database, season: str, min_attempts: int = MIN_ZONE_ATTEMPTS) -> dict:
+    """League-wide efficiency per shot zone for one season.
+
+    Points per shot is what makes the zones comparable: a 35% three is worth more than
+    a 42% mid-range, and only the points-per-shot column shows it.
+    """
+    zones = db.query_df(
+        "SELECT SHOT_ZONE_BASIC AS zone, "
+        "       COUNT(*) AS attempts, "
+        "       AVG(SHOT_MADE_FLAG) AS fg_pct, "
+        # Value every shot on its own row. Taking the zone's maximum would let the
+        # handful of rows the feed mislabels (8 of 22,025 mid-range shots are tagged
+        # 3PT) reprice the entire zone.
+        "       SUM(SHOT_MADE_FLAG * CASE WHEN SHOT_TYPE LIKE '3PT%' THEN 3 ELSE 2 END) "
+        "           / CAST(COUNT(*) AS DOUBLE) AS points_per_shot, "
+        "       AVG(CASE WHEN SHOT_TYPE LIKE '3PT%' THEN 1.0 ELSE 0.0 END) AS three_share "
+        "FROM shots WHERE season = ? "
+        "GROUP BY SHOT_ZONE_BASIC HAVING COUNT(*) >= ? "
+        "ORDER BY attempts DESC",
+        [season, min_attempts],
+    )
+    total = int(zones["attempts"].sum()) if not zones.empty else 0
+
+    return {
+        "season": season,
+        "minAttempts": min_attempts,
+        "totalAttempts": total,
+        "zones": [
+            {
+                "zone": row.zone,
+                "attempts": int(row.attempts),
+                "share": float(row.attempts) / total if total else 0.0,
+                "fgPct": float(row.fg_pct),
+                "pointsPerShot": float(row.points_per_shot),
+                "isThree": float(row.three_share) > 0.5,
+            }
+            for row in zones.itertuples()
+        ],
+    }
+
+
 def export_dataset(db: Database, root: Path, seasons: list[str]) -> list[Path]:
     """Write the index plus per-season leaders and team ratings under ``root``."""
     written = [_write_json(root / "index.json", build_index(db))]
@@ -193,6 +238,9 @@ def export_dataset(db: Database, root: Path, seasons: list[str]) -> list[Path]:
         written.append(_write_json(root / "leaders" / f"{season}.json", build_leaders(db, season)))
         written.append(
             _write_json(root / "teams" / f"{season}.json", build_team_ratings(db, season))
+        )
+        written.append(
+            _write_json(root / "shot-zones" / f"{season}.json", build_shot_zones(db, season))
         )
     return written
 

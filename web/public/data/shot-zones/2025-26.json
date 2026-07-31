@@ -1,0 +1,55 @@
+{
+  "season": "2025-26",
+  "minAttempts": 200,
+  "totalAttempts": 219131,
+  "zones": [
+    {
+      "zone": "Above the Break 3",
+      "attempts": 67375,
+      "share": 0.30746448471462273,
+      "fgPct": 0.3500556586270872,
+      "pointsPerShot": 1.0501224489795917,
+      "isThree": true
+    },
+    {
+      "zone": "Restricted Area",
+      "attempts": 62253,
+      "share": 0.2840903386558725,
+      "fgPct": 0.6709395531139062,
+      "pointsPerShot": 1.3418791062278124,
+      "isThree": false
+    },
+    {
+      "zone": "In The Paint (Non-RA)",
+      "attempts": 43908,
+      "share": 0.20037329268793552,
+      "fgPct": 0.4455907807233306,
+      "pointsPerShot": 0.8911815614466612,
+      "isThree": false
+    },
+    {
+      "zone": "Mid-Range",
+      "attempts": 22025,
+      "share": 0.1005106534447431,
+      "fgPct": 0.4167536889897843,
+      "pointsPerShot": 0.8337343927355279,
+      "isThree": false
+    },
+    {
+      "zone": "Left Corner 3",
+      "attempts": 12210,
+      "share": 0.05572009437277245,
+      "fgPct": 0.3873054873054873,
+      "pointsPerShot": 1.161916461916462,
+      "isThree": true
+    },
+    {
+      "zone": "Right Corner 3",
+      "attempts": 11360,
+      "share": 0.051841136124053645,
+      "fgPct": 0.38609154929577466,
+      "pointsPerShot": 1.158274647887324,
+      "isThree": true
+    }
+  ]
+}

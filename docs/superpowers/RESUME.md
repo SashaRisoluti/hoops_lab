@@ -37,8 +37,19 @@ gate.
 
 **Progress:** Task 0 (repo relocation) done. Task 1 (team colour resolver) `338d976`. Task 2
 (token bridge + drift gate) `64b935e`. Task 3 (dataset export — 11 files, 87.6 KB) `1d7c463`.
-Task 4 (Next.js skeleton, 103 kB First Load JS, all routes static) done.
-**Next: Task 5, the home page hero** — real leaders and team ratings plus the archetype preview.
+Task 4 (Next.js skeleton, 103 kB First Load JS, all routes static) `752a8d7`. Task 5 (home page:
+hero, `CourtZones` shot-efficiency court, leaders, team ratings) done.
+**Next: Task 6, the About page** — engineering story, architecture, JSON-LD, OG image.
+
+Confirmed by the user 2026-07-31: LinkedIn `https://www.linkedin.com/in/sasha-risoluti/`; the
+live dashboard is `https://hoopslab.streamlit.app/`. There is still **no custom domain** — note
+that `hoopslab.streamlit.app` is Streamlit Community Cloud and cannot host the Next.js app, so
+`site.url` currently holds the expected Vercel URL and must be corrected at deploy time.
+
+Visual verification is set up: Playwright lives in the session scratchpad (`verify/shot.mjs`) and
+screenshots the running app at 1440px and 360px while checking for horizontal overflow and console
+errors. Two real defects in Task 5 were invisible to the test suite and only surfaced this way —
+always screenshot before calling a page done.
 
 Build the web app with `cd web && npm run build`. It needs `NODE_EXTRA_CA_CERTS` set to the CA
 bundle (already a user env var) or `next/font/google` fails behind the corporate proxy — see

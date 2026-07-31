@@ -1,3 +1,20 @@
+## Web shell Phase 1 — Task 5: home page (2026-07-31)
+
+- Hero renders real 2025-26 data: headline counts, league leaders with the
+  minimum-sample thresholds shown, and the five best teams by net rating.
+- New signature visual `CourtZones`: a bespoke SVG half court in real court units,
+  each zone shaded by points per shot against the league average. Backed by a new
+  `shot-zones/{season}.json` export (219,131 attempts aggregated to six zones).
+- **Bug fixed in the zone export**: valuing a zone by its maximum shot type let 8
+  mislabelled 3PT rows out of 22,025 reprice every mid-range jumper at three points,
+  inflating its points per shot from 0.83 to 1.25. Each shot is now valued on its own
+  row; a regression test covers a contaminated zone.
+- **Design-system fix in `StatTile`**: the team accent no longer colours the value.
+  Tinting a value by franchise made Detroit's +8.4 red and Boston's +8.3 green, which
+  contradicts the fixed green/yellow/red data language. The accent is now a marker
+  beside the label.
+- Verified in a real browser at 1440px and 360px: no horizontal scroll, no JS errors.
+
 ## Web shell Phase 1 — Task 4: Next.js skeleton (2026-07-31)
 
 - New `web/`: Next.js 15 App Router + React 19 + Tailwind 3.4, all routes statically

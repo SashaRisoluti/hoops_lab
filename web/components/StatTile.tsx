@@ -24,19 +24,28 @@ export function StatTile({
   value: string;
   sub?: string;
   percentile?: number | null;
+  /**
+   * Franchise colour. It marks *which team* the tile is about and never colours the
+   * value: green/yellow/red are reserved for how good a number is, so tinting a value
+   * by team would tell a reader that Detroit's +8.4 is bad and Boston's +8.3 is good.
+   */
   accent?: string;
 }) {
   const hasPercentile = typeof percentile === "number" && Number.isFinite(percentile);
 
   return (
     <div className="card p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</p>
-      <p
-        className="mt-1 font-display text-2xl font-bold tabular-nums"
-        style={accent ? { color: accent } : undefined}
-      >
-        {value}
+      <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-ink-muted">
+        {accent ? (
+          <span
+            aria-hidden
+            className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm"
+            style={{ backgroundColor: accent }}
+          />
+        ) : null}
+        <span className="min-w-0 truncate">{label}</span>
       </p>
+      <p className="mt-1 font-display text-2xl font-bold tabular-nums">{value}</p>
       {sub ? <p className="mt-1 text-xs text-ink-soft">{sub}</p> : null}
       {hasPercentile ? (
         <div

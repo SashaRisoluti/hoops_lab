@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from hoops_lab.storage.database import Database
 from scripts.export_web_data import (
@@ -14,8 +15,10 @@ from scripts.export_web_data import (
     LEADER_CATEGORIES,
     MIN_GAMES,
     MIN_MINUTES,
+    MIN_ZONE_ATTEMPTS,
     build_index,
     build_leaders,
+    build_shot_zones,
     build_team_ratings,
     export_dataset,
 )
@@ -54,6 +57,27 @@ def _db() -> Database:
                 "AST": [5.0, 9.0, 1.0, 2.0],
                 "REB": [7.0, 4.0, 2.0, 1.0],
                 "TS_PCT": [0.62, 0.58, 0.70, 0.80],
+            }
+        ),
+    )
+    con.register(
+        "shots",
+        pd.DataFrame(
+            {
+                "season": ["2025-26"] * 10,
+                "SHOT_ZONE_BASIC": (
+                    ["Restricted Area"] * 3
+                    + ["Above the Break 3"] * 4
+                    + ["Mid-Range"] * 2
+                    + ["Backcourt"]  # one attempt: below the minimum sample
+                ),
+                "SHOT_TYPE": (
+                    ["2PT Field Goal"] * 3
+                    + ["3PT Field Goal"] * 4
+                    + ["2PT Field Goal"] * 2
+                    + ["3PT Field Goal"]
+                ),
+                "SHOT_MADE_FLAG": [1, 1, 0, 1, 0, 0, 0, 1, 0, 0],
             }
         ),
     )
@@ -186,13 +210,83 @@ def test_defensive_percentile_rewards_the_lower_rating() -> None:
     assert best_def["tricode"] == "BOS"
 
 
+# ---- shot zones -------------------------------------------------------------
+
+
+def test_shot_zones_drop_zones_below_the_minimum_sample() -> None:
+    zones = build_shot_zones(_db(), "2025-26", min_attempts=2)
+    assert "Backcourt" not in [z["zone"] for z in zones["zones"]]
+
+
+def test_shot_zones_compute_points_per_shot_from_the_shot_value() -> None:
+    zones = build_shot_zones(_db(), "2025-26", min_attempts=2)
+    restricted = next(z for z in zones["zones"] if z["zone"] == "Restricted Area")
+    # 2 of 3 made, worth 2 points each.
+    assert restricted["fgPct"] == pytest.approx(2 / 3)
+    assert restricted["pointsPerShot"] == pytest.approx(4 / 3)
+
+
+def test_shot_zones_value_three_pointers_at_three_points() -> None:
+    zones = build_shot_zones(_db(), "2025-26", min_attempts=2)
+    deep = next(z for z in zones["zones"] if z["zone"] == "Above the Break 3")
+    # 1 of 4 made, worth 3 points each.
+    assert deep["pointsPerShot"] == pytest.approx(0.75)
+
+
+def test_a_mislabelled_three_does_not_revalue_a_whole_two_point_zone() -> None:
+    """Regression: real data puts a handful of 3PT rows inside Mid-Range.
+
+    Taking the zone's maximum shot value let 8 stray rows out of 22,025 price every
+    mid-range jumper at three points, inflating its points per shot from 0.83 to 1.25.
+    Each shot must be valued individually.
+    """
+    db = Database(path=":memory:")
+    db.connect().register(
+        "shots",
+        pd.DataFrame(
+            {
+                "season": ["2025-26"] * 5,
+                "SHOT_ZONE_BASIC": ["Mid-Range"] * 5,
+                # Four honest two-pointers and one mislabelled three.
+                "SHOT_TYPE": ["2PT Field Goal"] * 4 + ["3PT Field Goal"],
+                "SHOT_MADE_FLAG": [1, 1, 0, 0, 0],
+            }
+        ),
+    )
+    zone = build_shot_zones(db, "2025-26", min_attempts=1)["zones"][0]
+    # 2 makes, both worth 2 points, over 5 attempts.
+    assert zone["pointsPerShot"] == pytest.approx(0.8)
+
+
+def test_shot_zones_report_each_zones_share_of_attempts() -> None:
+    zones = build_shot_zones(_db(), "2025-26", min_attempts=2)
+    total = sum(z["attempts"] for z in zones["zones"])
+    assert sum(z["share"] for z in zones["zones"]) == pytest.approx(1.0)
+    assert total == 9  # 10 shots minus the single backcourt heave
+
+
+def test_shot_zones_are_ordered_by_attempts() -> None:
+    zones = build_shot_zones(_db(), "2025-26", min_attempts=2)
+    attempts = [z["attempts"] for z in zones["zones"]]
+    assert attempts == sorted(attempts, reverse=True)
+
+
+def test_shot_zones_publish_the_minimum_sample_applied() -> None:
+    assert build_shot_zones(_db(), "2025-26")["minAttempts"] == MIN_ZONE_ATTEMPTS
+
+
 # ---- whole export -----------------------------------------------------------
 
 
 def test_export_writes_the_expected_files(tmp_path: Path) -> None:
     written = export_dataset(_db(), tmp_path, ["2025-26"])
     names = {p.relative_to(tmp_path).as_posix() for p in written}
-    assert names == {"index.json", "leaders/2025-26.json", "teams/2025-26.json"}
+    assert names == {
+        "index.json",
+        "leaders/2025-26.json",
+        "teams/2025-26.json",
+        "shot-zones/2025-26.json",
+    }
 
 
 def test_every_exported_file_is_valid_json(tmp_path: Path) -> None:
