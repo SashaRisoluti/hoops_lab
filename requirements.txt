@@ -1,4 +1,4 @@
-# Flat dependency list for HuggingFace Spaces (mirrors [project.dependencies]
+# Flat dependency list for Streamlit Community Cloud (mirrors [project.dependencies]
 # in pyproject.toml — keep the two in sync).
 nba_api>=1.4
 pandas>=2.1

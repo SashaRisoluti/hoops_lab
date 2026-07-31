@@ -117,7 +117,7 @@ class Database:
     ) -> bool:
         """Make sure the database exists and is seeded; rebuild it if not.
 
-        Called at dashboard startup: HuggingFace Spaces has an ephemeral
+        Called at dashboard startup: the hosted demo has an ephemeral
         filesystem, so the DuckDB file may need to be rebuilt from the
         versioned Parquet files on every boot.
 

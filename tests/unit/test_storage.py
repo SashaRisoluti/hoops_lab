@@ -188,7 +188,7 @@ def test_seed_builds_possessions_from_play_by_play(tmp_path) -> None:
 
 
 def test_seed_falls_back_to_processed_dir_when_raw_is_empty(tmp_path) -> None:
-    # HF Spaces scenario: data/raw is gitignored (empty), the versioned demo
+    # Hosted-demo scenario: data/raw is gitignored (empty), the versioned demo
     # parquet live in the processed directory instead.
     processed = tmp_path / "processed"
     _write_fixture_parquets(processed)

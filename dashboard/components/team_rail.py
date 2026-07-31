@@ -6,7 +6,7 @@ and the season selector beside it. Selection is global (session state) and
 survives page changes; clicks travel through a ``?team=XXX`` query param.
 
 Logos are hotlinked from the NBA CDN and fetched by the *browser*, so they
-work on HF Spaces without committing trademarked assets to the repo; the
+work on the hosted demo without committing trademarked assets to the repo; the
 tricode title is the fallback.
 """
 

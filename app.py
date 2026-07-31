@@ -1,9 +1,11 @@
 """Local convenience launcher for the dashboard.
 
-NOT used on HuggingFace Spaces: with `sdk: streamlit` the Space runs
-`streamlit run` itself on the README's `app_file` (dashboard/app.py).
-Running through `python -m streamlit` keeps the repo root on sys.path so
-the `hoops_lab` package is importable.
+NOT the entry point of any deployment. Streamlit Community Cloud runs
+`streamlit run` itself against `dashboard/app.py`; pointing a host at this
+file would spawn a nested server the host never sees.
+
+Running through `python -m streamlit` keeps the repo root on sys.path so the
+`hoops_lab` package is importable.
 """
 
 import subprocess
@@ -17,7 +19,7 @@ subprocess.run(
         "run",
         "dashboard/app.py",
         "--server.port",
-        "7860",  # HF Spaces standard port
+        "8501",  # Streamlit's default
         "--server.address",
         "0.0.0.0",
         "--server.headless",

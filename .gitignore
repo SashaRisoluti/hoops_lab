@@ -24,7 +24,7 @@ README_files/
 logos/
 
 # Data: raw downloads and local DuckDB files are rebuilt from code.
-# data/processed/ (Parquet) IS versioned — it feeds the HuggingFace Spaces demo.
+# data/processed/ (Parquet) IS versioned — it feeds the public Streamlit demo.
 data/raw/*
 !data/raw/.gitkeep
 data/db/*

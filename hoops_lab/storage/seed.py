@@ -25,7 +25,7 @@ from hoops_lab.storage.models import PARQUET_TABLES
 
 logger = logging.getLogger(__name__)
 
-#: Versioned demo parquet (used when data/raw is empty, e.g. on HF Spaces).
+#: Versioned demo parquet (used when data/raw is empty, e.g. on the hosted demo).
 PROCESSED_DATA_DIR = Path("data/processed")
 
 #: Advanced columns exposed by the player_season_full view (when present in
@@ -209,7 +209,7 @@ def seed_database(
     raw_dir:
         Directory with the raw Parquet files (default: ``RAW_DATA_DIR``).
     fallback_dir:
-        Used when ``raw_dir`` holds no parquet at all — on HF Spaces the raw
+        Used when ``raw_dir`` holds no parquet at all — on the hosted demo the raw
         downloads are gitignored and the versioned demo parquet live in
         ``data/processed`` (default).
 

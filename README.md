@@ -1,20 +1,11 @@
----
-title: Hoops Lab
-emoji: 🏀
-colorFrom: red
-colorTo: indigo
-sdk: streamlit
-sdk_version: "1.58.0"
-app_file: dashboard/app.py
-pinned: true
-license: mit
----
-
 # 🏀 Hoops Lab
 
 Modular NBA data-science framework — **historical analysis**, **pre-game scouting** and **live game intelligence** — built as a professional sports-analytics portfolio project.
 
-**Live demo**: [huggingface.co/spaces/srisoluti/hoops-lab](https://huggingface.co/spaces/srisoluti/hoops-lab)
+| | |
+|---|---|
+| **Website** | [hoops-lab.vercel.app](https://hoops-lab.vercel.app/) — statically generated, real data, no cold start |
+| **Live dashboard** | [hoopslab.streamlit.app](https://hoopslab.streamlit.app/) — the full interactive tool (sleeps when idle) |
 
 ## What it does
 
@@ -29,22 +20,23 @@ nba_api  →  ingestion  →  Parquet (data/raw)  →  DuckDB (storage)
                                                       ↓
                        features / filters / analytics / live / models
                                                       ↓
-                 Streamlit dashboard  ·  FastAPI (Phase 4+)  ·  Python package
+        Streamlit dashboard  ·  static website (web/)  ·  Python package
 ```
 
-The framework exposes three independent interfaces:
+The framework exposes four independent interfaces over one analytics engine:
 
 | Interface | Location | Status |
 |---|---|---|
-| Streamlit dashboard (main UI) | `dashboard/` | 🚧 Phase 1 |
-| FastAPI REST API | `api/` | planned, Phase 4+ |
-| Importable Python package | `hoops_lab/` | 🚧 in progress |
+| Importable Python package | `hoops_lab/` | ✅ all 6 phases complete |
+| Streamlit dashboard (full tool) | `dashboard/` | ✅ 9 pages |
+| Public website (Next.js, static) | `web/` | ✅ live |
+| FastAPI REST API | `api/` | stub, not started |
 
 ## Project structure
 
 ```
 hoops-lab/
-├── app.py                # HuggingFace Spaces entry point (thin wrapper)
+├── app.py                # local launcher (deployments use dashboard/app.py)
 ├── hoops_lab/            # core package (business logic only)
 │   ├── ingestion/        # nba_api client, historical & live downloads
 │   ├── storage/          # DuckDB database, schema, migrations, seed
@@ -55,6 +47,8 @@ hoops-lab/
 │   ├── models/           # win probability, shot quality, lineup recommender (Phase 6)
 │   └── reports/          # post-game and scouting reports
 ├── dashboard/            # Streamlit UI (presentation only)
+├── web/                  # Next.js public website (static, generated data)
+├── scripts/              # CLI utilities incl. the web data export
 ├── api/                  # FastAPI REST interface (Phase 4+)
 ├── data/                 # raw / processed / db (see .gitignore policy)
 ├── notebooks/            # exploratory analysis
@@ -82,7 +76,7 @@ python -m streamlit run dashboard/app.py
 
 ## Configuration
 
-All settings are environment variables with safe defaults, read exclusively through [`hoops_lab/config.py`](hoops_lab/config.py). Locally they come from `.env`; on HuggingFace Spaces from **Space Secrets**.
+All settings are environment variables with safe defaults, read exclusively through [`hoops_lab/config.py`](hoops_lab/config.py). Locally they come from `.env`; in the hosted demo from the platform's secrets store.
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -97,14 +91,14 @@ All settings are environment variables with safe defaults, read exclusively thro
 
 The reference team is **never hard-coded**. To switch from the default (Dallas Mavericks) to any other NBA team:
 
-1. Set `REFERENCE_TEAM` in your `.env` (or as a Space Secret) to the team's full name as it appears on stats.nba.com — e.g. `REFERENCE_TEAM=Boston Celtics`.
+1. Set `REFERENCE_TEAM` in your `.env` (or the host's secrets store) to the team's full name as it appears on stats.nba.com — e.g. `REFERENCE_TEAM=Boston Celtics`.
 2. Done — the name is resolved to the official team id at runtime by `NBAApiClient.team_id_from_name()`.
 
 ## Data strategy (public demo)
 
 - Last **5 NBA regular seasons** (2021-22 → 2025-26) preloaded.
 - League-wide player box scores and advanced stats; shot charts and play-by-play for a representative sample of games.
-- Pre-computed Parquet files in `data/processed/` are versioned in the repo (kept under ~500 MB); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because HF Spaces has an ephemeral filesystem.
+- Pre-computed Parquet files in `data/processed/` are versioned in the repo (kept under ~500 MB); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because the hosting filesystem is ephemeral.
 
 ## Shot Profile Visual Analytics
 
@@ -161,12 +155,30 @@ pytest
 
 Unit tests never hit the network; every advanced-stat formula is validated against known reference values.
 
-## Deployment (HuggingFace Spaces)
+## Deployment
 
-- With `sdk: streamlit`, the Space runs `streamlit run` itself on `app_file: dashboard/app.py` (the root [`app.py`](app.py) is a local-convenience launcher only).
-- `requirements.txt` (flat deps) and `packages.txt` (apt deps) live at the repo root as HF expects.
-- [`.github/workflows/sync_to_hf.yml`](.github/workflows/sync_to_hf.yml) force-pushes `main` to the Space on every push. Setup: add a write-scoped `HF_TOKEN` as a GitHub Actions secret.
-- The Space rebuilds the DuckDB at boot from the versioned demo parquet in `data/processed/` (set `ENVIRONMENT=production` as a Space variable to disable live-API features).
+Two surfaces deploy from this repo, both on a push to `main`.
+
+### Website — Vercel
+
+The Next.js app in [`web/`](web/) is statically generated from JSON exported by
+[`scripts/export_web_data.py`](scripts/export_web_data.py), so it loads instantly and needs no
+backend. Vercel project setting: **Root Directory `web`**; framework auto-detects; no environment
+variables.
+
+Colours are not written by hand — `web/tokens.json` is generated from
+[`dashboard/components/theme.py`](dashboard/components/theme.py) and a design gate fails if the
+two ever drift apart.
+
+### Dashboard — Streamlit Community Cloud
+
+- Main file path `dashboard/app.py`. The root [`app.py`](app.py) is a local launcher only;
+  pointing a host at it would spawn a nested server the host never sees.
+- `requirements.txt` (flat deps) and `packages.txt` (apt deps) live at the repo root, where
+  Streamlit Cloud looks for them.
+- DuckDB is rebuilt at boot from the versioned demo parquet in `data/processed/`, because the
+  hosting filesystem is ephemeral. Set `ENVIRONMENT=production` to disable live-API features.
+- The free tier sleeps when idle, so the first visit after a quiet period takes ~30s to wake.
 
 ## License
 

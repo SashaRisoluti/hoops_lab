@@ -1,3 +1,17 @@
+## Deployment consolidated: Vercel + Streamlit Cloud (2026-07-31)
+
+- The website is live at <https://hoops-lab.vercel.app/> (Next.js, static, root directory
+  `web/`); the dashboard at <https://hoopslab.streamlit.app/>.
+- HuggingFace Spaces retired. Removed `.github/workflows/sync_to_hf.yml` — it would have
+  failed on every push once the Space was deleted — and the HF YAML frontmatter from the
+  README. The `HF_TOKEN` secret is no longer used.
+- Reworded, not removed, the comments explaining `ensure_db_ready()`: the ephemeral-filesystem
+  rationale still applies on Streamlit Community Cloud, so the mechanism stays.
+- Root `app.py` now defaults to Streamlit's port 8501 instead of the HF-specific 7860, and its
+  docstring warns that pointing a host at it spawns a nested server.
+- README refreshed: both live links, four-interface table (the dashboard was still marked
+  "Phase 1"), `web/` and `scripts/` added to the structure, and a rewritten deployment section.
+
 ## Web shell Phase 1 — Task 6: About page (2026-07-31)
 
 - Engineering story: the five-stage pipeline (ingestion, storage, possession parser,

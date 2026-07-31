@@ -11,7 +11,7 @@ from hoops_lab.storage.database import Database
 
 @st.cache_resource
 def get_database() -> Database:
-    """Open the analytical DB, rebuilding it from Parquet if needed (HF Spaces)."""
+    """Open the analytical DB, rebuilding it from Parquet if needed (hosted demo)."""
     db = Database()
     db.ensure_db_ready()
     return db

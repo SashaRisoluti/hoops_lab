@@ -90,7 +90,8 @@ pattern. Worth *not* copying: absent SEO, hand-rolled routing, no light mode.
 ## Standing user decisions
 
 - Resolve review findings and plan conflicts with the recommended option; no mid-run questions.
-- Push to `origin/main` (triggers the HF Spaces deploy) was authorized at the end of Phase B.
+- Push to `origin/main` is authorized; it redeploys both the Streamlit dashboard and the
+  Vercel site.
 
 ## Environment warning
 

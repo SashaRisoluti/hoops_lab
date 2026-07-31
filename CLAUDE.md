@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Modular NBA data-science framework (portfolio project). All 6 roadmap phases are complete (see README); current work is refinement and deployment (GitHub + HuggingFace Spaces). Original product spec: `../idee_dashboard_basket_data_science.md` and `../prompt_claude_code_basketball_framework.md` (Italian, outside the repo).
+Modular NBA data-science framework (portfolio project). All 6 roadmap phases are complete (see README); deployed as a Streamlit dashboard (Streamlit Community Cloud) and a static Next.js site (Vercel, from `web/`). Original product spec: `../idee_dashboard_basket_data_science.md` and `../prompt_claude_code_basketball_framework.md` (Italian, outside the repo).
 
 Code, docstrings, UI and documentation are in **English**; conversation with the user in **Italian**.
 
@@ -44,7 +44,7 @@ Data flow: `nba_api → data/raw/*.parquet → DuckDB (data/db/hoops_lab.duckdb)
 
 - **Layering**: business logic ONLY in `hoops_lab/`; `dashboard/` is presentation-only; `api/` is a FastAPI stub for later. Env vars are read ONLY via `hoops_lab/config.py` (safe defaults; `.env` optional). The reference team is `REFERENCE_TEAM` — never hard-code a team.
 - **Ingestion** (`hoops_lab/ingestion/`): ALL remote calls go through `NBAApiClient` (≥0.6s throttle, 30s timeout, retries). League-wide datasets are one call per season; **lineups and shot charts are downloaded per team** (the league lineup endpoint is capped at 2000 rows server-side; shot files are named `shot_chart_{team_id}_{season}.parquet` so teams coexist). The PBP sample is built with `sample_game_ids_per_team`.
-- **Storage** (`hoops_lab/storage/`): SQL migrations own the empty structural tables; the seeder creates data tables straight from parquet (schema inferred, `season` extracted from the filename) and derives `teams`/`players`/`seasons`/`games` plus the `player_season_full` VIEW (base LEFT JOIN advanced — the base every filter query targets). `ensure_db_ready()` rebuilds everything from parquet (HF Spaces has an ephemeral filesystem) and auto-heals older DBs.
+- **Storage** (`hoops_lab/storage/`): SQL migrations own the empty structural tables; the seeder creates data tables straight from parquet (schema inferred, `season` extracted from the filename) and derives `teams`/`players`/`seasons`/`games` plus the `player_season_full` VIEW (base LEFT JOIN advanced — the base every filter query targets). `ensure_db_ready()` rebuilds everything from parquet (the hosting filesystem is ephemeral) and auto-heals older DBs.
 - **Filter engine** (`hoops_lab/filters/`): `QueryRequest` → parameterized SQL. Injection guard is three-layered (whitelisted base-table registry, regex-validated quoted identifiers, `?` params). Window operators (`top_n`, `percentile_above/below`, `last_n_games`) compile to `QUALIFY`, which DuckDB evaluates **after** WHERE — that is what guarantees the project's core rule: percentiles always refer to the filtered population, never the full universe.
 - **Possession parser** (`hoops_lab/features/possession.py`): state machine over PBPv3 events; points come from offense-team score deltas, so totals are self-validating (the invariant test reconstructs every final score). Events must be re-sorted chronologically (`sort_chronological`) — raw feeds contain out-of-order late-inserted rows.
 - **Live pipeline** (`hoops_lab/live/`): one path for replay and live — events → `GameState` (re-segments possessions with the same historical parser, so live PPP/pace are comparable to baselines by construction) → KPIs → alerts. The live feed is adapted to the stats-format contract by `ingestion/live.adapt_live_actions` (lowercase action types, FT `MISS` marker, coordinate passthrough); it is unit-tested but not yet verified against a real live game.
@@ -71,7 +71,7 @@ Data flow: `nba_api → data/raw/*.parquet → DuckDB (data/db/hoops_lab.duckdb)
   internals (`HEAD`, `index`, `refs/heads/main`). Duplicate pages appear in the Streamlit nav and
   pytest collects duplicate tests. If `git log` fails or conflict copies appear, stop and surface
   it to the user — never resolve `.git` conflict copies silently.
-- `requirements.txt` mirrors `[project.dependencies]` in `pyproject.toml` by hand (HF Spaces needs
-  the flat file) — update both together.
+- `requirements.txt` mirrors `[project.dependencies]` in `pyproject.toml` by hand (Streamlit
+  Community Cloud needs the flat file) — update both together.
 - Session continuity: resume point in `docs/superpowers/RESUME.md`; SDD task ledger in
   `.superpowers/sdd/progress.md` (gitignored).

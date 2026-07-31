@@ -3,7 +3,7 @@
 Single source of truth for runtime settings: every module reads configuration
 from here, never from ``os.getenv`` directly. Values come from a local ``.env``
 file when present (development) or from real environment variables / Space
-Secrets (production on HuggingFace Spaces). Every setting has a safe default,
+Secrets (production on Streamlit Community Cloud). Every setting has a safe default,
 so the project also runs with no configuration at all.
 """
 
@@ -13,7 +13,7 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()  # no-op when .env is missing (e.g. on HuggingFace Spaces)
+load_dotenv()  # no-op when .env is missing (e.g. on Streamlit Community Cloud)
 
 #: Per-request timeout for nba_api calls, in seconds.
 NBA_API_TIMEOUT: int = int(os.getenv("NBA_API_TIMEOUT", "30"))
