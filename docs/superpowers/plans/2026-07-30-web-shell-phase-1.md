@@ -60,15 +60,24 @@ cover every exact-duplicate group (ATL/POR, CHI/HOU/TOR, CLE/IND, DET/LAC, MIA/U
 `hex→hsl→hex` round-tripping for all 30 accents, hue and saturation preservation under lift, and
 a regression guard asserting that no already-readable accent is modified.
 
-## Task 2 — Token bridge
+## Task 2 — Token bridge — ✅ DONE
 
-- `scripts/export_web_data.py` gains a `--tokens-only` mode writing `web/tokens.json` from
-  `theme.tokens_json()`.
-- New design gate in `tests/unit/test_design_gates.py`: parse `web/tokens.json`, assert it equals
-  `TOKENS` exactly. Fails loudly if either side changes alone.
+Delivered: `scripts/export_web_data.py --tokens-only` writes `web/tokens.json`; the drift gate
+`test_web_tokens_artifact_matches_theme` lives in `tests/unit/test_design_gates.py`; export
+behaviour is covered separately by `tests/unit/test_web_export_tokens.py`.
 
-**Verify:** gate passes; mutating one token value in `theme.py` without re-exporting turns the
-gate red.
+Extension beyond the original plan: the payload also carries `teamAccents`
+(`TEAM_ACCENTS_READABLE`), so the web app never re-derives team colours in TypeScript and Task 1's
+contrast work is inherited for free. Output is deterministic — no timestamp — otherwise every
+export would diff and the gate would be noise.
+
+Also fixed here, from the deferred follow-up list: the `test_chart_components_colors` flake. It
+was running against Streamlit's 3s default script timeout while the AppTest apps need up to ~16s
+to import pandas and plotly on a loaded machine. Timeout raised to 30s; assertions untouched;
+verified stable across three consecutive runs.
+
+**Verified:** gate goes red when a token is edited without re-exporting (demonstrated); 264 unit
++ 14 integration tests green; ruff clean; dashboard boots HTTP 200.
 
 ## Task 3 — Data export
 

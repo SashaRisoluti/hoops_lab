@@ -11,12 +11,14 @@ Last updated: 2026-07-30.
   reverting 20 source files to older content while the newest content sat in conflict copies.
   Fully recovered; all 76 conflict copies removed. Verified: 214 unit + 14 integration tests
   green, ruff clean, dashboard boots HTTP 200.
-- Local `main` is at `2cc9e69` (recovered CLAUDE.md documentation), **one commit ahead of
-  `origin/main`** — not yet pushed.
+- **The repo moved to `C:\dev\hoops-lab`** on 2026-07-30. The OneDrive folder is retired and
+  carries a `_STALE_DO_NOT_USE.md` marker. Corporate TLS breaks `git-lfs`; fixed globally with
+  `http.sslCAInfo` pointing at an exported Windows CA bundle.
 
 ## Next work: public web shell
 
-Brainstormed and specced on 2026-07-30. Not started.
+Specced 2026-07-30. **Phase 1 in progress on `feature/web-shell-phase-1`** — Tasks 0, 1 and 2
+done.
 
 | Doc | Path |
 |---|---|
@@ -33,14 +35,16 @@ and over a Vite SPA (per-route SEO/OG is mandatory and is the reference's fatal 
 charts with no chart library; Tailwind tokens generated from `theme.py` and guarded by a design
 gate.
 
-**Blocking first task:** move the repo out of OneDrive to `C:\dev\hoops-lab` before any `npm`
-work. `node_modules` in a synced folder makes today's corruption near-certain to recur.
+**Progress:** Task 0 (repo relocation) done. Task 1 (team colour resolver) done at `338d976`.
+Task 2 (token bridge, `web/tokens.json` + drift gate) done. **Next: Task 3, the DuckDB → JSON
+data export**, then Tasks 4–7 build and deploy the Next.js app.
 
-**Highest-value single item, verified against real data:** `TEAM_ACCENTS` has five groups sharing
-a byte-identical hex covering 11 of 30 teams (ATL/POR, CHI/HOU/TOR, CLE/IND, DET/LAC, MIA/UTA),
-and 18 of 30 accents fall below 52% lightness on the dark surface. Head-to-head charts for those
-pairs are currently unreadable. The fix is a Python colour resolver that benefits Streamlit too —
-Phase 1, Task 1.
+**Colour finding, corrected by measurement:** the reference's 52% lightness floor does not apply
+here. Against this project's much darker `BG_PAGE` `#070b14`, only **1 of 30** accents (SAC, 1.99)
+fails WCAG 3:1 for graphical objects — not 18. `ensure_contrast` lifts only what fails, so exactly
+one accent changed. The duplicate-hex collisions (ATL/POR, CHI/HOU/TOR, CLE/IND, DET/LAC, MIA/UTA)
+are real but **latent**: no surface paints two team accents at once until Phase 3. `resolve_pair`
+is built and tested but deliberately unwired.
 
 ## Reference project findings (2026-07-30)
 

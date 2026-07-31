@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from streamlit.testing.v1 import AppTest
 
+# AppTest defaults to a 3s script timeout, which these apps can exceed on a loaded
+# machine simply importing pandas and plotly. A generous ceiling keeps the suite
+# deterministic while still failing on a genuine hang.
+RUN_TIMEOUT = 30
+
 
 def _radar_app() -> None:
     from dashboard.components.radar_chart import render_radar_chart
@@ -12,7 +17,7 @@ def _radar_app() -> None:
 
 
 def test_radar_uses_primary_palette_on_transparent_paper() -> None:
-    at = AppTest.from_function(_radar_app).run()
+    at = AppTest.from_function(_radar_app).run(timeout=RUN_TIMEOUT)
     assert not at.exception
     fig = at.get("plotly_chart")[0].proto.spec
     assert "#F97316" not in fig
@@ -32,7 +37,7 @@ def _hist_app() -> None:
 
 
 def test_histogram_uses_soft_primary_bars() -> None:
-    at = AppTest.from_function(_hist_app).run()
+    at = AppTest.from_function(_hist_app).run(timeout=RUN_TIMEOUT)
     assert not at.exception
     spec = at.get("plotly_chart")[0].proto.spec
     assert "#4d7fff" in spec  # COLOR_PRIMARY_SOFT bars

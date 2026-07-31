@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import re
 import tomllib
 from pathlib import Path
 
 from dashboard.components import theme
 from hoops_lab.visuals import altair_charts, court, heatmaps, shot_maps
+from scripts.export_web_data import TOKENS_PATH
 
 REPO = Path(__file__).resolve().parents[2]
 HEX_RE = re.compile(r"#[0-9a-fA-F]{3,8}\b")
@@ -43,6 +45,19 @@ def test_visuals_mirror_matches_theme_tokens() -> None:
     assert heatmaps.EFF_GOOD == theme.COLOR_GOOD
     assert heatmaps.TEXT_SOFT == theme.TEXT_SOFT
     assert heatmaps.TEXT_MAIN == theme.TEXT
+
+
+def test_web_tokens_artifact_matches_theme() -> None:
+    """The web app's generated tokens must never drift from theme.py.
+
+    Fails when a token is edited without re-running ``python scripts/export_web_data.py
+    --tokens-only``, which would let Streamlit and the web app render different colors.
+    """
+    committed = json.loads((REPO / TOKENS_PATH).read_text(encoding="utf-8"))
+    assert committed["tokens"] == theme.TOKENS, "stale web tokens — re-run the export"
+    assert committed["teamAccents"] == theme.TEAM_ACCENTS_READABLE, (
+        "stale web team accents — re-run the export"
+    )
 
 
 def test_streamlit_config_matches_tokens() -> None:

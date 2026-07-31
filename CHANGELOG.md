@@ -1,3 +1,15 @@
+## Web shell Phase 1 — Task 2: token bridge (2026-07-30)
+
+- `scripts/export_web_data.py --tokens-only` generates `web/tokens.json` from
+  `theme.TOKENS` and `theme.TEAM_ACCENTS_READABLE`. Deterministic output (no timestamp)
+  so the artifact only changes when the tokens do.
+- New design gate `test_web_tokens_artifact_matches_theme` fails when a token is edited
+  without re-exporting, so Streamlit and the web app cannot drift apart.
+- Fixed the long-standing AppTest flake: `test_chart_components_colors` ran against
+  Streamlit's 3s default script timeout while the apps need up to ~16s to import pandas
+  and plotly on a loaded machine. Timeout raised; assertions unchanged.
+- `.gitignore` covers `web/node_modules/`, `.next/`, `out/`, `.vercel/`.
+
 ## Web shell Phase 1 — Task 1: readable team accents (2026-07-30)
 
 - New `hoops_lab/visuals/team_colors.py`: WCAG contrast helpers, minimal-lift
