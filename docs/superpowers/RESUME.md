@@ -35,9 +35,12 @@ and over a Vite SPA (per-route SEO/OG is mandatory and is the reference's fatal 
 charts with no chart library; Tailwind tokens generated from `theme.py` and guarded by a design
 gate.
 
-**Progress:** Task 0 (repo relocation) done. Task 1 (team colour resolver) done at `338d976`.
-Task 2 (token bridge, `web/tokens.json` + drift gate) done. **Next: Task 3, the DuckDB → JSON
-data export**, then Tasks 4–7 build and deploy the Next.js app.
+**Progress:** Task 0 (repo relocation) done. Task 1 (team colour resolver) `338d976`. Task 2
+(token bridge + drift gate) `64b935e`. Task 3 (dataset export — 11 files, 87.6 KB) done.
+**Next: Task 4, the Next.js skeleton**, then home, about and the Vercel deploy.
+
+Still needed from the user before Task 7: the custom domain, LinkedIn URL, and whether to show
+an email address.
 
 **Colour finding, corrected by measurement:** the reference's 52% lightness floor does not apply
 here. Against this project's much darker `BG_PAGE` `#070b14`, only **1 of 30** accents (SAC, 1.99)

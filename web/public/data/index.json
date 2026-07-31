@@ -1,0 +1,200 @@
+{
+  "generatedAt": "2026-07-31T09:35:50+00:00",
+  "generatedFrom": "data/db/hoops_lab.duckdb",
+  "seasons": [
+    "2025-26",
+    "2024-25",
+    "2023-24",
+    "2022-23",
+    "2021-22"
+  ],
+  "latestSeason": "2025-26",
+  "teams": [
+    {
+      "id": 1610612737,
+      "tricode": "ATL",
+      "name": "Atlanta Hawks",
+      "accent": "#e03a3e"
+    },
+    {
+      "id": 1610612751,
+      "tricode": "BKN",
+      "name": "Brooklyn Nets",
+      "accent": "#9ba3ae"
+    },
+    {
+      "id": 1610612738,
+      "tricode": "BOS",
+      "name": "Boston Celtics",
+      "accent": "#007a33"
+    },
+    {
+      "id": 1610612766,
+      "tricode": "CHA",
+      "name": "Charlotte Hornets",
+      "accent": "#00788c"
+    },
+    {
+      "id": 1610612741,
+      "tricode": "CHI",
+      "name": "Chicago Bulls",
+      "accent": "#ce1141"
+    },
+    {
+      "id": 1610612739,
+      "tricode": "CLE",
+      "name": "Cleveland Cavaliers",
+      "accent": "#fdbb30"
+    },
+    {
+      "id": 1610612742,
+      "tricode": "DAL",
+      "name": "Dallas Mavericks",
+      "accent": "#0064b1"
+    },
+    {
+      "id": 1610612743,
+      "tricode": "DEN",
+      "name": "Denver Nuggets",
+      "accent": "#fec524"
+    },
+    {
+      "id": 1610612765,
+      "tricode": "DET",
+      "name": "Detroit Pistons",
+      "accent": "#c8102e"
+    },
+    {
+      "id": 1610612744,
+      "tricode": "GSW",
+      "name": "Golden State Warriors",
+      "accent": "#ffc72c"
+    },
+    {
+      "id": 1610612745,
+      "tricode": "HOU",
+      "name": "Houston Rockets",
+      "accent": "#ce1141"
+    },
+    {
+      "id": 1610612754,
+      "tricode": "IND",
+      "name": "Indiana Pacers",
+      "accent": "#fdbb30"
+    },
+    {
+      "id": 1610612746,
+      "tricode": "LAC",
+      "name": "Los Angeles Clippers",
+      "accent": "#c8102e"
+    },
+    {
+      "id": 1610612747,
+      "tricode": "LAL",
+      "name": "Los Angeles Lakers",
+      "accent": "#fdb927"
+    },
+    {
+      "id": 1610612763,
+      "tricode": "MEM",
+      "name": "Memphis Grizzlies",
+      "accent": "#5d76a9"
+    },
+    {
+      "id": 1610612748,
+      "tricode": "MIA",
+      "name": "Miami Heat",
+      "accent": "#f9a01b"
+    },
+    {
+      "id": 1610612749,
+      "tricode": "MIL",
+      "name": "Milwaukee Bucks",
+      "accent": "#1b8a5a"
+    },
+    {
+      "id": 1610612750,
+      "tricode": "MIN",
+      "name": "Minnesota Timberwolves",
+      "accent": "#78be20"
+    },
+    {
+      "id": 1610612740,
+      "tricode": "NOP",
+      "name": "New Orleans Pelicans",
+      "accent": "#85714d"
+    },
+    {
+      "id": 1610612752,
+      "tricode": "NYK",
+      "name": "New York Knicks",
+      "accent": "#f58426"
+    },
+    {
+      "id": 1610612760,
+      "tricode": "OKC",
+      "name": "Oklahoma City Thunder",
+      "accent": "#007ac1"
+    },
+    {
+      "id": 1610612753,
+      "tricode": "ORL",
+      "name": "Orlando Magic",
+      "accent": "#0077c0"
+    },
+    {
+      "id": 1610612755,
+      "tricode": "PHI",
+      "name": "Philadelphia 76ers",
+      "accent": "#006bb6"
+    },
+    {
+      "id": 1610612756,
+      "tricode": "PHX",
+      "name": "Phoenix Suns",
+      "accent": "#e56020"
+    },
+    {
+      "id": 1610612757,
+      "tricode": "POR",
+      "name": "Portland Trail Blazers",
+      "accent": "#e03a3e"
+    },
+    {
+      "id": 1610612758,
+      "tricode": "SAC",
+      "name": "Sacramento Kings",
+      "accent": "#7f3fb6"
+    },
+    {
+      "id": 1610612759,
+      "tricode": "SAS",
+      "name": "San Antonio Spurs",
+      "accent": "#c4ced4"
+    },
+    {
+      "id": 1610612761,
+      "tricode": "TOR",
+      "name": "Toronto Raptors",
+      "accent": "#ce1141"
+    },
+    {
+      "id": 1610612762,
+      "tricode": "UTA",
+      "name": "Utah Jazz",
+      "accent": "#f9a01b"
+    },
+    {
+      "id": 1610612764,
+      "tricode": "WAS",
+      "name": "Washington Wizards",
+      "accent": "#e31837"
+    }
+  ],
+  "summary": {
+    "seasons": 5,
+    "teams": 30,
+    "games": 6150,
+    "players": 1029
+  }
+}

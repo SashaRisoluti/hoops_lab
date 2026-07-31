@@ -1,3 +1,14 @@
+## Web shell Phase 1 — Task 3: dataset export (2026-07-30)
+
+- `scripts/export_web_data.py` now writes `web/public/data/`: `index.json` (seasons, 30
+  teams with accents, headline counts), plus `leaders/{season}.json` and
+  `teams/{season}.json` for all five demo seasons. 11 files, 87.6 KB total.
+- Leaderboards apply and publish the mandatory minimum sample (`GP >= 20`,
+  `MIN >= 15.0`); team ratings reuse `analytics.team_identity.league_ratings`, so no
+  statistic is recomputed for the web app.
+- Integration tests assert the export stays under a 2 MB budget and that exported
+  leaders match a direct DuckDB query exactly.
+
 ## Web shell Phase 1 — Task 2: token bridge (2026-07-30)
 
 - `scripts/export_web_data.py --tokens-only` generates `web/tokens.json` from

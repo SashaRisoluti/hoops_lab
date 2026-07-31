@@ -79,7 +79,27 @@ verified stable across three consecutive runs.
 **Verified:** gate goes red when a token is edited without re-exporting (demonstrated); 264 unit
 + 14 integration tests green; ruff clean; dashboard boots HTTP 200.
 
-## Task 3 — Data export
+## Task 3 — Data export — ✅ DONE
+
+Delivered: `build_index`, `build_leaders`, `build_team_ratings`, `export_dataset` in
+`scripts/export_web_data.py`; 21 unit tests against an in-memory database and 5 integration tests
+against the real one.
+
+**Actual output: 11 files, 87.6 KB total** — comfortably inside the 2 MB budget, so no lazy-loading
+machinery is needed. `index.json` is 4.2 KB, each season's leaders ~6.3 KB and team ratings ~10.8 KB.
+
+Deviation: **`archetypes/{season}.json` was deferred to Phase 2.** The archetype pipeline clusters
+1,091,329 shot rows, and its only consumer is the `/archetypes` page that Phase 2 builds. Exporting
+it now would slow every build for data nothing reads. `teams/{season}.json` was added in its place,
+because the home page hero needs real team ratings.
+
+Minimum-sample filter is mandatory and published in the payload: `GP >= 20` and `MIN >= 15.0`
+per game, so a 3-game cameo cannot top a leaderboard.
+
+**Verified:** exported leaders match a direct DuckDB query exactly (names and values); all 30 teams
+resolve to a tricode and accent; 285 unit + 19 integration tests green; ruff clean.
+
+### Original plan text
 
 `scripts/export_web_data.py` full implementation. Calls existing `hoops_lab.analytics` functions
 only — no new analytics.

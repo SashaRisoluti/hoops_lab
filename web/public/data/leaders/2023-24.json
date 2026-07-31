@@ -1,0 +1,271 @@
+{
+  "season": "2023-24",
+  "minGames": 20,
+  "minMinutes": 15.0,
+  "categories": [
+    {
+      "key": "PTS",
+      "label": "Points per game",
+      "leaders": [
+        {
+          "playerId": 203954,
+          "name": "Joel Embiid",
+          "tricode": "PHI",
+          "value": 34.7
+        },
+        {
+          "playerId": 1629029,
+          "name": "Luka Don\u010di\u0107",
+          "tricode": "DAL",
+          "value": 33.9
+        },
+        {
+          "playerId": 203507,
+          "name": "Giannis Antetokounmpo",
+          "tricode": "MIL",
+          "value": 30.4
+        },
+        {
+          "playerId": 1628983,
+          "name": "Shai Gilgeous-Alexander",
+          "tricode": "OKC",
+          "value": 30.1
+        },
+        {
+          "playerId": 1628973,
+          "name": "Jalen Brunson",
+          "tricode": "NYK",
+          "value": 28.7
+        },
+        {
+          "playerId": 1626164,
+          "name": "Devin Booker",
+          "tricode": "PHX",
+          "value": 27.1
+        },
+        {
+          "playerId": 201142,
+          "name": "Kevin Durant",
+          "tricode": "PHX",
+          "value": 27.1
+        },
+        {
+          "playerId": 1628369,
+          "name": "Jayson Tatum",
+          "tricode": "BOS",
+          "value": 26.9
+        },
+        {
+          "playerId": 1628368,
+          "name": "De'Aaron Fox",
+          "tricode": "SAC",
+          "value": 26.6
+        },
+        {
+          "playerId": 1628378,
+          "name": "Donovan Mitchell",
+          "tricode": "CLE",
+          "value": 26.6
+        }
+      ]
+    },
+    {
+      "key": "AST",
+      "label": "Assists per game",
+      "leaders": [
+        {
+          "playerId": 1630169,
+          "name": "Tyrese Haliburton",
+          "tricode": "IND",
+          "value": 10.9
+        },
+        {
+          "playerId": 1629027,
+          "name": "Trae Young",
+          "tricode": "ATL",
+          "value": 10.8
+        },
+        {
+          "playerId": 1629029,
+          "name": "Luka Don\u010di\u0107",
+          "tricode": "DAL",
+          "value": 9.8
+        },
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 9.0
+        },
+        {
+          "playerId": 201935,
+          "name": "James Harden",
+          "tricode": "LAC",
+          "value": 8.5
+        },
+        {
+          "playerId": 2544,
+          "name": "LeBron James",
+          "tricode": "LAL",
+          "value": 8.3
+        },
+        {
+          "playerId": 1627734,
+          "name": "Domantas Sabonis",
+          "tricode": "SAC",
+          "value": 8.2
+        },
+        {
+          "playerId": 1627832,
+          "name": "Fred VanVleet",
+          "tricode": "HOU",
+          "value": 8.1
+        },
+        {
+          "playerId": 1630163,
+          "name": "LaMelo Ball",
+          "tricode": "CHA",
+          "value": 8.0
+        },
+        {
+          "playerId": 1630595,
+          "name": "Cade Cunningham",
+          "tricode": "DET",
+          "value": 7.5
+        }
+      ]
+    },
+    {
+      "key": "REB",
+      "label": "Rebounds per game",
+      "leaders": [
+        {
+          "playerId": 1627734,
+          "name": "Domantas Sabonis",
+          "tricode": "SAC",
+          "value": 13.7
+        },
+        {
+          "playerId": 203497,
+          "name": "Rudy Gobert",
+          "tricode": "MIN",
+          "value": 12.9
+        },
+        {
+          "playerId": 203076,
+          "name": "Anthony Davis",
+          "tricode": "LAL",
+          "value": 12.6
+        },
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 12.4
+        },
+        {
+          "playerId": 1631105,
+          "name": "Jalen Duren",
+          "tricode": "DET",
+          "value": 11.6
+        },
+        {
+          "playerId": 203507,
+          "name": "Giannis Antetokounmpo",
+          "tricode": "MIL",
+          "value": 11.5
+        },
+        {
+          "playerId": 1629028,
+          "name": "Deandre Ayton",
+          "tricode": "POR",
+          "value": 11.1
+        },
+        {
+          "playerId": 203954,
+          "name": "Joel Embiid",
+          "tricode": "PHI",
+          "value": 11.0
+        },
+        {
+          "playerId": 203994,
+          "name": "Jusuf Nurki\u0107",
+          "tricode": "PHX",
+          "value": 11.0
+        },
+        {
+          "playerId": 203991,
+          "name": "Clint Capela",
+          "tricode": "ATL",
+          "value": 10.6
+        }
+      ]
+    },
+    {
+      "key": "TS_PCT",
+      "label": "True shooting",
+      "leaders": [
+        {
+          "playerId": 1628436,
+          "name": "Luke Kornet",
+          "tricode": "BOS",
+          "value": 0.736
+        },
+        {
+          "playerId": 1629655,
+          "name": "Daniel Gafford",
+          "tricode": "DAL",
+          "value": 0.731
+        },
+        {
+          "playerId": 1641726,
+          "name": "Dereck Lively II",
+          "tricode": "DAL",
+          "value": 0.728
+        },
+        {
+          "playerId": 1630208,
+          "name": "Nick Richards",
+          "tricode": "CHA",
+          "value": 0.717
+        },
+        {
+          "playerId": 1631218,
+          "name": "Trayce Jackson-Davis",
+          "tricode": "GSW",
+          "value": 0.692
+        },
+        {
+          "playerId": 1630188,
+          "name": "Jalen Smith",
+          "tricode": "IND",
+          "value": 0.682
+        },
+        {
+          "playerId": 1628960,
+          "name": "Grayson Allen",
+          "tricode": "PHX",
+          "value": 0.679
+        },
+        {
+          "playerId": 1630167,
+          "name": "Obi Toppin",
+          "tricode": "IND",
+          "value": 0.677
+        },
+        {
+          "playerId": 1629021,
+          "name": "Moritz Wagner",
+          "tricode": "ORL",
+          "value": 0.676
+        },
+        {
+          "playerId": 203497,
+          "name": "Rudy Gobert",
+          "tricode": "MIN",
+          "value": 0.675
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "season": "2021-22",
+  "minGames": 20,
+  "minMinutes": 15.0,
+  "categories": [
+    {
+      "key": "PTS",
+      "label": "Points per game",
+      "leaders": [
+        {
+          "playerId": 203954,
+          "name": "Joel Embiid",
+          "tricode": "PHI",
+          "value": 30.6
+        },
+        {
+          "playerId": 2544,
+          "name": "LeBron James",
+          "tricode": "LAL",
+          "value": 30.3
+        },
+        {
+          "playerId": 203507,
+          "name": "Giannis Antetokounmpo",
+          "tricode": "MIL",
+          "value": 29.9
+        },
+        {
+          "playerId": 201142,
+          "name": "Kevin Durant",
+          "tricode": "BKN",
+          "value": 29.9
+        },
+        {
+          "playerId": 1629029,
+          "name": "Luka Don\u010di\u0107",
+          "tricode": "DAL",
+          "value": 28.4
+        },
+        {
+          "playerId": 1629027,
+          "name": "Trae Young",
+          "tricode": "ATL",
+          "value": 28.4
+        },
+        {
+          "playerId": 201942,
+          "name": "DeMar DeRozan",
+          "tricode": "CHI",
+          "value": 27.9
+        },
+        {
+          "playerId": 1629630,
+          "name": "Ja Morant",
+          "tricode": "MEM",
+          "value": 27.4
+        },
+        {
+          "playerId": 202681,
+          "name": "Kyrie Irving",
+          "tricode": "BKN",
+          "value": 27.4
+        },
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 27.1
+        }
+      ]
+    },
+    {
+      "key": "AST",
+      "label": "Assists per game",
+      "leaders": [
+        {
+          "playerId": 101108,
+          "name": "Chris Paul",
+          "tricode": "PHX",
+          "value": 10.8
+        },
+        {
+          "playerId": 201935,
+          "name": "James Harden",
+          "tricode": "PHI",
+          "value": 10.3
+        },
+        {
+          "playerId": 1629027,
+          "name": "Trae Young",
+          "tricode": "ATL",
+          "value": 9.7
+        },
+        {
+          "playerId": 1627749,
+          "name": "Dejounte Murray",
+          "tricode": "SAS",
+          "value": 9.2
+        },
+        {
+          "playerId": 1629029,
+          "name": "Luka Don\u010di\u0107",
+          "tricode": "DAL",
+          "value": 8.7
+        },
+        {
+          "playerId": 1629636,
+          "name": "Darius Garland",
+          "tricode": "CLE",
+          "value": 8.6
+        },
+        {
+          "playerId": 1630169,
+          "name": "Tyrese Haliburton",
+          "tricode": "IND",
+          "value": 8.2
+        },
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 7.9
+        },
+        {
+          "playerId": 1630163,
+          "name": "LaMelo Ball",
+          "tricode": "CHA",
+          "value": 7.6
+        },
+        {
+          "playerId": 200768,
+          "name": "Kyle Lowry",
+          "tricode": "MIA",
+          "value": 7.5
+        }
+      ]
+    },
+    {
+      "key": "REB",
+      "label": "Rebounds per game",
+      "leaders": [
+        {
+          "playerId": 203497,
+          "name": "Rudy Gobert",
+          "tricode": "UTA",
+          "value": 14.7
+        },
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 13.8
+        },
+        {
+          "playerId": 1627734,
+          "name": "Domantas Sabonis",
+          "tricode": "SAC",
+          "value": 12.1
+        },
+        {
+          "playerId": 203991,
+          "name": "Clint Capela",
+          "tricode": "ATL",
+          "value": 11.9
+        },
+        {
+          "playerId": 203954,
+          "name": "Joel Embiid",
+          "tricode": "PHI",
+          "value": 11.7
+        },
+        {
+          "playerId": 203507,
+          "name": "Giannis Antetokounmpo",
+          "tricode": "MIL",
+          "value": 11.6
+        },
+        {
+          "playerId": 202685,
+          "name": "Jonas Valan\u010di\u016bnas",
+          "tricode": "NOP",
+          "value": 11.4
+        },
+        {
+          "playerId": 203994,
+          "name": "Jusuf Nurki\u0107",
+          "tricode": "POR",
+          "value": 11.1
+        },
+        {
+          "playerId": 202696,
+          "name": "Nikola Vu\u010devi\u0107",
+          "tricode": "CHI",
+          "value": 11.0
+        },
+        {
+          "playerId": 1628386,
+          "name": "Jarrett Allen",
+          "tricode": "CLE",
+          "value": 10.8
+        }
+      ]
+    },
+    {
+      "key": "TS_PCT",
+      "label": "True shooting",
+      "leaders": [
+        {
+          "playerId": 1629057,
+          "name": "Robert Williams III",
+          "tricode": "BOS",
+          "value": 0.745
+        },
+        {
+          "playerId": 203497,
+          "name": "Rudy Gobert",
+          "tricode": "UTA",
+          "value": 0.732
+        },
+        {
+          "playerId": 203939,
+          "name": "Dwight Powell",
+          "tricode": "DAL",
+          "value": 0.725
+        },
+        {
+          "playerId": 1629011,
+          "name": "Mitchell Robinson",
+          "tricode": "NYK",
+          "value": 0.722
+        },
+        {
+          "playerId": 1630168,
+          "name": "Onyeka Okongwu",
+          "tricode": "ATL",
+          "value": 0.714
+        },
+        {
+          "playerId": 1629655,
+          "name": "Daniel Gafford",
+          "tricode": "WAS",
+          "value": 0.708
+        },
+        {
+          "playerId": 1627745,
+          "name": "Damian Jones",
+          "tricode": "SAC",
+          "value": 0.701
+        },
+        {
+          "playerId": 1628386,
+          "name": "Jarrett Allen",
+          "tricode": "CLE",
+          "value": 0.698
+        },
+        {
+          "playerId": 1626158,
+          "name": "Richaun Holmes",
+          "tricode": "SAC",
+          "value": 0.689
+        },
+        {
+          "playerId": 1629637,
+          "name": "Jaxson Hayes",
+          "tricode": "NOP",
+          "value": 0.68
+        }
+      ]
+    }
+  ]
+}

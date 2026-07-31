@@ -1,0 +1,271 @@
+{
+  "season": "2025-26",
+  "minGames": 20,
+  "minMinutes": 15.0,
+  "categories": [
+    {
+      "key": "PTS",
+      "label": "Points per game",
+      "leaders": [
+        {
+          "playerId": 1629029,
+          "name": "Luka Don\u010di\u0107",
+          "tricode": "LAL",
+          "value": 33.5
+        },
+        {
+          "playerId": 1628983,
+          "name": "Shai Gilgeous-Alexander",
+          "tricode": "OKC",
+          "value": 31.1
+        },
+        {
+          "playerId": 1630162,
+          "name": "Anthony Edwards",
+          "tricode": "MIN",
+          "value": 28.8
+        },
+        {
+          "playerId": 1627759,
+          "name": "Jaylen Brown",
+          "tricode": "BOS",
+          "value": 28.7
+        },
+        {
+          "playerId": 1630178,
+          "name": "Tyrese Maxey",
+          "tricode": "PHI",
+          "value": 28.3
+        },
+        {
+          "playerId": 1628378,
+          "name": "Donovan Mitchell",
+          "tricode": "CLE",
+          "value": 27.9
+        },
+        {
+          "playerId": 202695,
+          "name": "Kawhi Leonard",
+          "tricode": "LAC",
+          "value": 27.9
+        },
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 27.7
+        },
+        {
+          "playerId": 203507,
+          "name": "Giannis Antetokounmpo",
+          "tricode": "MIL",
+          "value": 27.6
+        },
+        {
+          "playerId": 203954,
+          "name": "Joel Embiid",
+          "tricode": "PHI",
+          "value": 26.9
+        }
+      ]
+    },
+    {
+      "key": "AST",
+      "label": "Assists per game",
+      "leaders": [
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 10.7
+        },
+        {
+          "playerId": 1630595,
+          "name": "Cade Cunningham",
+          "tricode": "DET",
+          "value": 9.9
+        },
+        {
+          "playerId": 1630581,
+          "name": "Josh Giddey",
+          "tricode": "CHI",
+          "value": 9.1
+        },
+        {
+          "playerId": 1629029,
+          "name": "Luka Don\u010di\u0107",
+          "tricode": "LAL",
+          "value": 8.3
+        },
+        {
+          "playerId": 1629630,
+          "name": "Ja Morant",
+          "tricode": "MEM",
+          "value": 8.1
+        },
+        {
+          "playerId": 201935,
+          "name": "James Harden",
+          "tricode": "CLE",
+          "value": 8.0
+        },
+        {
+          "playerId": 1630552,
+          "name": "Jalen Johnson",
+          "tricode": "ATL",
+          "value": 7.9
+        },
+        {
+          "playerId": 1629614,
+          "name": "Andrew Nembhard",
+          "tricode": "IND",
+          "value": 7.7
+        },
+        {
+          "playerId": 1629645,
+          "name": "Kevin Porter Jr.",
+          "tricode": "MIL",
+          "value": 7.4
+        },
+        {
+          "playerId": 1642264,
+          "name": "Stephon Castle",
+          "tricode": "SAS",
+          "value": 7.4
+        }
+      ]
+    },
+    {
+      "key": "REB",
+      "label": "Rebounds per game",
+      "leaders": [
+        {
+          "playerId": 203999,
+          "name": "Nikola Joki\u0107",
+          "tricode": "DEN",
+          "value": 12.9
+        },
+        {
+          "playerId": 1626157,
+          "name": "Karl-Anthony Towns",
+          "tricode": "NYK",
+          "value": 11.9
+        },
+        {
+          "playerId": 1642270,
+          "name": "Donovan Clingan",
+          "tricode": "POR",
+          "value": 11.6
+        },
+        {
+          "playerId": 203497,
+          "name": "Rudy Gobert",
+          "tricode": "MIN",
+          "value": 11.5
+        },
+        {
+          "playerId": 1641705,
+          "name": "Victor Wembanyama",
+          "tricode": "SAS",
+          "value": 11.5
+        },
+        {
+          "playerId": 203076,
+          "name": "Anthony Davis",
+          "tricode": "WAS",
+          "value": 11.1
+        },
+        {
+          "playerId": 1627826,
+          "name": "Ivica Zubac",
+          "tricode": "IND",
+          "value": 10.6
+        },
+        {
+          "playerId": 1631105,
+          "name": "Jalen Duren",
+          "tricode": "DET",
+          "value": 10.5
+        },
+        {
+          "playerId": 203994,
+          "name": "Jusuf Nurki\u0107",
+          "tricode": "UTA",
+          "value": 10.4
+        },
+        {
+          "playerId": 1630552,
+          "name": "Jalen Johnson",
+          "tricode": "ATL",
+          "value": 10.3
+        }
+      ]
+    },
+    {
+      "key": "TS_PCT",
+      "label": "True shooting",
+      "leaders": [
+        {
+          "playerId": 1630579,
+          "name": "Jericho Sims",
+          "tricode": "MIL",
+          "value": 0.772
+        },
+        {
+          "playerId": 1641750,
+          "name": "Ryan Kalkbrenner",
+          "tricode": "CHA",
+          "value": 0.762
+        },
+        {
+          "playerId": 1629637,
+          "name": "Jaxson Hayes",
+          "tricode": "LAL",
+          "value": 0.758
+        },
+        {
+          "playerId": 1629057,
+          "name": "Robert Williams III",
+          "tricode": "POR",
+          "value": 0.722
+        },
+        {
+          "playerId": 1629048,
+          "name": "Goga Bitadze",
+          "tricode": "ORL",
+          "value": 0.7
+        },
+        {
+          "playerId": 1627751,
+          "name": "Jakob Poeltl",
+          "tricode": "TOR",
+          "value": 0.698
+        },
+        {
+          "playerId": 1628379,
+          "name": "Luke Kennard",
+          "tricode": "LAL",
+          "value": 0.689
+        },
+        {
+          "playerId": 1628436,
+          "name": "Luke Kornet",
+          "tricode": "SAS",
+          "value": 0.689
+        },
+        {
+          "playerId": 1631105,
+          "name": "Jalen Duren",
+          "tricode": "DET",
+          "value": 0.688
+        },
+        {
+          "playerId": 1630264,
+          "name": "Anthony Gill",
+          "tricode": "WAS",
+          "value": 0.682
+        }
+      ]
+    }
+  ]
+}
