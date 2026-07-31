@@ -114,7 +114,28 @@ seeded with fixture frames; asserts every emitted file parses as JSON, matches i
 set, and that total bytes stay under 2 MB. Numbers for one known player are asserted equal to the
 values the Streamlit page shows for the same season.
 
-## Task 4 — Next.js skeleton
+## Task 4 — Next.js skeleton — ✅ DONE
+
+Delivered: `web/` on Next 15.5.22, React 19.2.8, Tailwind 3.4.19, TypeScript 5.9.3. All 7 routes
+prerendered static; **First Load JS 103 kB** against a 150 kB budget. `npm run build` and
+`tsc --noEmit` both clean; every route serves 200 with real data rendered (6,150 games,
+1,029 players).
+
+Environment blocker resolved: npm hit the same corporate TLS interception as git-lfs
+(`SELF_SIGNED_CERT_IN_CHAIN`). Fixed with `npm config set cafile` plus a user-level
+`NODE_EXTRA_CA_CERTS`, both pointing at the exported Windows CA bundle — `strict-ssl` stays on.
+The Node variable matters beyond npm: `next/font/google` downloads Inter at build time and would
+otherwise fail the same way.
+
+Deviations: no `output: "export"` (Vercel SSG keeps `next/og` available for Task 6's OG images);
+the `lint` script was dropped from `package.json` because eslint is not installed and a script
+that always fails is worse than none; a minimal `/about` stub was added early because the nav and
+sitemap both link to it and would otherwise 404.
+
+Added beyond plan: `test_no_hex_literals_in_the_web_app`, the web-side twin of the dashboard's
+no-hex gate, so neither surface can hardcode a colour outside the generated tokens.
+
+### Original plan text
 
 `web/` — Next.js App Router, TypeScript, Tailwind. `tailwind.config.ts` imports `tokens.json`.
 

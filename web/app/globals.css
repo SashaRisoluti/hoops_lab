@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-page text-ink font-body antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  /* Visible keyboard focus everywhere. The reference site leaves this to the browser
+     default, which disappears against a near-black background. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-page;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border border-line bg-card;
+  }
+}
+
+/* Reduced motion: kill the animation AND reset the end state, so a reduced-motion
+   visitor is never left looking at content that faded in halfway. Most sites forget
+   the second half and ship invisible text. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

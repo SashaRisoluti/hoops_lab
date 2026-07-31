@@ -60,6 +60,29 @@ def test_web_tokens_artifact_matches_theme() -> None:
     )
 
 
+def test_no_hex_literals_in_the_web_app() -> None:
+    """The web app must consume generated tokens, never hardcode a colour.
+
+    The same rule the dashboard follows: `tokens.json` is generated from theme.py, so a
+    hex literal anywhere else is a colour that can silently drift from the design system.
+    """
+    roots = [REPO / "web" / part for part in ("app", "components", "lib")]
+    offenders: list[str] = []
+    for root in roots:
+        if not root.exists():
+            continue
+        for path in root.rglob("*.ts*"):
+            for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                if HEX_RE.search(line):
+                    offenders.append(f"{path.relative_to(REPO)}:{i}")
+    config = REPO / "web" / "tailwind.config.ts"
+    if config.exists():
+        for i, line in enumerate(config.read_text(encoding="utf-8").splitlines(), 1):
+            if HEX_RE.search(line):
+                offenders.append(f"{config.relative_to(REPO)}:{i}")
+    assert not offenders, f"hex literals in the web app: {offenders}"
+
+
 def test_streamlit_config_matches_tokens() -> None:
     config = tomllib.loads((REPO / ".streamlit" / "config.toml").read_text(encoding="utf-8"))
     assert config["theme"]["primaryColor"] == theme.COLOR_PRIMARY

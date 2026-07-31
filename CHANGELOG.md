@@ -1,3 +1,18 @@
+## Web shell Phase 1 — Task 4: Next.js skeleton (2026-07-31)
+
+- New `web/`: Next.js 15 App Router + React 19 + Tailwind 3.4, all routes statically
+  generated. First Load JS 103 kB, under the 150 kB budget.
+- `tailwind.config.ts` derives every colour from the generated `web/tokens.json`, so the
+  Streamlit theme is the single source of truth for both surfaces. Verified end to end:
+  the Python token values appear in the compiled CSS bundle.
+- `AppShell` (sticky topbar, nav collapsing at 980px with `aria-expanded`/`aria-controls`),
+  `StatTile` and `PageHeader` ported from their Streamlit counterparts, plus a skip link
+  and a visible focus ring.
+- `app/robots.ts` and `app/sitemap.ts`; per-route metadata with Open Graph and Twitter
+  cards — the reference site ships none of this.
+- New design gate `test_no_hex_literals_in_the_web_app` mirrors the dashboard rule, so
+  the web app cannot hardcode a colour outside the generated tokens.
+
 ## Web shell Phase 1 — Task 3: dataset export (2026-07-30)
 
 - `scripts/export_web_data.py` now writes `web/public/data/`: `index.json` (seasons, 30

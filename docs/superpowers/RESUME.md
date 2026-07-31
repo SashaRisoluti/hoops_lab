@@ -36,11 +36,16 @@ charts with no chart library; Tailwind tokens generated from `theme.py` and guar
 gate.
 
 **Progress:** Task 0 (repo relocation) done. Task 1 (team colour resolver) `338d976`. Task 2
-(token bridge + drift gate) `64b935e`. Task 3 (dataset export — 11 files, 87.6 KB) done.
-**Next: Task 4, the Next.js skeleton**, then home, about and the Vercel deploy.
+(token bridge + drift gate) `64b935e`. Task 3 (dataset export — 11 files, 87.6 KB) `1d7c463`.
+Task 4 (Next.js skeleton, 103 kB First Load JS, all routes static) done.
+**Next: Task 5, the home page hero** — real leaders and team ratings plus the archetype preview.
 
-Still needed from the user before Task 7: the custom domain, LinkedIn URL, and whether to show
-an email address.
+Build the web app with `cd web && npm run build`. It needs `NODE_EXTRA_CA_CERTS` set to the CA
+bundle (already a user env var) or `next/font/google` fails behind the corporate proxy — see
+[[hoops-lab-corporate-tls-git-lfs]].
+
+Still needed from the user before Task 7: the custom domain (placeholder `hoopslab.dev` sits in
+`web/lib/site.ts`), the LinkedIn URL, and whether to show an email address.
 
 **Colour finding, corrected by measurement:** the reference's 52% lightness floor does not apply
 here. Against this project's much darker `BG_PAGE` `#070b14`, only **1 of 30** accents (SAC, 1.99)
