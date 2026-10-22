@@ -176,8 +176,8 @@ two ever drift apart.
 
 - Main file path `dashboard/app.py`. The root [`app.py`](app.py) is a local launcher only;
   pointing a host at it would spawn a nested server the host never sees.
-- `requirements.txt` (flat deps) and `packages.txt` (apt deps) live at the repo root, where
-  Streamlit Cloud looks for them.
+- `requirements.txt` (exact pins — the tested set; Cloud runs Python 3.14) and `packages.txt`
+  (apt deps) live at the repo root, where Streamlit Cloud looks for them.
 - DuckDB is rebuilt at boot from the versioned demo parquet in `data/processed/`, because the
   hosting filesystem is ephemeral. Set `ENVIRONMENT=production` to disable live-API features.
 - The free tier sleeps when idle, so the first visit after a quiet period takes ~30s to wake.

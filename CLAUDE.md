@@ -80,7 +80,10 @@ Data flow: `nba_api → data/raw/*.parquet → DuckDB (data/db/hoops_lab.duckdb)
   internals (`HEAD`, `index`, `refs/heads/main`). Duplicate pages appear in the Streamlit nav and
   pytest collects duplicate tests. If `git log` fails or conflict copies appear, stop and surface
   it to the user — never resolve `.git` conflict copies silently.
-- `requirements.txt` mirrors `[project.dependencies]` in `pyproject.toml` by hand (Streamlit
-  Community Cloud needs the flat file) — update both together.
+- `requirements.txt` is the **deploy lock**: exact `==` pins of the set the full suite passed
+  against (Streamlit Cloud runs **Python 3.14** and would otherwise install the latest of every
+  floor — DuckDB 2.0 took the hosted app down on 2026-10-22 with every local test green).
+  `pyproject.toml` keeps the floors. Bump a pin only after the suite passes with it; any new
+  dependency goes in both files.
 - Session continuity: resume point in `docs/superpowers/RESUME.md`; SDD task ledger in
   `.superpowers/sdd/progress.md` (gitignored).
