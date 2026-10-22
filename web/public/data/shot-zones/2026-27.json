@@ -1,0 +1,39 @@
+{
+  "season": "2026-27",
+  "minAttempts": 200,
+  "totalAttempts": 2231,
+  "zones": [
+    {
+      "zone": "Above the Break 3",
+      "attempts": 769,
+      "share": 0.34468848050201706,
+      "fgPct": 0.34980494148244473,
+      "pointsPerShot": 1.0494148244473342,
+      "isThree": true
+    },
+    {
+      "zone": "Restricted Area",
+      "attempts": 695,
+      "share": 0.3115194979829673,
+      "fgPct": 0.6834532374100719,
+      "pointsPerShot": 1.3669064748201438,
+      "isThree": false
+    },
+    {
+      "zone": "In The Paint (Non-RA)",
+      "attempts": 536,
+      "share": 0.2402510085163604,
+      "fgPct": 0.4197761194029851,
+      "pointsPerShot": 0.8395522388059702,
+      "isThree": false
+    },
+    {
+      "zone": "Mid-Range",
+      "attempts": 231,
+      "share": 0.10354101299865531,
+      "fgPct": 0.39826839826839827,
+      "pointsPerShot": 0.7965367965367965,
+      "isThree": false
+    }
+  ]
+}

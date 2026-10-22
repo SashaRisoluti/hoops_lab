@@ -1,14 +1,15 @@
 {
-  "generatedAt": "2026-07-31T12:17:13+00:00",
+  "generatedAt": "2026-10-22T13:13:29+00:00",
   "generatedFrom": "data/db/hoops_lab.duckdb",
   "seasons": [
+    "2026-27",
     "2025-26",
     "2024-25",
     "2023-24",
     "2022-23",
     "2021-22"
   ],
-  "latestSeason": "2025-26",
+  "featuredSeason": "2025-26",
   "teams": [
     {
       "id": 1610612737,
@@ -192,15 +193,15 @@
     }
   ],
   "summary": {
-    "seasons": 5,
+    "seasons": 6,
     "teams": 30,
-    "games": 6150,
-    "players": 1029,
-    "shots": 1091329,
-    "possessions": 77299
+    "games": 6164,
+    "players": 1059,
+    "shots": 1093793,
+    "possessions": 80065
   },
   "project": {
-    "tests": 305,
-    "modules": 55
+    "tests": 316,
+    "modules": 56
   }
 }

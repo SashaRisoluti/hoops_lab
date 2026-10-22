@@ -1,0 +1,27 @@
+{
+  "season": "2026-27",
+  "minGames": 20,
+  "minMinutes": 15.0,
+  "categories": [
+    {
+      "key": "PTS",
+      "label": "Points per game",
+      "leaders": []
+    },
+    {
+      "key": "AST",
+      "label": "Assists per game",
+      "leaders": []
+    },
+    {
+      "key": "REB",
+      "label": "Rebounds per game",
+      "leaders": []
+    },
+    {
+      "key": "TS_PCT",
+      "label": "True shooting",
+      "leaders": []
+    }
+  ]
+}
