@@ -55,3 +55,12 @@ def test_temporal_split_by_season() -> None:
     assert set(train["season"]) == {"2023-24"}
     assert set(test["season"]) == {"2024-25"}
     assert len(train) + len(test) == len(shots)
+
+
+def test_temporal_split_never_trains_on_a_later_season() -> None:
+    shots = _shots()
+    later = shots.iloc[:10].assign(season="2025-26")
+    train, test = temporal_split(pd.concat([shots, later], ignore_index=True), "2024-25")
+
+    assert set(train["season"]) == {"2023-24"}
+    assert set(test["season"]) == {"2024-25"}

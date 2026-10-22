@@ -2,8 +2,8 @@
 
 Single source of truth for runtime settings: every module reads configuration
 from here, never from ``os.getenv`` directly. Values come from a local ``.env``
-file when present (development) or from real environment variables / Space
-Secrets (production on Streamlit Community Cloud). Every setting has a safe default,
+file when present (development) or from real environment variables / app
+secrets (production on Streamlit Community Cloud). Every setting has a safe default,
 so the project also runs with no configuration at all.
 """
 
@@ -36,6 +36,11 @@ REFERENCE_TEAM: str = os.getenv("REFERENCE_TEAM", "Dallas Mavericks")
 #: Seasons preloaded for the public demo (comma-separated in the env var).
 DEMO_SEASONS: list[str] = [
     s.strip()
-    for s in os.getenv("DEMO_SEASONS", "2021-22,2022-23,2023-24,2024-25,2025-26").split(",")
+    for s in os.getenv("DEMO_SEASONS", "2021-22,2022-23,2023-24,2024-25,2025-26,2026-27").split(",")
     if s.strip()
 ]
+
+#: Games every team must have played before a season becomes the default one
+#: (dashboard season selector, website, live baselines). Until then the previous
+#: season stays featured, so early-season samples never drive a headline view.
+FEATURED_MIN_TEAM_GAMES: int = int(os.getenv("FEATURED_MIN_TEAM_GAMES", "10"))

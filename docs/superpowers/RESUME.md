@@ -1,9 +1,22 @@
 # Session Resume Point
 
-Last updated: 2026-07-30.
+Last updated: 2026-10-22.
 
 ## Current state
 
+- **Season 2026-27 (opened 2026-10-20) is ingested**, with a one-command weekly refresh:
+  `python scripts/refresh_season.py [--push]`. The default ("featured") season stays 2025-26
+  until every team has played `FEATURED_MIN_TEAM_GAMES` (10) games — `featured_season()` in
+  `hoops_lab/analytics/seasons.py` drives the dashboard selector, the web headline season
+  (`index.json` `featuredSeason`) and the live baselines.
+- **Live mode:** `LivePoller` no longer freezes the play-by-play (it shared one throttle clock
+  with the scoreboard). Still open: `cdn.nba.com` (nba_api live) is 403-blocked on the corporate
+  network, so live mode can only be checked on the hosted app or off-network; a stats-endpoint
+  fallback (ScoreboardV3 + PlayByPlayV3, PBPv3 needs no adapter) and `st.fragment(run_every=)`
+  auto-refresh are the next live improvements. Streamlit Cloud has no `ENVIRONMENT` secret, so
+  live mode is visible there.
+- **Deployed 2026-07-31:** website https://hoops-lab.vercel.app/ (Vercel, root `web/`),
+  dashboard https://hoopslab.streamlit.app/. HuggingFace Spaces retired. Single branch `main`.
 - **Worldcup26 UI restyle (Phase A + B): COMPLETE and merged.** Phase A at `ef4c8fc`, Phase B
   `d278796..bba45af`, resume-point commit `2366992`.
 - **2026-07-30: OneDrive corruption recovered.** A PC shutdown mid-session left OneDrive
@@ -15,10 +28,11 @@ Last updated: 2026-07-30.
   carries a `_STALE_DO_NOT_USE.md` marker. Corporate TLS breaks `git-lfs`; fixed globally with
   `http.sslCAInfo` pointing at an exported Windows CA bundle.
 
-## Next work: public web shell
+## Public web shell — Phase 1 shipped (2026-07-31); Phase 2 not started
 
-Specced 2026-07-30. **Phase 1 in progress on `feature/web-shell-phase-1`** — Tasks 0, 1 and 2
-done.
+Specced 2026-07-30, merged to `main` and deployed to Vercel. Phase 2 (`/archetypes` page plus
+the deferred `archetypes/{season}.json` export) has not started. The notes below are the
+Phase 1 history.
 
 | Doc | Path |
 |---|---|
@@ -39,8 +53,7 @@ gate.
 (token bridge + drift gate) `64b935e`. Task 3 (dataset export — 11 files, 87.6 KB) `1d7c463`.
 Task 4 (Next.js skeleton, 103 kB First Load JS, all routes static) `752a8d7`. Task 5 (home page:
 hero, `CourtZones` shot-efficiency court, leaders, team ratings) `b924457`. Task 6 (About page,
-JSON-LD, generated OG card) done.
-**Next: Task 7, the Vercel deploy** — the only remaining Phase 1 task.
+JSON-LD, generated OG card) done. Task 7 (Vercel deploy) done 2026-07-31.
 
 Confirmed by the user 2026-07-31: LinkedIn `https://www.linkedin.com/in/sasha-risoluti/`; the
 live dashboard is `https://hoopslab.streamlit.app/`. There is still **no custom domain** — note
@@ -56,8 +69,7 @@ Build the web app with `cd web && npm run build`. It needs `NODE_EXTRA_CA_CERTS`
 bundle (already a user env var) or `next/font/google` fails behind the corporate proxy — see
 [[hoops-lab-corporate-tls-git-lfs]].
 
-Still needed from the user before Task 7: the custom domain (placeholder `hoopslab.dev` sits in
-`web/lib/site.ts`), the LinkedIn URL, and whether to show an email address.
+Still open: no custom domain (the site uses the free `*.vercel.app`).
 
 **Colour finding, corrected by measurement:** the reference's 52% lightness floor does not apply
 here. Against this project's much darker `BG_PAGE` `#070b14`, only **1 of 30** accents (SAC, 1.99)
@@ -85,7 +97,6 @@ pattern. Worth *not* copying: absent SEO, hand-rolled routing, no light mode.
 - `stat_tile` docstring: mention NaN omission for delta/pctl.
 - `radar_chart.py` import line is exactly 100 chars — split when next touched.
 - Radar AppTest rare 3 s timeout flake — bump when next touched.
-- `README.md` interface table still says "Phase 1" for the dashboard — stale, fix in Phase 1 Task 8.
 
 ## Standing user decisions
 

@@ -30,6 +30,7 @@ from dashboard.components.theme import (  # noqa: E402
     plotly_layout,
     render_command_bar,
 )
+from hoops_lab.analytics.seasons import featured_season  # noqa: E402
 from hoops_lab.config import ENVIRONMENT  # noqa: E402
 from hoops_lab.features.possession import sort_chronological  # noqa: E402
 from hoops_lab.live.alert_engine import evaluate_alerts  # noqa: E402
@@ -100,7 +101,8 @@ if mode == "Live (nba_api)":
     away_id = int(game["awayTeam"]["teamId"])
     home_abbr = game["homeTeam"]["teamTricode"]
     away_abbr = game["awayTeam"]["teamTricode"]
-    season = database.query_df("SELECT max(season) AS s FROM seasons").iloc[0]["s"]
+    # Baselines from the featured season: a few early games are noise, not a baseline.
+    season = featured_season(database)
     current_game_id = str(game["gameId"])
     st.button("🔄 Refresh")
 else:

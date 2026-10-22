@@ -1,3 +1,23 @@
+## Season 2026-27 + weekly refresh + live fixes (2026-10-22)
+
+- 2026-27 added to `DEMO_SEASONS` and ingested (the season opened 2026-10-20).
+- **Featured season**: `hoops_lab.analytics.seasons.featured_season` is the newest season in
+  which every team has played `FEATURED_MIN_TEAM_GAMES` (default 10) games, else the previous
+  one. It drives the dashboard's default season, the website headline season (`index.json`
+  key renamed `latestSeason` -> `featuredSeason`, since it is no longer always the newest)
+  and the live-mode baselines. 2026-27 stays selectable everywhere from day one.
+- `scripts/refresh_season.py [--push]`: one-command weekly refresh (download -> publish to
+  `data/processed` -> reseed from what ships -> web export -> optional commit + push).
+- Fix: `LivePoller` shared one throttle clock between the scoreboard and play-by-play, so
+  the scoreboard call made first on every rerun starved the play-by-play — a live game froze
+  on its first snapshot. Each feed now has its own clock; an empty scoreboard no longer
+  bypasses the throttle either.
+- Fix: `temporal_split` trained on every season other than the test one, including later
+  ones; it now trains strictly on earlier seasons, as its docstring always claimed.
+- Web home: the seasons range is derived from the data instead of hard-coded.
+- `numpy` declared as a direct dependency (it was imported directly but only arrived via
+  pandas). "Space Secrets" wording from the HuggingFace era replaced.
+
 ## Deployment consolidated: Vercel + Streamlit Cloud (2026-07-31)
 
 - The website is live at <https://hoops-lab.vercel.app/> (Next.js, static, root directory

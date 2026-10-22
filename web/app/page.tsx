@@ -7,6 +7,7 @@ import {
   getTeamRatings,
   leagueAveragePps,
   siteIndex,
+  zoneFgPct,
 } from "@/lib/data";
 import { site } from "@/lib/site";
 
@@ -15,14 +16,15 @@ function formatValue(key: string, value: number): string {
 }
 
 export default async function HomePage() {
-  const { summary, latestSeason, generatedAt } = siteIndex;
+  const { summary, seasons, featuredSeason, generatedAt } = siteIndex;
   const [leaders, ratings, shotZones] = await Promise.all([
-    getLeaderboards(latestSeason),
-    getTeamRatings(latestSeason),
-    getShotZones(latestSeason),
+    getLeaderboards(featuredSeason),
+    getTeamRatings(featuredSeason),
+    getShotZones(featuredSeason),
   ]);
 
   const average = leagueAveragePps(shotZones.zones);
+  const pct = (match: string) => `${(zoneFgPct(shotZones.zones, match) * 100).toFixed(1)}%`;
   const byEfficiency = [...shotZones.zones].sort((a, b) => b.pointsPerShot - a.pointsPerShot);
   const topTeams = [...ratings.teams]
     .filter((t) => t.netRating !== null)
@@ -34,7 +36,7 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="mb-14">
         <p className="text-sm font-semibold uppercase tracking-widest text-primary-soft">
-          {latestSeason} season · live data
+          {featuredSeason} season · live data
         </p>
         <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-tight sm:text-5xl">
           {site.tagline}
@@ -60,7 +62,7 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatTile label="Seasons" value={String(summary.seasons)} sub="2021-22 to 2025-26" />
+          <StatTile label="Seasons" value={String(summary.seasons)} sub={`${seasons.at(-1)} to ${seasons[0]}`} />
           <StatTile label="Teams" value={String(summary.teams)} />
           <StatTile label="Games" value={summary.games.toLocaleString("en-US")} />
           <StatTile label="Players" value={summary.players.toLocaleString("en-US")} />
@@ -73,10 +75,11 @@ export default async function HomePage() {
           Where the points actually come from
         </h2>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          Field-goal percentage hides the answer. Priced in points per shot, a 38.7% corner three
-          beats a 41.7% mid-range jumper — which is why the mid-range has all but disappeared.
+          Field-goal percentage hides the answer. Priced in points per shot, a {pct("Corner 3")}{" "}
+          corner three beats a {pct("Mid-Range")} mid-range jumper — which is why the mid-range has
+          all but disappeared.
           Every zone below is {shotZones.totalAttempts.toLocaleString("en-US")} real attempts from
-          the {latestSeason} season.
+          the {featuredSeason} season.
         </p>
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -101,7 +104,7 @@ export default async function HomePage() {
           <div className="card overflow-x-auto p-4">
             <table className="w-full text-sm">
               <caption className="sr-only">
-                Points per shot and attempt share by court zone, {latestSeason}
+                Points per shot and attempt share by court zone, {featuredSeason}
               </caption>
               <thead>
                 <tr className="border-b border-line-soft text-left text-xs uppercase tracking-wide text-ink-muted">
@@ -149,7 +152,7 @@ export default async function HomePage() {
       {/* Leaders */}
       <section className="mb-14" aria-labelledby="leaders">
         <h2 id="leaders" className="text-2xl font-bold">
-          {latestSeason} league leaders
+          {featuredSeason} league leaders
         </h2>
         <p className="mt-2 text-ink-soft">
           Minimum {leaders.minGames} games and {leaders.minMinutes} minutes per game — a
@@ -186,7 +189,7 @@ export default async function HomePage() {
       {/* Team ratings */}
       <section aria-labelledby="teams">
         <h2 id="teams" className="text-2xl font-bold">
-          Best net rating, {latestSeason}
+          Best net rating, {featuredSeason}
         </h2>
         <p className="mt-2 text-ink-soft">
           Point differential per 100 possessions, with the team&apos;s league percentile.

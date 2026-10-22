@@ -25,6 +25,7 @@ from dashboard.components.theme import (
     TEXT_FAINT,
     hex_to_rgba,
 )
+from hoops_lab.analytics.seasons import featured_season
 from hoops_lab.config import REFERENCE_TEAM
 from hoops_lab.storage.database import Database
 
@@ -83,6 +84,11 @@ def _seasons(_db: Database) -> list[str]:
     return _db.query_df("SELECT season FROM seasons ORDER BY season DESC")["season"].tolist()
 
 
+@st.cache_data
+def _featured_season(_db: Database) -> str | None:
+    return featured_season(_db)
+
+
 def render_team_rail(database: Database) -> tuple[int, str, str]:
     """Render the rail + season selector; return (team_id, abbreviation, season)."""
     teams = _teams(database)
@@ -101,7 +107,13 @@ def render_team_rail(database: Database) -> tuple[int, str, str]:
 
     rail_col, season_col = st.columns([6.0, 0.85])
     rail_col.markdown(build_rail_html(abbr_to_id, selected), unsafe_allow_html=True)
+    seasons = _seasons(database)
+    featured = _featured_season(database)
     season = season_col.selectbox(
-        "Season", _seasons(database), key="rail_season", label_visibility="collapsed"
+        "Season",
+        seasons,
+        index=seasons.index(featured) if featured in seasons else 0,
+        key="rail_season",
+        label_visibility="collapsed",
     )
     return int(abbr_to_id[selected]), selected, season

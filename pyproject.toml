@@ -28,6 +28,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "altair>=5.0",
     "minisom>=2.3",
+    "numpy>=1.26",
 ]
 
 [project.optional-dependencies]

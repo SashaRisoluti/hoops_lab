@@ -31,6 +31,7 @@ if str(ROOT) not in sys.path:
 import pandas as pd  # noqa: E402
 
 from dashboard.components.theme import TEAM_ACCENTS_READABLE, TOKENS  # noqa: E402
+from hoops_lab.analytics.seasons import featured_season  # noqa: E402
 from hoops_lab.analytics.team_identity import league_ratings  # noqa: E402
 from hoops_lab.config import DEMO_SEASONS  # noqa: E402
 from hoops_lab.storage.database import Database  # noqa: E402
@@ -123,7 +124,8 @@ def build_index(db: Database) -> dict:
         "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         "generatedFrom": "data/db/hoops_lab.duckdb",
         "seasons": seasons,
-        "latestSeason": seasons[0] if seasons else None,
+        # The season the home page headlines: the previous one while the newest is young.
+        "featuredSeason": featured_season(db),
         "teams": [
             {
                 "id": int(row.team_id),

@@ -12,7 +12,7 @@ export const contentType = "image/png";
 
 export default function OpengraphImage() {
   const t = tokens.tokens;
-  const { summary, latestSeason } = siteIndex;
+  const { summary, featuredSeason } = siteIndex;
 
   const facts = [
     [summary.seasons.toString(), "seasons"],
@@ -62,7 +62,7 @@ export default function OpengraphImage() {
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 24, color: t.primary_soft }}>{`${latestSeason} season`}</div>
+          <div style={{ fontSize: 24, color: t.primary_soft }}>{`${featuredSeason} season`}</div>
         </div>
       </div>
     ),

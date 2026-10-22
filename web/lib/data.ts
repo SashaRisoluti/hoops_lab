@@ -19,7 +19,7 @@ export type SiteIndex = {
   generatedAt: string;
   generatedFrom: string;
   seasons: string[];
-  latestSeason: string;
+  featuredSeason: string;
   teams: Team[];
   summary: {
     seasons: number;
@@ -119,4 +119,12 @@ export function leagueAveragePps(zones: ShotZone[]): number {
   const attempts = zones.reduce((sum, z) => sum + z.attempts, 0);
   if (attempts === 0) return 0;
   return zones.reduce((sum, z) => sum + z.pointsPerShot * z.attempts, 0) / attempts;
+}
+
+/** Attempt-weighted FG% across every zone whose name contains `match` (e.g. "Corner 3"). */
+export function zoneFgPct(zones: ShotZone[], match: string): number {
+  const matched = zones.filter((z) => z.zone.includes(match));
+  const attempts = matched.reduce((sum, z) => sum + z.attempts, 0);
+  if (attempts === 0) return 0;
+  return matched.reduce((sum, z) => sum + z.fgPct * z.attempts, 0) / attempts;
 }

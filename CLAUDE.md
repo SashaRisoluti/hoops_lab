@@ -29,6 +29,10 @@ python -m hoops_lab.features.possession         # 4. segment PBP into the posses
 
 # Extend the demo bundle with extra seasons (league data, per-team lineups/shots, PBP sample)
 python scripts/extend_seasons.py --seasons 2021-22 2022-23 [--skip-pbp]
+
+# Weekly in-season refresh: download newest DEMO_SEASONS season -> data/processed -> reseed
+# -> web export; --push commits and pushes (both hosts redeploy). Stop the dashboard first.
+python scripts/refresh_season.py [--push]
 ```
 
 ## Development workflow

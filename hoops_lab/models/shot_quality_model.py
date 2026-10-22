@@ -33,7 +33,8 @@ def temporal_split(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Train on seasons before ``test_season``, test on it (no leakage)."""
     test = shots.loc[shots["season"] == test_season]
-    train = shots.loc[shots["season"] != test_season]
+    # "YYYY-YY" labels sort chronologically, so < means strictly earlier seasons.
+    train = shots.loc[shots["season"] < test_season]
     return train, test
 
 

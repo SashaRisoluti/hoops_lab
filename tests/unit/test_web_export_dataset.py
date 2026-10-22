@@ -42,7 +42,14 @@ def _db() -> Database:
     con.register("seasons", pd.DataFrame({"season": ["2024-25", "2025-26"]}))
     con.register(
         "games",
-        pd.DataFrame({"game_id": ["1", "2", "3"], "season": ["2024-25", "2025-26", "2025-26"]}),
+        pd.DataFrame(
+            {
+                "game_id": ["1", "2", "3"],
+                "season": ["2024-25", "2025-26", "2025-26"],
+                "home_team_id": [1610612737, 1610612738, 1610612747],
+                "away_team_id": [1610612738, 1610612747, 1610612737],
+            }
+        ),
     )
     con.register(
         "player_season_full",
@@ -109,8 +116,20 @@ def test_index_lists_the_seasons_newest_first() -> None:
     assert index["seasons"] == ["2025-26", "2024-25"]
 
 
-def test_index_names_the_latest_season() -> None:
-    assert build_index(_db())["latestSeason"] == "2025-26"
+def test_index_features_the_newest_season_when_no_season_is_complete() -> None:
+    assert build_index(_db())["featuredSeason"] == "2025-26"
+
+
+def test_index_features_the_previous_season_while_the_newest_one_is_young() -> None:
+    db = _db()
+    complete = [{"season": "2024-25", "home_team_id": 1, "away_team_id": 2}] * 82
+    young = [{"season": "2025-26", "home_team_id": 1, "away_team_id": 2}] * 3
+    db.connect().register("games", pd.DataFrame(complete + young))
+
+    index = build_index(db)
+
+    assert index["featuredSeason"] == "2024-25"
+    assert index["seasons"][0] == "2025-26"  # still listed, still exported
 
 
 def test_index_carries_every_team_with_its_readable_accent() -> None:

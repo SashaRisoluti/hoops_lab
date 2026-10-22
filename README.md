@@ -85,7 +85,8 @@ All settings are environment variables with safe defaults, read exclusively thro
 | `DB_PATH` | `data/db/hoops_lab.duckdb` | DuckDB database file |
 | `ENVIRONMENT` | `development` | `production` disables live-API features in the demo |
 | `REFERENCE_TEAM` | `Dallas Mavericks` | Your team for tests and scouting comparisons |
-| `DEMO_SEASONS` | `2021-22,...,2025-26` | Seasons preloaded for the public demo |
+| `DEMO_SEASONS` | `2021-22,...,2026-27` | Seasons preloaded for the public demo; the newest is the one `refresh_season.py` refreshes |
+| `FEATURED_MIN_TEAM_GAMES` | `10` | Games every team needs before the newest season becomes the default view |
 
 ### Changing the reference team
 
@@ -96,9 +97,9 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 
 ## Data strategy (public demo)
 
-- Last **5 NBA regular seasons** (2021-22 → 2025-26) preloaded.
+- Every regular season in `DEMO_SEASONS` (2021-22 onwards) preloaded; the in-progress season is refreshed weekly (see "Refreshing the current season"). Until every team has played `FEATURED_MIN_TEAM_GAMES` games, the previous season stays the default view.
 - League-wide player box scores and advanced stats; shot charts and play-by-play for a representative sample of games.
-- Pre-computed Parquet files in `data/processed/` are versioned in the repo (kept under ~500 MB); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because the hosting filesystem is ephemeral.
+- Pre-computed Parquet files in `data/processed/` are versioned in the repo with Git LFS (~30 MB); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because the hosting filesystem is ephemeral.
 
 ## Shot Profile Visual Analytics
 
@@ -179,6 +180,21 @@ two ever drift apart.
 - DuckDB is rebuilt at boot from the versioned demo parquet in `data/processed/`, because the
   hosting filesystem is ephemeral. Set `ENVIRONMENT=production` to disable live-API features.
 - The free tier sleeps when idle, so the first visit after a quiet period takes ~30s to wake.
+
+### Refreshing the current season
+
+One command, run weekly from a machine that can reach stats.nba.com (with the local
+dashboard stopped, since it holds the DuckDB file):
+
+```powershell
+python scripts/refresh_season.py          # download, rebuild, re-export; check locally
+python scripts/refresh_season.py --push   # same, then commit + push -> both hosts redeploy
+```
+
+It downloads the newest season in `DEMO_SEASONS` (league data, per-team lineups and shot
+charts, a play-by-play sample), copies it into `data/processed/`, rebuilds DuckDB from exactly
+what ships, and re-exports `web/public/data/`. A full run makes ~140 throttled API calls (a few
+minutes). Weekly is deliberate: every refresh adds a new version of the season's LFS parquet.
 
 ## License
 
