@@ -63,13 +63,13 @@
       "name": "Chicago Bulls",
       "wins": 0,
       "losses": 1,
-      "offRating": 82.1,
-      "defRating": 121.6,
-      "netRating": -39.5,
-      "pace": 111.5,
+      "offRating": 82.7,
+      "defRating": 128.4,
+      "netRating": -45.7,
+      "pace": 111.56,
       "offRatingPctl": 3.571428571428571,
-      "defRatingPctl": 21.428571428571427,
-      "netRatingPctl": 7.142857142857142
+      "defRatingPctl": 7.142857142857142,
+      "netRatingPctl": 3.571428571428571
     },
     {
       "id": 1610612742,
@@ -110,7 +110,7 @@
       "netRating": -21.6,
       "pace": 102.0,
       "offRatingPctl": 32.142857142857146,
-      "defRatingPctl": 14.285714285714285,
+      "defRatingPctl": 17.857142857142858,
       "netRatingPctl": 17.857142857142858
     },
     {
@@ -165,7 +165,7 @@
       "defRating": 102.9,
       "netRating": 21.6,
       "pace": 102.0,
-      "offRatingPctl": 89.28571428571429,
+      "offRatingPctl": 85.71428571428571,
       "defRatingPctl": 71.42857142857143,
       "netRatingPctl": 85.71428571428571
     },
@@ -194,7 +194,7 @@
       "netRating": -24.8,
       "pace": 105.5,
       "offRatingPctl": 21.428571428571427,
-      "defRatingPctl": 10.714285714285714,
+      "defRatingPctl": 14.285714285714285,
       "netRatingPctl": 14.285714285714285
     },
     {
@@ -208,7 +208,7 @@
       "netRating": -10.5,
       "pace": 103.5,
       "offRatingPctl": 46.42857142857143,
-      "defRatingPctl": 17.857142857142858,
+      "defRatingPctl": 21.428571428571427,
       "netRatingPctl": 32.142857142857146
     },
     {
@@ -221,7 +221,7 @@
       "defRating": 100.0,
       "netRating": 24.8,
       "pace": 105.5,
-      "offRatingPctl": 92.85714285714286,
+      "offRatingPctl": 89.28571428571429,
       "defRatingPctl": 82.14285714285714,
       "netRatingPctl": 89.28571428571429
     },
@@ -306,8 +306,8 @@
       "netRating": -40.1,
       "pace": 97.0,
       "offRatingPctl": 7.142857142857142,
-      "defRatingPctl": 7.142857142857142,
-      "netRatingPctl": 3.571428571428571
+      "defRatingPctl": 10.714285714285714,
+      "netRatingPctl": 7.142857142857142
     },
     {
       "id": 1610612757,
@@ -319,9 +319,9 @@
       "defRating": 86.5,
       "netRating": 40.1,
       "pace": 97.0,
-      "offRatingPctl": 96.42857142857143,
+      "offRatingPctl": 92.85714285714286,
       "defRatingPctl": 96.42857142857143,
-      "netRatingPctl": 100.0
+      "netRatingPctl": 96.42857142857143
     },
     {
       "id": 1610612758,
@@ -357,13 +357,13 @@
       "name": "Toronto Raptors",
       "wins": 1,
       "losses": 0,
-      "offRating": 121.6,
-      "defRating": 82.1,
-      "netRating": 39.5,
-      "pace": 111.5,
-      "offRatingPctl": 82.14285714285714,
+      "offRating": 128.4,
+      "defRating": 82.7,
+      "netRating": 45.7,
+      "pace": 111.56,
+      "offRatingPctl": 96.42857142857143,
       "defRatingPctl": 100.0,
-      "netRatingPctl": 96.42857142857143
+      "netRatingPctl": 100.0
     },
     {
       "id": 1610612762,
@@ -389,7 +389,7 @@
       "defRating": 112.6,
       "netRating": 10.5,
       "pace": 103.5,
-      "offRatingPctl": 85.71428571428571,
+      "offRatingPctl": 82.14285714285714,
       "defRatingPctl": 57.14285714285714,
       "netRatingPctl": 71.42857142857143
     }
