@@ -11,10 +11,11 @@ Last updated: 2026-10-22.
   (`index.json` `featuredSeason`) and the live baselines.
 - **Live mode:** `LivePoller` no longer freezes the play-by-play (it shared one throttle clock
   with the scoreboard). Still open: `cdn.nba.com` (nba_api live) is 403-blocked on the corporate
-  network, so live mode can only be checked on the hosted app or off-network; a stats-endpoint
-  fallback (ScoreboardV3 + PlayByPlayV3, PBPv3 needs no adapter) and `st.fragment(run_every=)`
-  auto-refresh are the next live improvements. Streamlit Cloud has no `ENVIRONMENT` secret, so
-  live mode is visible there.
+  network; live mode now falls back to stats.nba.com (ScoreboardV3 + PlayByPlayV3, verified on
+  two final games: exact scores) and auto-refreshes with `st.fragment(run_every=30)`. Still to
+  verify on a real game night: the CDN adapter on real live payloads, in-game lag of the stats
+  fallback, and which source Streamlit Cloud can reach. Streamlit Cloud has no `ENVIRONMENT`
+  secret, so live mode is visible there.
 - **Deployed 2026-07-31:** website https://hoops-lab.vercel.app/ (Vercel, root `web/`),
   dashboard https://hoopslab.streamlit.app/. HuggingFace Spaces retired. Single branch `main`.
 - **Worldcup26 UI restyle (Phase A + B): COMPLETE and merged.** Phase A at `ef4c8fc`, Phase B

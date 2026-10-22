@@ -1,3 +1,21 @@
+## Live fallback + auto-refresh, unattended refresh, new-PC setup (2026-10-22)
+
+- Live mode tries the NBA live CDN first and falls back to stats.nba.com (ScoreboardV3 +
+  PlayByPlayV3) with a 10 s, single-attempt client, so a blocked host cannot hang the page.
+  Verified on two final games: parsed scores match the scoreboard exactly.
+- Live mode auto-refreshes with `st.fragment(run_every=LIVE_REFRESH_SECONDS)` (default 30);
+  replay is unchanged. The picker lists in-progress then finished games with their status
+  text; a caption shows the source in use and the last update (ET).
+- `LivePoller.events()` returns stats-contract events in chronological order whatever the
+  source (replaces `play_by_play()`).
+- `featured_season`: a team that has not played yet now counts as 0 games, so "every team"
+  is enforced (found in pre-push review).
+- `refresh_season.py --push` is safe unattended: main only, rebases before downloading and
+  before pushing, full test suite as a gate, commits only the data paths, timestamped log.
+- `scripts/schedule_refresh.ps1` (weekly per-user Scheduled Task) and
+  `scripts/setup_machine.ps1` (one-command bootstrap of a fresh clone: LFS data, venv, deps,
+  DuckDB — no historical re-download).
+
 ## Season 2026-27 + weekly refresh + live fixes (2026-10-22)
 
 - 2026-27 added to `DEMO_SEASONS` and ingested (the season opened 2026-10-20).

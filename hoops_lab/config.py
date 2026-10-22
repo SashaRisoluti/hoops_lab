@@ -21,6 +21,9 @@ NBA_API_TIMEOUT: int = int(os.getenv("NBA_API_TIMEOUT", "30"))
 #: Minimum delay between consecutive nba_api calls, in seconds (rate limit).
 NBA_API_DELAY: float = float(os.getenv("NBA_API_DELAY", "0.6"))
 
+#: Seconds between automatic refreshes of the Live Command Center in live mode.
+LIVE_REFRESH_SECONDS: int = int(os.getenv("LIVE_REFRESH_SECONDS", "30"))
+
 #: Path of the local DuckDB database file.
 DB_PATH: str = os.getenv("DB_PATH", "data/db/hoops_lab.duckdb")
 

@@ -31,8 +31,13 @@ python -m hoops_lab.features.possession         # 4. segment PBP into the posses
 python scripts/extend_seasons.py --seasons 2021-22 2022-23 [--skip-pbp]
 
 # Weekly in-season refresh: download newest DEMO_SEASONS season -> data/processed -> reseed
-# -> web export; --push commits and pushes (both hosts redeploy). Stop the dashboard first.
+# -> web export -> full test suite as gate; --push (main only, rebases first) commits only the
+# data paths and pushes (both hosts redeploy). Stop the dashboard first (DuckDB lock).
 python scripts/refresh_season.py [--push]
+
+# New Windows PC: LFS data + .venv + deps + DuckDB in one go (-ScheduleRefresh also schedules)
+powershell -ExecutionPolicy Bypass -File scripts\setup_machine.ps1 [-ScheduleRefresh]
+scripts\schedule_refresh.ps1 [-Day Monday -Time 09:00] [-Unregister] [-DryRun]   # ONE PC only
 ```
 
 ## Development workflow
@@ -51,7 +56,7 @@ Data flow: `nba_api → data/raw/*.parquet → DuckDB (data/db/hoops_lab.duckdb)
 - **Storage** (`hoops_lab/storage/`): SQL migrations own the empty structural tables; the seeder creates data tables straight from parquet (schema inferred, `season` extracted from the filename) and derives `teams`/`players`/`seasons`/`games` plus the `player_season_full` VIEW (base LEFT JOIN advanced — the base every filter query targets). `ensure_db_ready()` rebuilds everything from parquet (the hosting filesystem is ephemeral) and auto-heals older DBs.
 - **Filter engine** (`hoops_lab/filters/`): `QueryRequest` → parameterized SQL. Injection guard is three-layered (whitelisted base-table registry, regex-validated quoted identifiers, `?` params). Window operators (`top_n`, `percentile_above/below`, `last_n_games`) compile to `QUALIFY`, which DuckDB evaluates **after** WHERE — that is what guarantees the project's core rule: percentiles always refer to the filtered population, never the full universe.
 - **Possession parser** (`hoops_lab/features/possession.py`): state machine over PBPv3 events; points come from offense-team score deltas, so totals are self-validating (the invariant test reconstructs every final score). Events must be re-sorted chronologically (`sort_chronological`) — raw feeds contain out-of-order late-inserted rows.
-- **Live pipeline** (`hoops_lab/live/`): one path for replay and live — events → `GameState` (re-segments possessions with the same historical parser, so live PPP/pace are comparable to baselines by construction) → KPIs → alerts. The live feed is adapted to the stats-format contract by `ingestion/live.adapt_live_actions` (lowercase action types, FT `MISS` marker, coordinate passthrough); it is unit-tested but not yet verified against a real live game.
+- **Live pipeline** (`hoops_lab/live/`): one path for replay and live — events → `GameState` (re-segments possessions with the same historical parser, so live PPP/pace are comparable to baselines by construction) → KPIs → alerts. The live feed is adapted to the stats-format contract by `ingestion/live.adapt_live_actions` (lowercase action types, FT `MISS` marker, coordinate passthrough); it is unit-tested but not yet verified against a real live game. `LivePoller` tries the live CDN first and falls back to stats.nba.com (ScoreboardV3 + PlayByPlayV3 — PBPv3 needs no adapter) with a 10 s, single-attempt client; the page auto-refreshes via `st.fragment(run_every=LIVE_REFRESH_SECONDS)`. The NBA night rolls over at 06:00 ET (`nba_today`). On the corporate network cdn.nba.com is 403-blocked, so only the fallback can be exercised locally.
 - **Models** (`hoops_lab/models/`): interpretable by design (logistic regressions, shrinkage). Pages train them on demand **excluding the selected game** (no leakage). PER/BPM/VORP are deliberately NOT re-implemented — endpoint values in `advanced_player_stats` are used instead.
 - Dashboard pages bootstrap `sys.path` from `__file__` and share `dashboard/components/data_access.py` (cached `get_database()`, team selectors).
 

@@ -87,6 +87,7 @@ All settings are environment variables with safe defaults, read exclusively thro
 | `REFERENCE_TEAM` | `Dallas Mavericks` | Your team for tests and scouting comparisons |
 | `DEMO_SEASONS` | `2021-22,...,2026-27` | Seasons preloaded for the public demo; the newest is the one `refresh_season.py` refreshes |
 | `FEATURED_MIN_TEAM_GAMES` | `10` | Games every team needs before the newest season becomes the default view |
+| `LIVE_REFRESH_SECONDS` | `30` | Seconds between live-mode auto-refreshes |
 
 ### Changing the reference team
 
@@ -193,8 +194,49 @@ python scripts/refresh_season.py --push   # same, then commit + push -> both hos
 
 It downloads the newest season in `DEMO_SEASONS` (league data, per-team lineups and shot
 charts, a play-by-play sample), copies it into `data/processed/`, rebuilds DuckDB from exactly
-what ships, and re-exports `web/public/data/`. A full run makes ~140 throttled API calls (a few
-minutes). Weekly is deliberate: every refresh adds a new version of the season's LFS parquet.
+what ships, re-exports `web/public/data/`, then runs the full test suite (Streamlit AppTests
+included) as a safety gate: if anything fails, nothing is committed and the live dashboard is
+untouched. A full run makes ~140 throttled API calls plus the suite (~15 minutes). Weekly is
+deliberate: every refresh adds a new version of the season's LFS parquet.
+
+### Automatic weekly refresh
+
+`scripts\schedule_refresh.ps1` registers a per-user Windows Scheduled Task, "hoops-lab weekly
+refresh" (Monday 09:00 by default, no admin rights). It runs `scripts\refresh_season.py --push`
+and appends to `data\raw\refresh.log`; if the PC was off it runs at the next logon or wake.
+
+```powershell
+scripts\schedule_refresh.ps1 [-Day Tuesday] [-Time 07:30]   # register or update
+scripts\schedule_refresh.ps1 -DryRun                        # show what would be registered
+scripts\schedule_refresh.ps1 -Unregister                    # remove (do this on the old PC)
+```
+
+A `--push` run works only on `main`, rebases on the latest `main` before downloading and again
+before pushing, and commits only `data/processed` and `web/public/data`. Task Scheduler always
+shows result 0 (the task runs in a hidden console): read the log's last line,
+`finished, exit code N`. **Keep the schedule active on one PC at a time.**
+
+### Working from another PC
+
+Every season's data is versioned in Git LFS (`data/processed`, ~31 MB), so a fresh clone needs
+no historical downloads; only the in-progress season is downloaded by the weekly refresh.
+
+```powershell
+git clone https://github.com/SashaRisoluti/hoops_lab.git
+cd hoops_lab
+powershell -ExecutionPolicy Bypass -File scripts\setup_machine.ps1   # add -ScheduleRefresh to also schedule it
+git push --dry-run   # once: Git Credential Manager stores your GitHub login for unattended pushes
+```
+
+`setup_machine.ps1` is safe to re-run: it checks git and git-lfs, installs the LFS hooks, runs
+`git lfs pull`, verifies the parquet are real files, creates `.venv` (Python 3.11+), installs
+`requirements.txt` plus the dev tools and builds the local DuckDB.
+
+Behind a TLS-inspecting proxy git works but git-lfs fails with `x509: certificate signed by
+unknown authority`; the script detects the leftover pointer files and prints how to export the
+Windows trust store to a PEM bundle for `git config --global http.sslCAInfo` (verification stays
+on). If `git clone` already reported "checkout failed": `set GIT_LFS_SKIP_SMUDGE=1`,
+`git restore --source=HEAD :/`, fix the CA bundle, `git lfs pull`, then a plain `git reset`.
 
 ## License
 

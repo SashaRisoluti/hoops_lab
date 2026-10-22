@@ -30,9 +30,14 @@ def featured_season(db: Database, min_team_games: int = FEATURED_MIN_TEAM_GAMES)
             SELECT season, away_team_id AS team_id FROM games
         ), per_team AS (
             SELECT season, team_id, count(*) AS games FROM team_games GROUP BY season, team_id
+        ), per_season AS (
+            SELECT season, min(games) AS min_games, count(*) AS teams FROM per_team GROUP BY season
         )
-        SELECT season, min(games) AS min_games FROM per_team
-        GROUP BY season ORDER BY season DESC
+        -- A team that has not played yet has no rows: a season with fewer teams than the
+        -- league has (the most seen in any season) counts as 0 games for that team.
+        SELECT season,
+               CASE WHEN teams < max(teams) OVER () THEN 0 ELSE min_games END AS min_games
+        FROM per_season ORDER BY season DESC
         """
     )
     if per_season.empty:

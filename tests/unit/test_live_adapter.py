@@ -2,7 +2,72 @@
 
 from __future__ import annotations
 
-from hoops_lab.ingestion.live import adapt_live_actions
+from datetime import date
+from unittest.mock import MagicMock
+
+import pandas as pd
+from nba_api.stats.endpoints import playbyplayv3, scoreboardv3
+
+from hoops_lab.ingestion.live import (
+    adapt_live_actions,
+    fetch_stats_play_by_play,
+    fetch_stats_scoreboard,
+    game_label,
+    nba_today,
+    pickable_games,
+)
+
+
+def _game(game_id: str, status: int, text: str) -> dict:
+    return {
+        "gameId": game_id,
+        "gameStatus": status,
+        "gameStatusText": text,
+        "awayTeam": {"teamTricode": "CLE", "teamId": 1},
+        "homeTeam": {"teamTricode": "PHI", "teamId": 2},
+    }
+
+
+def test_pickable_games_lists_in_progress_first_then_finals() -> None:
+    games = [
+        _game("final_a", 3, "Final"),
+        _game("scheduled", 1, "7:00 pm ET"),
+        _game("live", 2, "Q3 5:32"),
+        _game("final_b", 3, "Final/OT"),
+    ]
+
+    picked = pickable_games(games)
+
+    assert list(picked) == ["live", "final_a", "final_b"]
+    assert game_label(picked["live"]) == "CLE @ PHI — Q3 5:32"
+
+
+def test_nba_today_is_the_eastern_date_and_late_games_stay_on_their_night() -> None:
+    # 7 pm ET tip = 01:00 in Italy the next day: still the ET date.
+    assert nba_today(pd.Timestamp("2026-10-23 01:00", tz="Europe/Rome")) == date(2026, 10, 22)
+    # A 10:30 pm ET tip is still in progress at 00:30 ET: keep the previous night.
+    assert nba_today(pd.Timestamp("2026-10-23 00:30", tz="America/New_York")) == date(2026, 10, 22)
+    assert nba_today(pd.Timestamp("2026-10-23 12:00", tz="America/New_York")) == date(2026, 10, 23)
+
+
+def test_fetch_stats_scoreboard_queries_the_given_date_through_the_client() -> None:
+    client = MagicMock()
+    client._call.return_value.get_dict.return_value = {"scoreboard": {"games": [{"gameId": "1"}]}}
+
+    games = fetch_stats_scoreboard(client, date(2026, 10, 21))
+
+    client._call.assert_called_once_with(scoreboardv3.ScoreboardV3, game_date="2026-10-21")
+    assert games == [{"gameId": "1"}]
+
+
+def test_fetch_stats_play_by_play_uses_pbpv3_through_the_client() -> None:
+    client = MagicMock()
+    client.fetch_df.return_value = pd.DataFrame({"gameId": ["1"]})
+
+    events = fetch_stats_play_by_play(client, "1")
+
+    client.fetch_df.assert_called_once_with(playbyplayv3.PlayByPlayV3, game_id="1")
+    assert events["gameId"].tolist() == ["1"]
 
 
 def test_adapt_live_actions_maps_to_stats_format() -> None:

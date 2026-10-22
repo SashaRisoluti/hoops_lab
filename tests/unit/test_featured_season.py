@@ -33,6 +33,18 @@ def test_the_previous_season_is_featured_while_any_team_is_below_the_threshold()
     assert featured_season(db, min_team_games=10) == "2025-26"
 
 
+def test_a_team_that_has_not_played_yet_keeps_the_season_unfeatured() -> None:
+    pairs = ((1, 2), (3, 4))
+    rows = [{"season": "2025-26", "home_team_id": h, "away_team_id": a} for h, a in pairs] * 82
+    # 2026-27: teams 1, 2 and 3 have 12+ games each, team 4 has not played at all.
+    rows += [{"season": "2026-27", "home_team_id": 1, "away_team_id": 2}] * 12
+    rows += [{"season": "2026-27", "home_team_id": 3, "away_team_id": 2}] * 12
+    db = Database(path=":memory:")
+    db.connect().register("games", pd.DataFrame(rows))
+
+    assert featured_season(db, min_team_games=10) == "2025-26"
+
+
 def test_the_newest_season_is_the_fallback_when_none_qualifies() -> None:
     db = _db({"2026-27": (2, 3)})
     assert featured_season(db, min_team_games=10) == "2026-27"
