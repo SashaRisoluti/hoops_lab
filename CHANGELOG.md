@@ -1,3 +1,23 @@
+## Hosted-app hardening after the 2026-10-22 outage
+
+- **Outage:** Streamlit Cloud (Python 3.14) resolved `duckdb>=1.0` to DuckDB 2.0.0. Its
+  connections refuse new work while an `execute()` result is pending, so the boot-time seed
+  died with `ResourceInUseException`. Every local test was green on 1.5.5.
+  `requirements.txt` is now an exact lock of the tested set (`pyproject.toml` keeps the
+  floors).
+- The aborted 2.0 boot left a database file 1.5 cannot read. `Database.connect()` now
+  replaces a DuckDB file it cannot open (the file is a cache of the parquet). Lock conflicts
+  and read-only opens still raise.
+- **Data refreshes now reach the hosted dashboard.** A data push updates the hosted repo in
+  place, without a restart. The seed stores a parquet fingerprint (`seed_source`):
+  `ensure_db_ready()` reseeds when it no longer matches, and `get_database()` is cached per
+  fingerprint.
+- The default seed source is the versioned `data/processed`. `data/raw` is only a staging
+  area: after a refresh on a new PC it holds the current season alone.
+- Verified on Streamlit Cloud: neither NBA source is reachable from there. `cdn.nba.com`
+  answers 403 and `stats.nba.com` times out. Hosted live mode degrades to a warning; live data
+  works locally.
+
 ## Live fallback + auto-refresh, unattended refresh, new-PC setup (2026-10-22)
 
 - Live mode tries the NBA live CDN first and falls back to stats.nba.com (ScoreboardV3 +

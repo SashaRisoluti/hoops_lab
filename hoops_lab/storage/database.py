@@ -130,13 +130,15 @@ class Database:
 
         Called at dashboard startup: the hosted demo has an ephemeral
         filesystem, so the DuckDB file may need to be rebuilt from the
-        versioned Parquet files on every boot.
+        versioned Parquet files on every boot. It is also rebuilt when the
+        parquet changed since the last seed (a data push updates the hosted
+        repo in place, without a restart).
 
         Parameters
         ----------
         raw_dir:
-            Directory with the raw Parquet files (default: the ingestion
-            layer's ``RAW_DATA_DIR``).
+            Parquet source; see ``seed.source_dir`` (default: the versioned
+            ``data/processed``).
         force:
             Reseed even if the database already contains data.
 
@@ -144,10 +146,22 @@ class Database:
         -------
         True if a (re)seed was performed, False if the DB was already ready.
         """
-        from hoops_lab.storage.seed import seed_database  # local import: avoid cycle
+        from hoops_lab.storage.seed import (  # local import: avoid cycle
+            seed_database,
+            source_dir,
+            source_fingerprint,
+        )
 
         self.run_migrations()
         ready = self.table_rows("games") > 0 and all(self.has_table(t) for t in DERIVED_TABLES)
+        # Hosts update the repo in place after a data push without restarting the app:
+        # a database built from other parquet than the current ones is stale.
+        fingerprint = source_fingerprint(source_dir(raw_dir, fallback_dir))
+        ready = (
+            ready
+            and self.has_table("seed_source")
+            and (self.execute("SELECT fingerprint FROM seed_source").fetchone() == (fingerprint,))
+        )
         if not force and ready:
             return False
         seed_database(self, raw_dir=raw_dir, fallback_dir=fallback_dir)

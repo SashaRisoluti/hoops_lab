@@ -91,7 +91,7 @@ if ($LASTEXITCODE -ne 0) {
     Stop-Setup 'pip install failed. Behind a TLS proxy: .venv\Scripts\python.exe -m pip config set global.cert <CA bundle .pem>'
 }
 
-Write-Step 'Building the local DuckDB (data\raw if it has parquet, else data\processed)'
+Write-Step 'Building the local DuckDB from data\processed'
 & $python -m hoops_lab.storage.seed
 if ($LASTEXITCODE -ne 0) {
     Stop-Setup 'Database build failed. Is the dashboard running? It locks data\db\hoops_lab.duckdb.'

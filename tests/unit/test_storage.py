@@ -231,3 +231,21 @@ def test_an_unreadable_database_file_is_rebuilt_not_fatal(tmp_path) -> None:
 
     assert db.ensure_db_ready(raw_dir=raw_dir) is True
     assert db.table_rows("box_scores_team") == 4
+
+
+def test_ensure_db_ready_reseeds_when_the_parquet_change(tmp_path) -> None:
+    """Streamlit Cloud updates the repo in place after a data push, without restarting.
+
+    The database must notice the new parquet and rebuild, or the weekly refresh would
+    never reach the hosted dashboard.
+    """
+    db, raw_dir = _make_db(tmp_path)
+    assert db.ensure_db_ready(raw_dir=raw_dir) is True
+
+    team_box = pd.read_parquet(raw_dir / "team_box_2023-24.parquet")
+    team_box["GAME_ID"] = team_box["GAME_ID"].str.replace("00223", "00224")
+    team_box.to_parquet(raw_dir / "team_box_2024-25.parquet", index=False)
+
+    assert db.ensure_db_ready(raw_dir=raw_dir) is True
+    assert "2024-25" in db.query_df("SELECT season FROM seasons")["season"].tolist()
+    assert db.ensure_db_ready(raw_dir=raw_dir) is False  # stable once rebuilt

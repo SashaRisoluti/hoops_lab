@@ -12,6 +12,7 @@ Run as a module to (re)build the database from ``data/raw``::
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from pathlib import Path
 
@@ -195,6 +196,33 @@ def derive_core_tables(db: Database) -> dict[str, int]:
     return counts
 
 
+def source_dir(raw_dir: str | Path | None = None, fallback_dir: str | Path | None = None) -> Path:
+    """The parquet directory a seed reads.
+
+    By default the versioned ``data/processed`` (exactly what the hosts ship) when it
+    holds parquet, else ``data/raw`` (a from-scratch download). ``data/raw`` is only a
+    staging area: on a PC that refreshed the current season it holds that season alone.
+    An explicit ``raw_dir`` is used as given, falling back to ``fallback_dir`` when empty.
+    """
+    fallback_path = Path(fallback_dir) if fallback_dir is not None else PROCESSED_DATA_DIR
+    if raw_dir is None:
+        return fallback_path if any(fallback_path.glob("*.parquet")) else RAW_DATA_DIR
+    raw_path = Path(raw_dir)
+    if not any(raw_path.glob("*.parquet")) and any(fallback_path.glob("*.parquet")):
+        logger.info("No parquet in %s — falling back to %s", raw_path, fallback_path)
+        return fallback_path
+    return raw_path
+
+
+def source_fingerprint(directory: str | Path) -> str:
+    """Cheap identity of a parquet directory (names, sizes, mtimes), to detect new data."""
+    digest = hashlib.sha256()
+    for path in sorted(Path(directory).glob("*.parquet")):
+        stat = path.stat()
+        digest.update(f"{path.name}:{stat.st_size}:{stat.st_mtime_ns};".encode())
+    return digest.hexdigest()
+
+
 def seed_database(
     db: Database,
     raw_dir: str | Path | None = None,
@@ -206,23 +234,15 @@ def seed_database(
     ----------
     db:
         Target database (migrations are expected to have run already).
-    raw_dir:
-        Directory with the raw Parquet files (default: ``RAW_DATA_DIR``).
-    fallback_dir:
-        Used when ``raw_dir`` holds no parquet at all — on the hosted demo the raw
-        downloads are gitignored and the versioned demo parquet live in
-        ``data/processed`` (default).
+    raw_dir, fallback_dir:
+        Where the parquet come from; see :func:`source_dir` (default: the versioned
+        ``data/processed``, or ``data/raw`` when nothing is versioned yet).
 
     Returns
     -------
     Mapping of table name to row count for everything that was (re)built.
     """
-    raw_path = Path(raw_dir) if raw_dir is not None else RAW_DATA_DIR
-    fallback_path = Path(fallback_dir) if fallback_dir is not None else PROCESSED_DATA_DIR
-    if not any(raw_path.glob("*.parquet")) and any(fallback_path.glob("*.parquet")):
-        logger.info("No parquet in %s — falling back to %s", raw_path, fallback_path)
-        raw_path = fallback_path
-
+    raw_path = source_dir(raw_dir, fallback_dir)
     counts = load_parquet_tables(db, raw_path)
     counts.update(derive_core_tables(db))
 
@@ -231,6 +251,12 @@ def seed_database(
         db.connect().register("possessions_src", possessions)
         db.execute("CREATE OR REPLACE TABLE possessions AS SELECT * FROM possessions_src")
         counts["possessions"] = db.table_rows("possessions")
+
+    # Last, so an interrupted seed never looks complete to ensure_db_ready().
+    db.execute(
+        "CREATE OR REPLACE TABLE seed_source AS SELECT ? AS fingerprint",
+        [source_fingerprint(raw_path)],
+    )
 
     logger.info("Seed complete: %d tables", len(counts))
     return counts
