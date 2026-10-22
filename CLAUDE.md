@@ -85,5 +85,9 @@ Data flow: `nba_api → data/raw/*.parquet → DuckDB (data/db/hoops_lab.duckdb)
   floor — DuckDB 2.0 took the hosted app down on 2026-10-22 with every local test green).
   `pyproject.toml` keeps the floors. Bump a pin only after the suite passes with it; any new
   dependency goes in both files.
+- **Streamlit Cloud applies pushes in place** and reloads only `dashboard/` modules: after any
+  push that changes `hoops_lab/` code, Reboot the app (Manage app → ⋮ → Reboot), or new pages
+  import names the stale library modules lack (`ImportError`). Data-only pushes need no reboot
+  (fingerprint reseed). Verify the hosted app by page text/screenshot after every push.
 - Session continuity: resume point in `docs/superpowers/RESUME.md`; SDD task ledger in
   `.superpowers/sdd/progress.md` (gitignored).

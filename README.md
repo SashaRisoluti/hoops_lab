@@ -181,6 +181,16 @@ two ever drift apart.
 - DuckDB is rebuilt at boot from the versioned demo parquet in `data/processed/`, because the
   hosting filesystem is ephemeral. Set `ENVIRONMENT=production` to disable live-API features.
 - The free tier sleeps when idle, so the first visit after a quiet period takes ~30s to wake.
+- A push is applied **in place**, without restarting the app. Data-only pushes (the weekly
+  refresh) are picked up automatically, because the database is keyed on a parquet
+  fingerprint. After a push that changes Python code under `hoops_lab/`, **reboot the app**
+  (Manage app → ⋮ → Reboot app). Streamlit only reloads modules under `dashboard/`, so the
+  app would otherwise mix new pages with old library code (`ImportError`). Do the same if
+  the log shows "Updating the app files has failed". That is a git-lfs hiccup during the
+  in-place pull, and a reboot re-clones.
+- NBA endpoints are unreachable from Streamlit Cloud: `cdn.nba.com` answers 403 and
+  `stats.nba.com` times out. Live mode therefore shows a warning there and works when the
+  dashboard runs locally.
 
 ### Refreshing the current season
 
