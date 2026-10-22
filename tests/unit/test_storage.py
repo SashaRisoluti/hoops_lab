@@ -213,3 +213,21 @@ def test_migrations_create_structural_tables_and_are_idempotent(tmp_path) -> Non
     assert second == []  # nothing to re-apply
     for table in ("possessions", "player_percentiles", "live_game_events", "alerts"):
         assert db.has_table(table)
+
+
+def test_an_unreadable_database_file_is_rebuilt_not_fatal(tmp_path) -> None:
+    """The DB is a cache of the parquet: a file from another DuckDB version is replaced.
+
+    Streamlit Cloud once booted on DuckDB 2.0, which left a file DuckDB 1.5 cannot read
+    ("created with a newer version of DuckDB"); the app must rebuild, not crash.
+    """
+    raw_dir = tmp_path / "raw"
+    _write_fixture_parquets(raw_dir)
+    db_path = tmp_path / "db" / "stale.duckdb"
+    db_path.parent.mkdir(parents=True)
+    db_path.write_bytes(b"written by some other DuckDB" * 200)
+
+    db = Database(path=db_path)
+
+    assert db.ensure_db_ready(raw_dir=raw_dir) is True
+    assert db.table_rows("box_scores_team") == 4

@@ -40,7 +40,18 @@ class Database:
         if self._conn is None:
             if self.path != ":memory:":
                 Path(self.path).parent.mkdir(parents=True, exist_ok=True)
-            self._conn = duckdb.connect(self.path, read_only=self.read_only)
+            try:
+                self._conn = duckdb.connect(self.path, read_only=self.read_only)
+            except duckdb.IOException as exc:
+                # The file is a cache rebuilt from parquet by ensure_db_ready(): one this
+                # DuckDB cannot read (written by another version, truncated) is replaced.
+                # A lock held by another process is a real conflict and still raises.
+                if self.read_only or self.path == ":memory:" or "lock" in str(exc).lower():
+                    raise
+                logger.warning("Unreadable DuckDB file %s, rebuilding it: %s", self.path, exc)
+                for stale in (Path(self.path), Path(f"{self.path}.wal")):
+                    stale.unlink(missing_ok=True)
+                self._conn = duckdb.connect(self.path)
             logger.info("Connected to DuckDB at %s", self.path)
         return self._conn
 
