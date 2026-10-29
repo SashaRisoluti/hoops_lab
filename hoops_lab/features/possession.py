@@ -12,11 +12,16 @@ score-reconstruction invariant in the integration suite):
 * made final free throw ("N of N", neither technical nor flagrant);
 * period end.
 
-Points are the offense team's score delta between possession start and end
-(``scoreHome``/``scoreAway`` forward-filled; the home side is identified via
-the ``location`` column). KNOWN LIMIT: technical free throws made by the
-*defending* team are not attributed to any possession (rare; bounded by the
-integration test tolerance).
+Points are the offense team's points between possession start and end, summed
+from its own scoring events (made field goals at ``shotValue``, made free
+throws); the home side is identified via the ``location`` column. The feed's
+``scoreHome``/``scoreAway`` snapshots are deliberately NOT used: a scorer
+correction is entered later carrying the scoreboard of its insertion time, so
+once sorted back to its real time the snapshot series runs backwards. Summed
+events reproduce the box score exactly on every sampled game; snapshots did not.
+KNOWN LIMIT: points scored by the *defending* team inside a possession
+(technical free throws) are not attributed to any possession (rare; bounded by
+the integration test tolerance).
 
 Run as a module to (re)build the ``possessions`` table from the ingested
 play-by-play sample::
@@ -74,6 +79,15 @@ def sort_chronological(game: pd.DataFrame) -> pd.DataFrame:
         ["period", "_clock_sec", "actionNumber"], ascending=[True, False, True]
     )
     return ordered.drop(columns="_clock_sec").reset_index(drop=True)
+
+
+def _event_points(game: pd.DataFrame) -> pd.Series:
+    """Points scored on each event: made field goals at ``shotValue``, made free throws 1."""
+    made_fg = game["actionType"].eq("Made Shot")
+    missed = game["description"].astype(str).str.contains("MISS")
+    made_ft = game["actionType"].eq("Free Throw") & ~missed
+    shot_value = pd.to_numeric(game["shotValue"], errors="coerce").fillna(0)
+    return shot_value.where(made_fg, 0) + made_ft.astype(int)
 
 
 def _and_one_pending(game: pd.DataFrame, index: int, team: int) -> bool:
@@ -186,7 +200,7 @@ def build_possessions(pbp: pd.DataFrame) -> pd.DataFrame:
     pbp:
         PlayByPlayV3 rows (one or many games); required columns: gameId,
         actionNumber, period, clock, teamId, location, actionType, subType,
-        description, scoreHome, scoreAway.
+        description, shotValue.
 
     Returns
     -------
@@ -204,8 +218,13 @@ def build_possessions(pbp: pd.DataFrame) -> pd.DataFrame:
             continue
         home_id = int(home_rows.iloc[0]["teamId"])
 
-        home_score = pd.to_numeric(game["scoreHome"], errors="coerce").ffill().fillna(0)
-        away_score = pd.to_numeric(game["scoreAway"], errors="coerce").ffill().fillna(0)
+        # Running totals from the scoring events, not the feed's scoreHome/scoreAway:
+        # a scorer correction carries the scoreboard of its insertion time, so once sorted
+        # back to its real time that snapshot is non-monotonic (0022600009 was off by 7).
+        team = game["teamId"].fillna(0).astype(int)
+        points = _event_points(game)
+        home_score = points.where(team == home_id, 0).cumsum()
+        away_score = points.where((team > 0) & (team != home_id), 0).cumsum()
 
         results.extend(_segment_game(str(game_id), game, home_id, home_score, away_score))
 

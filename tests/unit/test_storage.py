@@ -78,6 +78,7 @@ def _write_fixture_parquets(raw_dir: Path) -> None:
             "description": ["", "Shot", ""],
             "scoreHome": ["", "2", ""],
             "scoreAway": ["", "0", ""],
+            "shotValue": [0, 2, 0],
         }
     )
     pbp.to_parquet(raw_dir / "play_by_play_sample_2023-24.parquet", index=False)
