@@ -55,24 +55,83 @@ hoops-lab/
 └── tests/                # unit / integration / fixtures
 ```
 
-## Quickstart
+## Quickstart: run your own copy
+
+You need Git, [Git LFS](https://git-lfs.com) and Python 3.12+ (3.11 also works). Every season
+from 2021-22 onward comes with the clone through Git LFS (about 31 MB), so there is no history
+to download. Only the season in progress is refreshed.
+
+**1. Clone and set up**
+
+Windows, one command after cloning (safe to re-run):
 
 ```powershell
-git clone <repo-url>
-cd hoops-lab
-python -m venv .venv
-.venv\Scripts\activate        # Windows  (macOS/Linux: source .venv/bin/activate)
-pip install -e ".[dev]"
-copy .env.example .env        # macOS/Linux: cp .env.example .env
-
-# Smoke test — verifies nba_api connectivity (downloads 2023-24 player stats)
-python -m hoops_lab.ingestion.nba_api_client
-
-# Run the dashboard
-python -m streamlit run dashboard/app.py
+git lfs install
+git clone https://github.com/SashaRisoluti/hoops_lab.git
+cd hoops_lab
+powershell -ExecutionPolicy Bypass -File scripts\setup_machine.ps1
 ```
 
-> Run commands from the repo root and prefer `python -m streamlit ...` so the `hoops_lab` package is always importable.
+macOS / Linux:
+
+```bash
+git lfs install
+git clone https://github.com/SashaRisoluti/hoops_lab.git
+cd hoops_lab
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt -e ".[dev]"
+python -m hoops_lab.storage.seed          # builds the local DuckDB from data/processed
+```
+
+**2. Run the dashboard**
+
+```bash
+python -m streamlit run dashboard/app.py   # Windows: .venv\Scripts\python.exe -m streamlit run dashboard/app.py
+```
+
+**3. Update the current season (by hand)**
+
+```bash
+python scripts/refresh_season.py
+```
+
+The script:
+- downloads the season in progress (about 140 throttled calls to stats.nba.com, a few minutes);
+- rebuilds the database and re-exports the website data;
+- runs the test suite as a safety gate.
+
+Stop the dashboard first, because it locks the database file. Run it from a home or office
+connection: stats.nba.com blocks cloud servers and CI runners.
+
+**4. Update every night, automatically**
+
+US games end around 05:00 UTC, so any local time after about 07:00 UTC works.
+
+Windows (Task Scheduler; no admin rights; if the PC was off, it runs at the next login):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\schedule_refresh.ps1 -Daily -LocalOnly -Time 09:00
+powershell -ExecutionPolicy Bypass -File scripts\schedule_refresh.ps1 -Unregister   # to stop it
+```
+
+macOS / Linux (cron). Run `crontab -e` and add one line, using your clone's path:
+
+```cron
+0 9 * * * cd /path/to/hoops_lab && .venv/bin/python scripts/refresh_season.py >> data/raw/refresh.log 2>&1
+```
+
+The log ends with `finished, exit code N`. `-LocalOnly` (and the cron line, which has no
+`--push`) only updates your copy: nothing is committed or pushed. The refresh rewrites
+`data/processed` and `web/public/data` in your clone, so discard those changes before pulling
+new code:
+
+```bash
+git restore data/processed web/public/data && git pull   # the next refresh regenerates them
+```
+
+> Run commands from the repo root, and launch Streamlit as `python -m streamlit ...` so the
+> `hoops_lab` package is always importable. The repo owner publishes the nightly data with
+> `--push`; see [Automatic refresh](#automatic-refresh-daily-or-weekly).
 
 ## Configuration
 
@@ -235,21 +294,24 @@ before pushing, and commits only `data/processed` and `web/public/data`. Task Sc
 shows result 0 (the task runs in a hidden console): read the log's last line,
 `finished, exit code N`. **Keep the schedule active on one PC at a time.**
 
-### Working from another PC
+### Working from another PC (repo owner)
 
-Every season's data is versioned in Git LFS (`data/processed`, ~31 MB), so a fresh clone needs
-no historical downloads; only the in-progress season is downloaded by the weekly refresh.
+Set the new PC up as in the [Quickstart](#quickstart-run-your-own-copy), then enable
+unattended publishing on it:
 
 ```powershell
-git clone https://github.com/SashaRisoluti/hoops_lab.git
-cd hoops_lab
-powershell -ExecutionPolicy Bypass -File scripts\setup_machine.ps1   # add -ScheduleRefresh to also schedule it
 git push --dry-run   # once: Git Credential Manager stores your GitHub login for unattended pushes
+powershell -ExecutionPolicy Bypass -File scripts\schedule_refresh.ps1 -Daily   # with --push
 ```
 
-`setup_machine.ps1` is safe to re-run: it checks git and git-lfs, installs the LFS hooks, runs
-`git lfs pull`, verifies the parquet are real files, creates `.venv` (Python 3.11+), installs
-`requirements.txt` plus the dev tools and builds the local DuckDB.
+Run `scripts\schedule_refresh.ps1 -Unregister` on the old PC, because only one PC should
+publish.
+
+`setup_machine.ps1` is safe to re-run. It:
+- checks git and git-lfs, installs the LFS hooks and runs `git lfs pull`;
+- verifies the parquet are real files, not LFS pointers;
+- creates `.venv` (Python 3.11+) and installs `requirements.txt` plus the dev tools;
+- builds the local DuckDB.
 
 Behind a TLS-inspecting proxy git works but git-lfs fails with `x509: certificate signed by
 unknown authority`; the script detects the leftover pointer files and prints how to export the

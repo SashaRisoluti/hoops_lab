@@ -1,3 +1,16 @@
+## README quickstart for anyone cloning the repo (2026-10-29)
+
+- The Quickstart is rewritten for anyone running their own copy. It covers Windows and
+  macOS/Linux:
+  1. clone with Git LFS, so every season arrives with the clone;
+  2. set up;
+  3. run the dashboard;
+  4. refresh the current season by hand;
+  5. refresh it every night (Task Scheduler or cron).
+- `schedule_refresh.ps1 -LocalOnly` refreshes a clone's data and dashboard without
+  committing or pushing, for people without write access. Pushing stays the default for the
+  repo owner.
+
 ## Possession points from events; daily refresh (2026-10-29)
 
 - The weekly refresh of 2026-10-26 was stopped by its safety gate: the score-reconstruction

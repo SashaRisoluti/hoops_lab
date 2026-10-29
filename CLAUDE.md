@@ -38,6 +38,7 @@ python scripts/refresh_season.py [--push]
 # New Windows PC: LFS data + .venv + deps + DuckDB in one go (-ScheduleRefresh also schedules)
 powershell -ExecutionPolicy Bypass -File scripts\setup_machine.ps1 [-ScheduleRefresh]
 scripts\schedule_refresh.ps1 [-Daily | -Day Monday] [-Time 09:00] [-Unregister] [-DryRun]  # ONE PC
+scripts\schedule_refresh.ps1 -Daily -LocalOnly   # other people's clones: refresh locally, no push
 ```
 
 ## Development workflow

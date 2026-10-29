@@ -8,7 +8,7 @@
 
         .venv\Scripts\python.exe scripts\refresh_season.py --push
 
-    appending stdout and stderr to data\raw\refresh.log (gitignored). It runs in a hidden
+    (without --push when -LocalOnly), appending stdout and stderr to data\raw\refresh.log (gitignored). It runs in a hidden
     console (conhost --headless), so Task Scheduler's "Last Run Result" is always 0: the
     log's last line ("finished, exit code N") is the real result.
 
@@ -29,6 +29,10 @@
     Run every day instead: each morning publishes the previous night's games. A day without
     games changes no data and pushes nothing.
 
+.PARAMETER LocalOnly
+    Refresh this clone's data and local dashboard only, never commit or push: for anyone
+    running their own copy without write access to the repo.
+
 .PARAMETER Time
     Local start time as HH:mm (default 09:00).
 
@@ -43,11 +47,15 @@
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File scripts\schedule_refresh.ps1 -Daily -Time 09:00
+
+.EXAMPLE
+    powershell -ExecutionPolicy Bypass -File scripts\schedule_refresh.ps1 -Daily -LocalOnly
 #>
 [CmdletBinding()]
 param(
     [System.DayOfWeek]$Day = 'Monday',
     [switch]$Daily,
+    [switch]$LocalOnly,
     [ValidatePattern('^\d{1,2}:\d{2}$')][string]$Time = '09:00',
     [switch]$Unregister,
     [switch]$DryRun
@@ -81,7 +89,8 @@ if (-not (Test-Path (Join-Path $Root '.venv\Scripts\python.exe'))) {
 }
 
 # Hidden console: no window pops up mid-refresh (or gets closed by mistake).
-$command = '.venv\Scripts\python.exe scripts\refresh_season.py --push >> data\raw\refresh.log 2>&1'
+$push = if ($LocalOnly) { '' } else { ' --push' }
+$command = ".venv\Scripts\python.exe scripts\refresh_season.py$push >> data\raw\refresh.log 2>&1"
 $actionArgs = @{
     Execute          = Join-Path $env:SystemRoot 'System32\conhost.exe'
     Argument         = "--headless cmd.exe /d /s /c `"$command`""
