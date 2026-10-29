@@ -32,16 +32,19 @@ def assisted_summary(db: Database, shots: pd.DataFrame) -> dict | None:
     if shots.empty or not db.has_table("play_by_play"):
         return None
 
-    con = db.connect()
-    con.register("shots_selection", shots[["GAME_ID", "GAME_EVENT_ID", "SHOT_MADE_FLAG"]])
-    matched = db.query_df(
-        """
-        SELECT s.SHOT_MADE_FLAG, p.gameId, p.description
-        FROM shots_selection AS s
-        JOIN play_by_play AS p
-          ON p.gameId = s.GAME_ID AND p.actionNumber = s.GAME_EVENT_ID
-        """
-    )
+    # Under the DB lock: the registered name is shared by every dashboard session.
+    with db.lock:
+        db.connect().register(
+            "shots_selection", shots[["GAME_ID", "GAME_EVENT_ID", "SHOT_MADE_FLAG"]]
+        )
+        matched = db.query_df(
+            """
+            SELECT s.SHOT_MADE_FLAG, p.gameId, p.description
+            FROM shots_selection AS s
+            JOIN play_by_play AS p
+              ON p.gameId = s.GAME_ID AND p.actionNumber = s.GAME_EVENT_ID
+            """
+        )
     if matched.empty:
         return None
 

@@ -250,3 +250,26 @@ def test_ensure_db_ready_reseeds_when_the_parquet_change(tmp_path) -> None:
     assert db.ensure_db_ready(raw_dir=raw_dir) is True
     assert "2024-25" in db.query_df("SELECT season FROM seasons")["season"].tolist()
     assert db.ensure_db_ready(raw_dir=raw_dir) is False  # stable once rebuilt
+
+
+def test_one_database_is_safe_to_share_between_threads() -> None:
+    """Streamlit runs every session (and interrupted rerun) in its own thread over one
+    cached Database: a bare DuckDB connection then hands some threads a None result."""
+    import threading
+
+    db = Database(path=":memory:")
+    db.execute("CREATE TABLE t AS SELECT range AS x FROM range(100000)")
+    results: list[object] = []
+
+    def worker() -> None:
+        for _ in range(100):
+            results.append(db.query_df("SELECT count(*) AS n FROM t WHERE x % 7 = ?", [3]))
+
+    threads = [threading.Thread(target=worker) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert len(results) == 400
+    assert all(isinstance(r, pd.DataFrame) and r["n"].iloc[0] == 14286 for r in results)
