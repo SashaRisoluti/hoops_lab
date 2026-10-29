@@ -10,6 +10,13 @@
 - `schedule_refresh.ps1 -Daily`: refresh every morning after the NBA night. The task is renamed
   "hoops-lab data refresh"; registering it removes the legacy "hoops-lab weekly refresh". The
   README documents the Git LFS cost of a daily cadence.
+- **Shared connection race (hosted app).** Overview on 2026-27 crashed with "'NoneType' object
+  is not subscriptable", and the log also showed `KeyError: 'game_id'`. The dashboard shares
+  one cached `Database` between all sessions, each running in its own thread, and a DuckDB
+  connection is not thread-safe. Locally, 170 of 800 threaded queries returned None. Every
+  use of the connection now holds a re-entrant lock. `shot_context` registers its selection
+  and queries it atomically, because that registered name is shared by every session. All 10
+  pages were checked with 2026-27 selected: they pass locally and on Streamlit Cloud.
 
 ## Hosted-app hardening after the 2026-10-22 outage
 
