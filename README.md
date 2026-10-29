@@ -209,17 +209,26 @@ included) as a safety gate: if anything fails, nothing is committed and the live
 untouched. A full run makes ~140 throttled API calls plus the suite (~15 minutes). Weekly is
 deliberate: every refresh adds a new version of the season's LFS parquet.
 
-### Automatic weekly refresh
+### Automatic refresh (daily or weekly)
 
-`scripts\schedule_refresh.ps1` registers a per-user Windows Scheduled Task, "hoops-lab weekly
-refresh" (Monday 09:00 by default, no admin rights). It runs `scripts\refresh_season.py --push`
-and appends to `data\raw\refresh.log`; if the PC was off it runs at the next logon or wake.
+`scripts\schedule_refresh.ps1` registers a per-user Windows Scheduled Task, "hoops-lab data
+refresh" (no admin rights). It runs `scripts\refresh_season.py --push` and appends to
+`data\raw\refresh.log`. If the PC was off at the scheduled time, the task runs at the next
+logon or wake. With `-Daily`, every morning publishes the previous night's games. US games end
+by about 07:00 Italian time, so the default 09:00 is safe. A day without games changes no data
+and pushes nothing.
 
 ```powershell
-scripts\schedule_refresh.ps1 [-Day Tuesday] [-Time 07:30]   # register or update
+scripts\schedule_refresh.ps1 -Daily [-Time 09:00]           # every morning
+scripts\schedule_refresh.ps1 [-Day Tuesday] [-Time 07:30]   # weekly instead
 scripts\schedule_refresh.ps1 -DryRun                        # show what would be registered
 scripts\schedule_refresh.ps1 -Unregister                    # remove (do this on the old PC)
 ```
+
+**Git LFS cost:** LFS keeps every version of every parquet file. A daily refresh adds roughly
+1–5 MB per day as the season grows (about 0.5 GB per season), against about 70 MB with weekly
+refreshes. Check the LFS usage under GitHub → Settings → Billing before relying on daily
+refreshes for a whole season.
 
 A `--push` run works only on `main`, rebases on the latest `main` before downloading and again
 before pushing, and commits only `data/processed` and `web/public/data`. Task Scheduler always

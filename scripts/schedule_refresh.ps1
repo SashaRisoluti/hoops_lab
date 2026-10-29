@@ -1,9 +1,10 @@
 <#
 .SYNOPSIS
-    Registers (or removes) the weekly hoops-lab data refresh as a per-user Scheduled Task.
+    Registers (or removes) the hoops-lab data refresh as a per-user Scheduled Task.
 
 .DESCRIPTION
-    The task "hoops-lab weekly refresh" runs, from the repo root that contains this script:
+    The task "hoops-lab data refresh" (weekly by default; -Daily for every morning after the
+    NBA night) runs, from the repo root that contains this script:
 
         .venv\Scripts\python.exe scripts\refresh_season.py --push
 
@@ -22,7 +23,11 @@
     season race each other and one of the two runs fails on a rebase conflict.
 
 .PARAMETER Day
-    Day of the week (default Monday).
+    Day of the week for the weekly schedule (default Monday).
+
+.PARAMETER Daily
+    Run every day instead: each morning publishes the previous night's games. A day without
+    games changes no data and pushes nothing.
 
 .PARAMETER Time
     Local start time as HH:mm (default 09:00).
@@ -35,18 +40,29 @@
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File scripts\schedule_refresh.ps1 -Day Tuesday -Time 07:30
+
+.EXAMPLE
+    powershell -ExecutionPolicy Bypass -File scripts\schedule_refresh.ps1 -Daily -Time 09:00
 #>
 [CmdletBinding()]
 param(
     [System.DayOfWeek]$Day = 'Monday',
+    [switch]$Daily,
     [ValidatePattern('^\d{1,2}:\d{2}$')][string]$Time = '09:00',
     [switch]$Unregister,
     [switch]$DryRun
 )
 
 $ErrorActionPreference = 'Stop'
-$TaskName = 'hoops-lab weekly refresh'
+$TaskName = 'hoops-lab data refresh'
+$LegacyTaskName = 'hoops-lab weekly refresh'  # the name before -Daily existed
 $Root = Split-Path -Parent $PSScriptRoot
+
+# Drop the task registered under the old name, so one PC never runs two schedules.
+if (-not $DryRun -and (Get-ScheduledTask -TaskName $LegacyTaskName -ErrorAction SilentlyContinue)) {
+    Unregister-ScheduledTask -TaskName $LegacyTaskName -Confirm:$false
+    Write-Host "Removed the legacy task '$LegacyTaskName'."
+}
 
 if ($Unregister) {
     if (-not (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)) {
@@ -79,13 +95,19 @@ $settingsArgs = @{
     AllowStartIfOnBatteries     = $true  # laptops: otherwise the run is silently skipped
     DontStopIfGoingOnBatteries  = $true
 }
-$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $Day -At $Time
+if ($Daily) {
+    $trigger = New-ScheduledTaskTrigger -Daily -At $Time
+    $when = "every day at $Time"
+} else {
+    $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $Day -At $Time
+    $when = "every $Day at $Time"
+}
 # -At yields a UTC ("...Z") boundary that drifts an hour at DST; local time follows the clock.
 $trigger.StartBoundary = ([datetime]$Time).ToString('s')
 $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 $task = @{
     TaskName    = $TaskName
-    Description = "Weekly hoops-lab data refresh (log: $Root\data\raw\refresh.log)"
+    Description = "hoops-lab data refresh, $when (log: $Root\data\raw\refresh.log)"
     Action      = New-ScheduledTaskAction @actionArgs
     Trigger     = $trigger
     Settings    = New-ScheduledTaskSettingsSet @settingsArgs
@@ -95,7 +117,7 @@ $task = @{
 if ($DryRun) {
     Write-Host "[dry run] would register '$TaskName' for $user (no admin, runs while logged on)"
     $s = $task.Settings
-    Write-Host "  when:     every $Day at $Time (start boundary $($task.Trigger.StartBoundary))"
+    Write-Host "  when:     $when (start boundary $($task.Trigger.StartBoundary))"
     Write-Host "  settings: StartWhenAvailable=$($s.StartWhenAvailable)"
     Write-Host "            RunOnlyIfNetworkAvailable=$($s.RunOnlyIfNetworkAvailable)"
     Write-Host "            ExecutionTimeLimit=$($s.ExecutionTimeLimit) MultipleInstances=$($s.MultipleInstances)"
@@ -107,7 +129,7 @@ if ($DryRun) {
 
 Register-ScheduledTask @task -Force | Out-Null
 $next = (Get-ScheduledTaskInfo -TaskName $TaskName).NextRunTime
-Write-Host "Registered '$TaskName' - next run: $next"
+Write-Host "Registered '$TaskName' ($when) - next run: $next"
 Write-Host "Log: $Root\data\raw\refresh.log"
 Write-Host "Run it now: Start-ScheduledTask -TaskName '$TaskName'"
 Write-Host 'Keep it active on ONE PC: run this script with -Unregister on any other PC.'

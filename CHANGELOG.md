@@ -1,3 +1,16 @@
+## Possession points from events; daily refresh (2026-10-29)
+
+- The weekly refresh of 2026-10-26 was stopped by its safety gate: the score-reconstruction
+  test found HOU @ SAS (0022600009) off by 7. **Root cause:** scorer corrections, entered a
+  quarter later, carry the scoreboard of their insertion time. Once sorted back to their real
+  time, that snapshot runs backwards, so score deltas double count. Possession points now come
+  from the scoring events: made shots at `shotValue`, made free throws. Summed events match the
+  box score on all 882 sampled team-games. Reconstruction improves in every season, and
+  segmentation is unchanged.
+- `schedule_refresh.ps1 -Daily`: refresh every morning after the NBA night. The task is renamed
+  "hoops-lab data refresh"; registering it removes the legacy "hoops-lab weekly refresh". The
+  README documents the Git LFS cost of a daily cadence.
+
 ## Hosted-app hardening after the 2026-10-22 outage
 
 - **Outage:** Streamlit Cloud (Python 3.14) resolved `duckdb>=1.0` to DuckDB 2.0.0. Its
