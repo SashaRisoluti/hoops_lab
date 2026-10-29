@@ -1,39 +1,55 @@
 {
   "season": "2026-27",
   "minAttempts": 200,
-  "totalAttempts": 2226,
+  "totalAttempts": 12097,
   "zones": [
     {
       "zone": "Above the Break 3",
-      "attempts": 767,
-      "share": 0.3445642407906559,
-      "fgPct": 0.35071707953063885,
-      "pointsPerShot": 1.0521512385919165,
+      "attempts": 3719,
+      "share": 0.30743159461023395,
+      "fgPct": 0.34229631621403606,
+      "pointsPerShot": 1.026888948642108,
       "isThree": true
     },
     {
       "zone": "Restricted Area",
-      "attempts": 693,
-      "share": 0.3113207547169811,
-      "fgPct": 0.6825396825396826,
-      "pointsPerShot": 1.3650793650793651,
+      "attempts": 3422,
+      "share": 0.2828800529056791,
+      "fgPct": 0.6598480420806546,
+      "pointsPerShot": 1.3196960841613092,
       "isThree": false
     },
     {
       "zone": "In The Paint (Non-RA)",
-      "attempts": 535,
-      "share": 0.2403414195867026,
-      "fgPct": 0.4205607476635514,
-      "pointsPerShot": 0.8411214953271028,
+      "attempts": 2348,
+      "share": 0.19409771017607672,
+      "fgPct": 0.4454855195911414,
+      "pointsPerShot": 0.8909710391822828,
       "isThree": false
     },
     {
       "zone": "Mid-Range",
-      "attempts": 231,
-      "share": 0.10377358490566038,
-      "fgPct": 0.39826839826839827,
-      "pointsPerShot": 0.7965367965367965,
+      "attempts": 1235,
+      "share": 0.1020914276266843,
+      "fgPct": 0.40161943319838056,
+      "pointsPerShot": 0.8032388663967611,
       "isThree": false
+    },
+    {
+      "zone": "Left Corner 3",
+      "attempts": 752,
+      "share": 0.062164172935438536,
+      "fgPct": 0.3470744680851064,
+      "pointsPerShot": 1.0398936170212767,
+      "isThree": true
+    },
+    {
+      "zone": "Right Corner 3",
+      "attempts": 621,
+      "share": 0.05133504174588741,
+      "fgPct": 0.33816425120772947,
+      "pointsPerShot": 1.0144927536231885,
+      "isThree": true
     }
   ]
 }
