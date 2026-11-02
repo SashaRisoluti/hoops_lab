@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 import { BOX_COLUMNS } from "@/lib/live/boxscore";
 import type { BoxColumn, BoxRow } from "@/lib/live/types";
 
@@ -13,12 +13,16 @@ type Team = { tricode: string; accent: string; rows: BoxRow[]; totals: Record<Bo
  */
 export function BoxScore({ teams }: { teams: Team[] }) {
   const [sel, setSel] = useState(0);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const team = teams[sel] ?? teams[0];
   if (!team) return null;
 
   const onKey = (e: KeyboardEvent) => {
     const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-    if (d) setSel((sel + d + teams.length) % teams.length);
+    if (!d) return;
+    const next = (sel + d + teams.length) % teams.length;
+    setSel(next);
+    tabs.current[next]?.focus(); // roving tabindex: focus follows the selected tab
   };
 
   return (
@@ -27,6 +31,9 @@ export function BoxScore({ teams }: { teams: Team[] }) {
         {teams.map((t, i) => (
           <button
             key={t.tricode}
+            ref={(el) => {
+              tabs.current[i] = el;
+            }}
             type="button"
             role="tab"
             id={`box-tab-${t.tricode}`}
