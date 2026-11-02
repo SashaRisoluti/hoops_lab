@@ -18,9 +18,22 @@ test("clockLabel", () => {
   assert.equal(clockLabel(pre), "Scheduled");
 });
 
+test("clockLabel: between periods shows ESPN's status text, not a 0.0 clock", () => {
+  assert.equal(clockLabel({ ...live, period: 2, clock: "0.0", statusDetail: "Halftime" }), "Halftime");
+  assert.equal(
+    clockLabel({ ...live, clock: "", statusDetail: "End of 3rd Quarter" }),
+    "End of 3rd Quarter",
+  );
+});
+
 test("tipOffLabel", () => {
   assert.equal(tipOffLabel("2026-11-03T00:00Z", "Europe/Rome"), "01:00");
   assert.equal(tipOffLabel("2026-11-03T00:00Z", "America/New_York"), "19:00");
+});
+
+test("tipOffLabel: a missing or malformed date renders a dash instead of throwing", () => {
+  assert.equal(tipOffLabel(""), "–");
+  assert.equal(tipOffLabel("not a date"), "–");
 });
 
 test("lastPlayText", () => {
