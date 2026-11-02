@@ -59,6 +59,22 @@ const cases: [string, Partial<Play>[], "home" | "away" | null][] = [
     [{ type: "Defensive Rebound", teamId: H }, { type: "Free Throw - 2 of 2", teamId: H, shootingPlay: true }],
     "home",
   ],
+  ["last FT of 1 made", [{ type: "Free Throw - 1 of 1", teamId: H, scoringPlay: true, shootingPlay: true }], "away"],
+  [
+    "technical FT made by the team with the ball",
+    [{ type: "Defensive Rebound", teamId: A }, { type: "Free Throw - Technical", teamId: A, scoringPlay: true, shootingPlay: true }],
+    "away",
+  ],
+  [
+    "technical FT made by the defence",
+    [{ type: "Defensive Rebound", teamId: A }, { type: "Free Throw - Technical", teamId: H, scoringPlay: true, shootingPlay: true }],
+    "away",
+  ],
+  [
+    "last flagrant FT made: shooting team keeps the ball",
+    [{ type: "Defensive Rebound", teamId: H }, { type: "Free Throw - Flagrant 2 of 2", teamId: H, scoringPlay: true, shootingPlay: true }],
+    "home",
+  ],
   ["jump ball", [{ type: "Jumpball", teamId: H }], "home"],
   ["end of period", [{ type: "Defensive Rebound", teamId: H }, { type: "End Period" }], null],
   [
