@@ -159,8 +159,11 @@ the production origin.
     `dashboard/components/theme.py`. `scripts/export_web_data.py` then writes a precomputed
     override table into `web/tokens.json`, e.g. `"teamPairOverrides": {"CHI-HOU": {"CHI":
     "#…"}, "MIA-UTA": {"UTA": "#…"}, …}`, keyed by the two tricodes sorted alphabetically and
-    covering every pair that `collides()`. The web page only looks up its matchup key, with no
-    colour maths in TypeScript and no hex literal in `web/` (gate).
+    covering every pair whose readable accents are **identical** (today 7 pairs: ATL-POR,
+    CHI-HOU, CHI-TOR, HOU-TOR, CLE-IND, DET-LAC, MIA-UTA). Not every pair `collides()` flags:
+    that test also catches 98 near-hue pairs (BOS-MIL, OKC-ORL, …), and recolouring those would
+    change ordinary matchups the owner did not ask about. The web page only looks up its
+    matchup key, with no colour maths in TypeScript and no hex literal in `web/` (gate).
   - TDD the override table in Python. Extend the token-artifact gate so a stale
     `teamPairOverrides` fails like stale `teamAccents` does.
   - Black on the near-black page would vanish. **Every team mark on `/live`** (shot dots,
