@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchScoreboard, fetchSummary } from "@/lib/live/espnClient";
-import { needsPreviousDay, pickGame, previousDayParam, shouldPoll } from "@/lib/live/selection";
-import type { GameSummary, ScoreboardGame } from "@/lib/live/types";
+import { pollDecision } from "@/lib/live/polling";
+import { needsPreviousDay, pickGame, previousDayParam } from "@/lib/live/selection";
+import type { GameState, GameSummary, ScoreboardGame } from "@/lib/live/types";
 
 const POLL_MS = 30_000;
 const byStart = (a: ScoreboardGame, b: ScoreboardGame) => a.startTime.localeCompare(b.startTime);
@@ -20,7 +21,10 @@ export type LiveGameState = {
   failedId: string | null;
 };
 
-/** Loads the scoreboard and the selected game from ESPN; polls only if a game was live at load. */
+/**
+ * Loads the scoreboard and the selected game from ESPN, then polls while the board or the
+ * selected game's last summary is in progress (see `pollDecision`).
+ */
 export function useLiveGame(): LiveGameState {
   const [status, setStatus] = useState<LiveGameState["status"]>("loading");
   const [games, setGames] = useState<ScoreboardGame[]>([]);
@@ -33,7 +37,7 @@ export function useLiveGame(): LiveGameState {
   const selected = useRef<string | null>(null);
   const gamesRef = useRef<ScoreboardGame[]>([]);
   const previous = useRef<ScoreboardGame[]>([]);
-  const summaryState = useRef<string | null>(null);
+  const summaryState = useRef<GameState | null>(null);
   const request = useRef(0); // ignores summary responses superseded by a newer request
 
   const loadSummary = useCallback(async (id: string) => {
@@ -95,13 +99,17 @@ export function useLiveGame(): LiveGameState {
         const board = await fetchScoreboard();
         if (!alive) return;
         setAll(board.games);
+        const decide = () =>
+          pollDecision({
+            games: board.games,
+            selectedId: selected.current,
+            summaryState: summaryState.current,
+          });
         const id = selected.current;
-        const g = board.games.find((x) => x.id === id);
-        // One more summary after the game ends captures the final box score.
-        if (id && g && (g.state === "in" || (g.state === "post" && summaryState.current === "in")))
-          await loadSummary(id);
+        if (id && decide().loadSummary) await loadSummary(id);
         else setStale(false);
-        if (!shouldPoll(board.games)) stop();
+        // Re-decided after the load: the final summary may just have arrived.
+        if (decide().stop) stop();
       } catch {
         if (alive) setStale(true);
       } finally {
@@ -126,7 +134,12 @@ export function useLiveGame(): LiveGameState {
         setStatus("ready");
         const g = gamesRef.current.find((x) => x.id === id);
         if (g && g.state !== "pre") await loadSummary(id);
-        if (alive && shouldPoll(today.games)) {
+        const next = pollDecision({
+          games: today.games,
+          selectedId: id,
+          summaryState: summaryState.current,
+        });
+        if (alive && !next.stop) {
           timer = setInterval(() => void tick(), POLL_MS);
           document.addEventListener("visibilitychange", onVisible);
         }
