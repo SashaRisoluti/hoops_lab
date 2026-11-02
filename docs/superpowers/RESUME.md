@@ -1,21 +1,38 @@
 # Session Resume Point
 
-Last updated: 2026-10-22.
+Last updated: 2026-11-02.
 
 ## Current state
 
-- **Season 2026-27 (opened 2026-10-20) is ingested**, with a one-command weekly refresh:
-  `python scripts/refresh_season.py [--push]`. The default ("featured") season stays 2025-26
-  until every team has played `FEATURED_MIN_TEAM_GAMES` (10) games — `featured_season()` in
-  `hoops_lab/analytics/seasons.py` drives the dashboard selector, the web headline season
-  (`index.json` `featuredSeason`) and the live baselines.
-- **Live mode:** `LivePoller` no longer freezes the play-by-play (it shared one throttle clock
-  with the scoreboard). Still open: `cdn.nba.com` (nba_api live) is 403-blocked on the corporate
-  network; live mode now falls back to stats.nba.com (ScoreboardV3 + PlayByPlayV3, verified on
-  two final games: exact scores) and auto-refreshes with `st.fragment(run_every=30)`. Still to
-  verify on a real game night: the CDN adapter on real live payloads, in-game lag of the stats
-  fallback, and which source Streamlit Cloud can reach. Streamlit Cloud has no `ENVIRONMENT`
-  secret, so live mode is visible there.
+- **Season 2026-27 is ingested and refreshed automatically.**
+  - Data on `main` runs through 2026-11-01 (`c757815`).
+  - One command does the refresh: `python scripts/refresh_season.py [--push]`. It downloads,
+    publishes, reseeds and exports, then runs the full test suite as a gate.
+  - The scheduled task on the owner's PC is still the legacy **weekly** one (Mondays 09:00).
+  - The user wants it daily. Claude cannot register the task, so the user must run
+    `powershell -ExecutionPolicy Bypass -File C:\dev\hoops-lab\scripts\schedule_refresh.ps1 -Daily`.
+  - The default ("featured") season stays 2025-26 until every team has
+    `FEATURED_MIN_TEAM_GAMES` (10) games.
+- **Fixed 2026-10-29:**
+  - Possession points are now summed from scoring events, not feed score snapshots. The gate
+    had blocked the refresh of 2026-10-26.
+  - The shared DuckDB connection is serialised with a lock. A race crashed Overview on 2026-27
+    on Streamlit Cloud.
+- **Hardened 2026-10-22, after the DuckDB 2.0 outage:**
+  - `requirements.txt` has exact pins.
+  - An unreadable DB file is rebuilt.
+  - The parquet fingerprint triggers a reseed. Data pushes need no reboot, but `hoops_lab/`
+    code pushes do: use Reboot app.
+- **README Quickstart** covers anyone cloning: setup, dashboard, manual refresh, and the
+  nightly refresh (`schedule_refresh.ps1 -Daily -LocalOnly` or cron).
+- **Live mode:**
+  - It uses the CDN first, falls back to stats.nba.com, and auto-refreshes every 30 s.
+  - It works locally through the fallback. On Streamlit Cloud both NBA sources are blocked,
+    so the hosted page only warns.
+  - **Open decision for the user:** add the ESPN public API as a third source for the hosted
+    app.
+  - Still unverified on a real game night: the CDN adapter on real payloads, and the in-game
+    lag of the stats fallback.
 - **Deployed 2026-07-31:** website https://hoops-lab.vercel.app/ (Vercel, root `web/`),
   dashboard https://hoopslab.streamlit.app/. HuggingFace Spaces retired. Single branch `main`.
 - **Worldcup26 UI restyle (Phase A + B): COMPLETE and merged.** Phase A at `ef4c8fc`, Phase B
