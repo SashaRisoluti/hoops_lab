@@ -39,7 +39,7 @@ export function BoxScore({ teams }: { teams: Team[] }) {
             }`}
           >
             <span
-              className="inline-block h-3 w-3 rounded-sm ring-1 ring-ink-faint"
+              className="inline-block h-3 w-3 rounded-sm ring-1 ring-ink-soft"
               style={{ backgroundColor: t.accent }}
             />
             {t.tricode}

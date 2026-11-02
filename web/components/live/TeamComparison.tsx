@@ -31,7 +31,7 @@ export function TeamComparison({
               <span className="tabular-nums text-ink">{r.awayLabel}</span>
               <div className="flex h-2 w-full justify-end">
                 <div
-                  className="h-2 rounded-sm ring-1 ring-ink-faint"
+                  className="h-2 rounded-sm ring-1 ring-ink-soft"
                   style={{ width: `${r.awayWidth}%`, backgroundColor: awayAccent }}
                 />
               </div>
@@ -40,7 +40,7 @@ export function TeamComparison({
             <div className="flex items-center gap-2">
               <div className="flex h-2 w-full">
                 <div
-                  className="h-2 rounded-sm ring-1 ring-ink-faint"
+                  className="h-2 rounded-sm ring-1 ring-ink-soft"
                   style={{ width: `${r.homeWidth}%`, backgroundColor: homeAccent }}
                 />
               </div>

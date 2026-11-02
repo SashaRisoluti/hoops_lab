@@ -25,7 +25,7 @@ function TeamBlock({
       >
         <span
           aria-hidden
-          className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm ring-1 ring-ink-faint"
+          className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm ring-1 ring-ink-soft"
           style={{ backgroundColor: accent }}
         />
         {team.tricode}
