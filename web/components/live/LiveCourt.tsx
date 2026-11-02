@@ -80,7 +80,6 @@ export function LiveCourt({
     <div>
       <div className="relative">
         <svg viewBox={`0 0 ${LEN} ${WID}`} className="w-full" role="img" aria-label={aria}>
-          <title>{aria}</title>
           <rect width={LEN} height={WID} className="fill-card" />
           <g className="stroke-court" strokeWidth={0.3} fill="none">
             <rect width={LEN} height={WID} />
@@ -90,20 +89,21 @@ export function LiveCourt({
             <Basket flip />
           </g>
           {shots.map((s, i) => (
-            <circle
-              key={i}
-              cx={s.courtX}
-              cy={s.courtY}
-              r={0.9}
-              strokeWidth={0.3}
-              className="stroke-ink-soft"
-              style={s.made ? { fill: accent(s.side) } : { fill: "none", stroke: accent(s.side) }}
-            >
+            <g key={i}>
               <title>{`${s.made ? "Made" : "Missed"}: ${s.text}`}</title>
-            </circle>
+              {/* Light halo under the team colour so a black accent stays visible. */}
+              <circle cx={s.courtX} cy={s.courtY} r={0.9} strokeWidth={0.8} fill="none" className="stroke-ink-soft" />
+              <circle
+                cx={s.courtX}
+                cy={s.courtY}
+                r={0.9}
+                strokeWidth={0.4}
+                style={s.made ? { fill: accent(s.side), stroke: accent(s.side) } : { fill: "none", stroke: accent(s.side) }}
+              />
+            </g>
           ))}
         </svg>
-        {label && possession && (
+        {possession && label && (
           <span
             className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold text-ink ring-1 ring-ink-faint"
             style={{ backgroundColor: accent(possession) }}
