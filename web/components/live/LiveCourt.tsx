@@ -65,12 +65,6 @@ export function LiveCourt({
   lastPlay: string | null;
 }) {
   const accent = (side: Side) => (side === "home" ? homeAccent : awayAccent);
-  const label =
-    possession === "home"
-      ? `${homeTricode} ATTACKING ►`
-      : possession === "away"
-        ? `◄ ${awayTricode} ATTACKING`
-        : null;
   const owner = possession === "home" ? homeTricode : awayTricode;
   const aria = `Basketball court, ${
     possession ? `${owner} has possession` : "no team in possession"
@@ -103,12 +97,16 @@ export function LiveCourt({
             </g>
           ))}
         </svg>
-        {possession && label && (
-          <span
-            className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold text-ink ring-1 ring-ink-faint"
-            style={{ backgroundColor: accent(possession) }}
-          >
-            {label}
+        {/* Neutral pill with a team swatch: white text on a light accent would be unreadable. */}
+        {possession && (
+          <span className="absolute left-1/2 top-2 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-page px-3 py-1 text-xs font-semibold text-ink ring-1 ring-ink-soft">
+            {possession === "away" && "◄"}
+            <span
+              aria-hidden
+              className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm ring-1 ring-ink-soft"
+              style={{ backgroundColor: accent(possession) }}
+            />
+            {possession === "home" ? `${homeTricode} ATTACKING ►` : `${awayTricode} ATTACKING`}
           </span>
         )}
       </div>
