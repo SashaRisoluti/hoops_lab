@@ -30,7 +30,11 @@ if str(ROOT) not in sys.path:
 
 import pandas as pd  # noqa: E402
 
-from dashboard.components.theme import TEAM_ACCENTS_READABLE, TOKENS  # noqa: E402
+from dashboard.components.theme import (  # noqa: E402
+    TEAM_ACCENTS_READABLE,
+    TEAM_PAIR_OVERRIDES,
+    TOKENS,
+)
 from hoops_lab.analytics.seasons import featured_season  # noqa: E402
 from hoops_lab.analytics.team_identity import league_ratings  # noqa: E402
 from hoops_lab.config import DEMO_SEASONS  # noqa: E402
@@ -75,6 +79,7 @@ def export_tokens(dest: Path) -> Path:
         "generatedFrom": _SOURCE,
         "tokens": dict(TOKENS),
         "teamAccents": dict(TEAM_ACCENTS_READABLE),
+        "teamPairOverrides": TEAM_PAIR_OVERRIDES,
     }
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

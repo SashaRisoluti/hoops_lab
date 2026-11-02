@@ -15,7 +15,7 @@ import json
 
 import streamlit as st
 
-from hoops_lab.visuals.team_colors import resolve_accents
+from hoops_lab.visuals.team_colors import ensure_contrast, pair_overrides, resolve_accents
 
 # ---- Surfaces (Worldcup26 navy family) --------------------------------------
 BG_PAGE = "#070b14"
@@ -84,6 +84,18 @@ TEAM_ACCENTS: dict[str, str] = {
 #: that actually fail are lightened — the rest pass through untouched, so team identity
 #: survives. This is what the UI paints.
 TEAM_ACCENTS_READABLE: dict[str, str] = resolve_accents(TEAM_ACCENTS, BG_PAGE)
+
+#: Owner-chosen colours a team switches to when its accent is identical to the opponent's.
+#: Chicago goes exact black (deliberately not contrast-lifted); Utah goes purple.
+TEAM_CLASH_ALTERNATES: dict[str, str] = {
+    "CHI": "#000000",
+    "UTA": ensure_contrast("#753BBD", BG_PAGE),
+}
+
+#: Per-matchup overrides ``"AAA-BBB" -> {tricode: hex}`` for identical-accent pairs.
+TEAM_PAIR_OVERRIDES: dict[str, dict[str, str]] = pair_overrides(
+    TEAM_ACCENTS_READABLE, TEAM_CLASH_ALTERNATES
+)
 
 #: Conference grouping for the team rail (design order, West | East).
 CONFERENCES: dict[str, list[str]] = {

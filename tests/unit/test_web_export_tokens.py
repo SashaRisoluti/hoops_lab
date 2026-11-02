@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dashboard.components.theme import TEAM_ACCENTS_READABLE, TOKENS
+from dashboard.components.theme import TEAM_ACCENTS_READABLE, TEAM_PAIR_OVERRIDES, TOKENS
 from scripts.export_web_data import TOKENS_PATH, export_tokens
 
 REPO = Path(__file__).resolve().parents[2]
@@ -23,6 +23,13 @@ def test_export_writes_the_readable_team_accents(tmp_path: Path) -> None:
     export_tokens(dest)
     payload = json.loads(dest.read_text(encoding="utf-8"))
     assert payload["teamAccents"] == TEAM_ACCENTS_READABLE
+
+
+def test_export_writes_the_team_pair_overrides(tmp_path: Path) -> None:
+    dest = tmp_path / "tokens.json"
+    export_tokens(dest)
+    payload = json.loads(dest.read_text(encoding="utf-8"))
+    assert payload["teamPairOverrides"] == TEAM_PAIR_OVERRIDES
 
 
 def test_export_records_where_the_tokens_came_from(tmp_path: Path) -> None:

@@ -231,3 +231,50 @@ def test_the_rail_keeps_a_readable_accent_exactly_as_the_franchise_defines_it() 
 
     html = team_rail.build_rail_html(mapping, selected="BOS")
     assert TEAM_ACCENTS["BOS"].lower() in html.lower()
+
+
+# ---- pair overrides ---------------------------------------------------------
+
+_SYNTH = {"AAA": "#ce1141", "BBB": "#CE1141", "CCC": "#007a33"}
+
+
+def test_pair_override_rotates_second_team_by_default() -> None:
+    assert tc.pair_overrides(_SYNTH, {}) == {
+        "AAA-BBB": {"BBB": tc.resolve_pair("#ce1141", "#ce1141")[1]}
+    }
+
+
+def test_pair_override_prefers_first_teams_alternate() -> None:
+    assert tc.pair_overrides(_SYNTH, {"AAA": "#000000"}) == {"AAA-BBB": {"AAA": "#000000"}}
+
+
+def test_pair_override_uses_second_teams_alternate() -> None:
+    assert tc.pair_overrides(_SYNTH, {"BBB": "#123456"}) == {"AAA-BBB": {"BBB": "#123456"}}
+
+
+def test_pair_override_skips_non_identical_pairs() -> None:
+    assert tc.pair_overrides({"AAA": "#ce1141", "CCC": "#007a33"}, {}) == {}
+
+
+def test_real_pair_overrides_and_alternates() -> None:
+    from dashboard.components import theme
+
+    assert theme.TEAM_CLASH_ALTERNATES == {"CHI": "#000000", "UTA": "#7a3fc3"}
+    assert theme.TEAM_PAIR_OVERRIDES == {
+        "ATL-POR": {"POR": "#e0b03a"},
+        "CHI-HOU": {"CHI": "#000000"},
+        "CHI-TOR": {"CHI": "#000000"},
+        "CLE-IND": {"IND": "#a9fd30"},
+        "DET-LAC": {"LAC": "#c87910"},
+        "HOU-TOR": {"TOR": "#ce6c11"},
+        "MIA-UTA": {"UTA": "#7a3fc3"},
+    }
+
+
+def test_overridden_pairs_no_longer_collide() -> None:
+    from dashboard.components import theme
+
+    for key, change in theme.TEAM_PAIR_OVERRIDES.items():
+        a, b = key.split("-")
+        colours = {a: theme.TEAM_ACCENTS_READABLE[a], b: theme.TEAM_ACCENTS_READABLE[b], **change}
+        assert not tc.collides(colours[a], colours[b]), key

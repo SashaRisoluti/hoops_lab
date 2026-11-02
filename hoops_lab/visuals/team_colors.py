@@ -17,6 +17,7 @@ possible. Two pure transforms, each applied only when a measurement says it is n
 from __future__ import annotations
 
 import colorsys
+import itertools
 from collections.abc import Mapping
 
 #: WCAG 2.1 minimum contrast for graphical objects and large text.
@@ -146,3 +147,27 @@ def resolve_accents(
     return {
         tricode: ensure_contrast(value, background, min_ratio) for tricode, value in accents.items()
     }
+
+
+def pair_overrides(
+    accents: Mapping[str, str], alternates: Mapping[str, str]
+) -> dict[str, dict[str, str]]:
+    """Return per-matchup colour overrides for teams whose accents are byte-identical.
+
+    Keys are ``"AAA-BBB"`` (tricodes sorted); each value maps the one team that switches
+    to its new colour. The first team's alternate wins, then the second's, else the
+    second team is hue-rotated by :func:`resolve_pair`. Only identical accents are
+    selected: :func:`collides` would also catch near-hue pairs nobody asked to recolour.
+    """
+    result: dict[str, dict[str, str]] = {}
+    for a, b in itertools.combinations(sorted(accents), 2):
+        if accents[a].lower() != accents[b].lower():
+            continue
+        if a in alternates:
+            change = {a: alternates[a]}
+        elif b in alternates:
+            change = {b: alternates[b]}
+        else:
+            change = {b: resolve_pair(accents[a], accents[b])[1]}
+        result[f"{a}-{b}"] = change
+    return result
