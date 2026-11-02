@@ -55,6 +55,7 @@ export function LiveScorebar({
   updatedAt,
   stale,
   tipOff,
+  live,
 }: {
   away: Side;
   home: Side;
@@ -66,6 +67,8 @@ export function LiveScorebar({
   updatedAt: number | null;
   stale: boolean;
   tipOff: string | null;
+  /** True only while the game is in progress (`state === "in"`); gates the LIVE marker. */
+  live: boolean;
 }) {
   const ago = updatedAt === null ? 0 : Math.max(0, Math.round((Date.now() - updatedAt) / 1000));
   const lastUpdate = updatedAt === null ? "–" : new Date(updatedAt).toLocaleTimeString();
@@ -77,7 +80,7 @@ export function LiveScorebar({
   return (
     <div className="card flex items-start gap-4 p-4">
       <TeamBlock team={away} accent={awayAccent} align="left" {...counts("away")} />
-      <div className="shrink-0 text-center">
+      <div className="min-w-0 max-w-[40%] shrink basis-1/3 text-center sm:max-w-xs">
         {tipOff !== null ? (
           <>
             <p className="font-display text-xl font-bold">Tip-off {tipOff}</p>
@@ -92,7 +95,7 @@ export function LiveScorebar({
               </p>
             ) : (
               <p className="mt-1 text-xs text-ink-soft">
-                LIVE · updated {ago}s ago · Data: ESPN
+                {live ? `LIVE · updated ${ago}s ago · Data: ESPN` : "Data: ESPN"}
               </p>
             )}
           </>
