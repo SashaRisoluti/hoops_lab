@@ -32,13 +32,21 @@ import pandas as pd  # noqa: E402
 
 from dashboard.components.theme import (  # noqa: E402
     TEAM_ACCENTS_READABLE,
-    TEAM_PAIR_OVERRIDES,
+    TEAM_CLASH_ALTERNATES,
     TOKENS,
 )
 from hoops_lab.analytics.seasons import featured_season  # noqa: E402
 from hoops_lab.analytics.team_identity import league_ratings  # noqa: E402
 from hoops_lab.config import DEMO_SEASONS  # noqa: E402
 from hoops_lab.storage.database import Database  # noqa: E402
+from hoops_lab.visuals.team_colors import pair_overrides  # noqa: E402
+
+#: Per-matchup overrides ``"AAA-BBB" -> {tricode: hex}`` for identical-accent pairs.
+#: Computed here, not in theme.py: Streamlit Cloud reloads only ``dashboard/`` modules on a
+#: push, so theme.py must not import library names the deployed process may not have yet.
+TEAM_PAIR_OVERRIDES: dict[str, dict[str, str]] = pair_overrides(
+    TEAM_ACCENTS_READABLE, TEAM_CLASH_ALTERNATES
+)
 
 #: Where the generated tokens live, relative to the repo root.
 TOKENS_PATH = "web/tokens.json"

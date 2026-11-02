@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dashboard.components.theme import TEAM_ACCENTS_READABLE, TEAM_PAIR_OVERRIDES, TOKENS
-from scripts.export_web_data import TOKENS_PATH, export_tokens
+from dashboard.components.theme import TEAM_ACCENTS_READABLE, TOKENS
+from scripts.export_web_data import TEAM_PAIR_OVERRIDES, TOKENS_PATH, export_tokens
 
 REPO = Path(__file__).resolve().parents[2]
 

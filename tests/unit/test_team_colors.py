@@ -6,6 +6,7 @@ import pytest
 
 from dashboard.components.theme import BG_PAGE, TEAM_ACCENTS
 from hoops_lab.visuals import team_colors as tc
+from scripts.export_web_data import TEAM_PAIR_OVERRIDES
 
 # Groups of teams whose official accents are byte-identical in TEAM_ACCENTS.
 DUPLICATE_GROUPS = [
@@ -260,7 +261,7 @@ def test_real_pair_overrides_and_alternates() -> None:
     from dashboard.components import theme
 
     assert theme.TEAM_CLASH_ALTERNATES == {"CHI": "#000000", "UTA": "#7a3fc3"}
-    assert theme.TEAM_PAIR_OVERRIDES == {
+    assert TEAM_PAIR_OVERRIDES == {
         "ATL-POR": {"POR": "#e0b03a"},
         "CHI-HOU": {"CHI": "#000000"},
         "CHI-TOR": {"CHI": "#000000"},
@@ -274,7 +275,7 @@ def test_real_pair_overrides_and_alternates() -> None:
 def test_overridden_pairs_no_longer_collide() -> None:
     from dashboard.components import theme
 
-    for key, change in theme.TEAM_PAIR_OVERRIDES.items():
+    for key, change in TEAM_PAIR_OVERRIDES.items():
         a, b = key.split("-")
         colours = {a: theme.TEAM_ACCENTS_READABLE[a], b: theme.TEAM_ACCENTS_READABLE[b], **change}
         assert not tc.collides(colours[a], colours[b]), key

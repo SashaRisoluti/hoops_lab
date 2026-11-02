@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import tomllib
@@ -9,7 +10,7 @@ from pathlib import Path
 
 from dashboard.components import theme
 from hoops_lab.visuals import altair_charts, court, heatmaps, shot_maps
-from scripts.export_web_data import TOKENS_PATH
+from scripts.export_web_data import TEAM_PAIR_OVERRIDES, TOKENS_PATH
 
 REPO = Path(__file__).resolve().parents[2]
 HEX_RE = re.compile(r"#[0-9a-fA-F]{3,8}\b")
@@ -58,7 +59,7 @@ def test_web_tokens_artifact_matches_theme() -> None:
     assert committed["teamAccents"] == theme.TEAM_ACCENTS_READABLE, (
         "stale web team accents — re-run the export"
     )
-    assert committed["teamPairOverrides"] == theme.TEAM_PAIR_OVERRIDES, (
+    assert committed["teamPairOverrides"] == TEAM_PAIR_OVERRIDES, (
         "stale web team pair overrides — re-run the export"
     )
 
@@ -102,3 +103,21 @@ def test_legacy_names_are_gone() -> None:
     assert not hasattr(overview_cards, "kpi_card")
     assert not hasattr(overview_cards, "stat_tile")  # renamed to mini_tile
     assert hasattr(overview_cards, "mini_tile")
+
+
+def test_theme_imports_only_names_the_deployed_library_already_has() -> None:
+    """``theme.py`` may import only ``ensure_contrast`` and ``resolve_accents``.
+
+    Streamlit Cloud applies a push in place and reloads only ``dashboard/`` modules: a
+    re-imported ``theme.py`` meets the OLD ``hoops_lab.visuals.team_colors`` already in
+    memory, so any newer name imported from it raises ImportError on every page until a
+    manual Reboot. Library-only additions (e.g. ``pair_overrides``) belong in scripts.
+    """
+    tree = ast.parse((REPO / "dashboard" / "components" / "theme.py").read_text(encoding="utf-8"))
+    imported = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module == "hoops_lab.visuals.team_colors"
+        for alias in node.names
+    }
+    assert imported <= {"ensure_contrast", "resolve_accents"}, imported
