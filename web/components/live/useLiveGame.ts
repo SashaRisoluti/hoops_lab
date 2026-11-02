@@ -16,6 +16,8 @@ export type LiveGameState = {
   summary: GameSummary | null;
   updatedAt: number | null;
   stale: boolean;
+  /** Id of the selected game whose last summary load failed, else null. */
+  failedId: string | null;
 };
 
 /** Loads the scoreboard and the selected game from ESPN; polls only if a game was live at load. */
@@ -26,6 +28,7 @@ export function useLiveGame(): LiveGameState {
   const [summary, setSummary] = useState<GameSummary | null>(null);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [stale, setStale] = useState(false);
+  const [failedId, setFailedId] = useState<string | null>(null);
 
   const selected = useRef<string | null>(null);
   const gamesRef = useRef<ScoreboardGame[]>([]);
@@ -42,8 +45,12 @@ export function useLiveGame(): LiveGameState {
       setSummary(s);
       setUpdatedAt(Date.now());
       setStale(false);
+      setFailedId(null);
     } catch {
-      if (mine === request.current) setStale(true);
+      if (mine === request.current && selected.current === id) {
+        setStale(true);
+        setFailedId(id);
+      }
     }
   }, []);
 
@@ -52,6 +59,8 @@ export function useLiveGame(): LiveGameState {
       selected.current = id;
       setSelectedId(id);
       setSummary(null);
+      setFailedId(null);
+      setStale(false);
       summaryState.current = null;
       history.replaceState(null, "", `?game=${id}`);
       if (gamesRef.current.find((g) => g.id === id)?.state !== "pre") void loadSummary(id);
@@ -132,5 +141,5 @@ export function useLiveGame(): LiveGameState {
     };
   }, [loadSummary]);
 
-  return { status, games, selectedId, select, summary, updatedAt, stale };
+  return { status, games, selectedId, select, summary, updatedAt, stale, failedId };
 }

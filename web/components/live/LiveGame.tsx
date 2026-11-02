@@ -62,7 +62,7 @@ function Detail({ summary, accents }: { summary: GameSummary; accents: Record<Si
 
 /** The /live page body: game chips, scorebar and, once ESPN has data, court, comparison, box score. */
 export function LiveGame() {
-  const { status, games, selectedId, select, summary, updatedAt, stale } = useLiveGame();
+  const { status, games, selectedId, select, summary, updatedAt, stale, failedId } = useLiveGame();
 
   if (status === "loading") return <Note>Loading games…</Note>;
   if (status === "error") return <Note>Couldn&apos;t reach ESPN — try again later.</Note>;
@@ -81,6 +81,7 @@ export function LiveGame() {
     tokens.teamPairOverrides,
     tokens.tokens.primary,
   );
+  const polled = (sum ?? game)?.state === "in";
   const scheduled = (sum?.state ?? game?.state) === "pre";
 
   return (
@@ -95,11 +96,14 @@ export function LiveGame() {
         fouls={sum ? teamFoulsThisPeriod(sum) : null}
         timeouts={sum ? timeoutsUsed(sum) : null}
         updatedAt={updatedAt}
-        stale={stale}
+        stale={stale && polled}
         tipOff={scheduled && game ? tipOffLabel(game.startTime) : null}
         live={sum?.state === "in"}
       />
       {scheduled ? <Note>This game has not started yet.</Note> : null}
+      {!sum && !scheduled && failedId === selectedId ? (
+        <Note>Game details not available — select the game again to retry.</Note>
+      ) : null}
       {sum && !scheduled ? <Detail summary={sum} accents={accents} /> : null}
     </div>
   );
