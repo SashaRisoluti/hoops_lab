@@ -155,7 +155,7 @@ def pair_overrides(
     """Return per-matchup colour overrides for teams whose accents are byte-identical.
 
     Keys are ``"AAA-BBB"`` (tricodes sorted); each value maps the one team that switches
-    to its new colour. The first team's alternate wins, then the second's, else the
+    to its new colour. The alphabetically first team's alternate wins, then the second's, else the
     second team is hue-rotated by :func:`resolve_pair`. Only identical accents are
     selected: :func:`collides` would also catch near-hue pairs nobody asked to recolour.
     """

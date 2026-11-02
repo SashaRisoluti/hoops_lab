@@ -58,6 +58,9 @@ def test_web_tokens_artifact_matches_theme() -> None:
     assert committed["teamAccents"] == theme.TEAM_ACCENTS_READABLE, (
         "stale web team accents — re-run the export"
     )
+    assert committed["teamPairOverrides"] == theme.TEAM_PAIR_OVERRIDES, (
+        "stale web team pair overrides — re-run the export"
+    )
 
 
 def test_no_hex_literals_in_the_web_app() -> None:
