@@ -121,8 +121,12 @@ export function useLiveGame(): LiveGameState {
       try {
         const today = await fetchScoreboard();
         let prev: ScoreboardGame[] = [];
+        // Yesterday's games are optional: a failed fetch just means none are shown.
         if (needsPreviousDay(today.games) && today.day)
-          prev = (await fetchScoreboard(previousDayParam(today.day))).games;
+          prev = await fetchScoreboard(previousDayParam(today.day)).then(
+            (b) => b.games,
+            () => [],
+          );
         if (!alive) return;
         previous.current = prev;
         setAll(today.games);
