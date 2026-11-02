@@ -22,7 +22,8 @@ const Note = ({ children }: { children: string }) => (
 );
 
 function Detail({ summary, accents }: { summary: GameSummary; accents: Record<Side, string> }) {
-  const court = onCourt(summary);
+  // On-court markers only while the game is in progress.
+  const court = summary.state === "in" ? onCourt(summary) : { home: [], away: [] };
   const teams = (["away", "home"] as const).flatMap((side) => {
     const team = summary[side];
     const box = summary.boxes.find((b) => b.espnId === team.espnId);
