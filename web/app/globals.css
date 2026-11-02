@@ -5,6 +5,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Native controls (scrollbars) render dark to match the site. */
+    color-scheme: dark;
   }
 
   body {
