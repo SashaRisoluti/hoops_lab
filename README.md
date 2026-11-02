@@ -231,6 +231,14 @@ Colours are not written by hand — `web/tokens.json` is generated from
 [`dashboard/components/theme.py`](dashboard/components/theme.py) and a design gate fails if the
 two ever drift apart.
 
+**`/live`** is the one page with runtime data: the visitor's browser reads the ESPN public API
+(scoreboard + game summary) directly, so it works where the hosted dashboard cannot reach the
+NBA feeds and it never sleeps. It shows the day's games, score and clock, which team has the
+ball, the last shots on a full court, a team comparison and the box score. It polls every 30 s
+only when a game is in progress at load. Parsing and derivation live in `web/lib/live/`
+(tested with `npm test`, Node's built-in runner, against trimmed real ESPN payloads in
+`web/tests/fixtures/`).
+
 ### Dashboard — Streamlit Community Cloud
 
 - Main file path `dashboard/app.py`. The root [`app.py`](app.py) is a local launcher only;

@@ -25,14 +25,24 @@ Last updated: 2026-11-02.
     code pushes do: use Reboot app.
 - **README Quickstart** covers anyone cloning: setup, dashboard, manual refresh, and the
   nightly refresh (`schedule_refresh.ps1 -Daily -LocalOnly` or cron).
-- **Live mode:**
+- **Live mode (Streamlit):**
   - It uses the CDN first, falls back to stats.nba.com, and auto-refreshes every 30 s.
   - It works locally through the fallback. On Streamlit Cloud both NBA sources are blocked,
     so the hosted page only warns.
-  - **Open decision for the user:** add the ESPN public API as a third source for the hosted
-    app.
   - Still unverified on a real game night: the CDN adapter on real payloads, and the in-game
     lag of the stats fallback.
+- **Live games on the website (`/live`, 2026-11-02):** the public answer to the decision above
+  (owner chose ESPN, in the browser, on Vercel — not a js.org/GitHub Pages migration).
+  - Spec `docs/superpowers/specs/2026-11-02-live-web-design.md`, plan
+    `docs/superpowers/plans/2026-11-02-live-web.md`. Logic in `web/lib/live/` (`npm test`),
+    UI in `web/components/live/`, page `web/app/live/page.tsx`.
+  - Verified: finished/scheduled/previous-day states against real ESPN, and a simulated
+    in-progress game (CDP request interception) for LIVE, possession, polling and the
+    "Connection lost" banner.
+  - **Next: a real game-night check** (01:00–06:00 CET): ESPN's `possession` flag, on-court
+    tracking from substitutions, polling, halftime label. Known later items: UTA purple is
+    2.83:1 on the card; `?game=` ids older than yesterday fall back silently; pill sits
+    top-centre on purpose.
 - **Deployed 2026-07-31:** website https://hoops-lab.vercel.app/ (Vercel, root `web/`),
   dashboard https://hoopslab.streamlit.app/. HuggingFace Spaces retired. Single branch `main`.
 - **Worldcup26 UI restyle (Phase A + B): COMPLETE and merged.** Phase A at `ef4c8fc`, Phase B

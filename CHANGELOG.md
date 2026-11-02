@@ -1,3 +1,26 @@
+## Live games page on the website (2026-11-02)
+
+- New `/live` page on the Vercel site. The visitor's browser reads the ESPN public API, so live
+  games show where the hosted dashboard cannot (Streamlit Cloud is blocked by both NBA feeds and
+  sleeps when idle). From a browser, `cdn.nba.com` and `cdn-uat.nba.com` both fail
+  (`Failed to fetch`; `cdn-uat` is not even in public DNS); ESPN answers with
+  `Access-Control-Allow-Origin: *`.
+- The page shows the day's games (last night's finals when nothing has started), score and
+  clock, team fouls and timeouts used, which team has the ball, the last 10 shots on a full
+  court, mirrored team-comparison bars and a tabbed box score with the five on court. It polls
+  every 30 s only if a game is in progress at load, and says "Connection lost — retrying" rather
+  than showing stale data as live.
+- Possession uses ESPN's flag, else the latest deciding play (rebound, turnover, made shot, last
+  free throw of a trip; technical and flagrant free throws never flip it). Polling stops only
+  when the scoreboard and the selected game's summary both say it is over.
+- Team colour clashes: when two teams with identical accents meet, Chicago turns black and Utah
+  purple; the other identical pairs get the existing hue rotation. The table is computed in
+  `scripts/export_web_data.py` and exported as `teamPairOverrides`. `theme.py` deliberately
+  imports nothing new from `hoops_lab/` (a unit test guards it), because Streamlit Cloud reloads
+  only `dashboard/` modules on a push and a new import would break every page until a reboot.
+- Web tests: `npm test` in `web/` (Node's built-in runner, no new dependency) against trimmed
+  real ESPN payloads.
+
 ## README quickstart for anyone cloning the repo (2026-10-29)
 
 - The Quickstart is rewritten for anyone running their own copy. It covers Windows and
