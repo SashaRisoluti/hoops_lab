@@ -8,9 +8,8 @@ Last updated: 2026-11-03.
   - Data on `main` runs through 2026-11-01 (`c757815`).
   - One command does the refresh: `python scripts/refresh_season.py [--push]`. It downloads,
     publishes, reseeds and exports, then runs the full test suite as a gate.
-  - The scheduled task on the owner's PC is still the legacy **weekly** one (Mondays 09:00).
-  - The user wants it daily. Claude cannot register the task, so the user must run
-    `powershell -ExecutionPolicy Bypass -File C:\dev\hoops-lab\scripts\schedule_refresh.ps1 -Daily`.
+  - The owner's PC runs the **daily** task "hoops-lab data refresh" at 09:00 (registered
+    2026-11-03; the legacy weekly task is gone). Log: `data\raw\refresh.log`.
   - The default ("featured") season stays 2025-26 until every team has
     `FEATURED_MIN_TEAM_GAMES` (10) games.
 - **Fixed 2026-10-29:**
