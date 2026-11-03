@@ -9,7 +9,16 @@ import { clockLabel, lastPlayText, tipOffLabel } from "@/lib/live/format";
 import { onCourt } from "@/lib/live/lineup";
 import { possession } from "@/lib/live/possession";
 import { lastShots } from "@/lib/live/shots";
-import type { GameSummary, ScoreboardGame, Side } from "@/lib/live/types";
+import type { GameSummary, ScoreboardGame, Side, WinProbModel } from "@/lib/live/types";
+import {
+  espnSeries,
+  homeWinProbability,
+  priorDiff,
+  wpAvailable,
+  wpSeries,
+} from "@/lib/live/winprob";
+import wpModelJson from "@/public/data/win-probability.json";
+import { WinProbabilityCard } from "./WinProbabilityCard";
 import { BoxScore } from "./BoxScore";
 import { GameChips } from "./GameChips";
 import { LiveCourt } from "./LiveCourt";
@@ -20,6 +29,66 @@ import { useLiveGame } from "./useLiveGame";
 const Note = ({ children }: { children: string }) => (
   <p className="card p-4 text-sm text-ink-soft">{children}</p>
 );
+
+const wpModel = wpModelJson as unknown as WinProbModel;
+
+function WinProb({
+  summary,
+  game,
+  accents,
+}: {
+  summary: GameSummary | null;
+  game: ScoreboardGame | undefined;
+  accents: Record<Side, string>;
+}) {
+  const src = summary ?? game;
+  if (!src) return null;
+  const prior = priorDiff(wpModel, src.home.tricode, src.away.tricode);
+  const pregame =
+    prior === null
+      ? null
+      : homeWinProbability(wpModel, {
+          margin: 0,
+          secondsRemaining: 2880,
+          priorDiff: prior,
+          neutral: src.neutralSite,
+        });
+  if (
+    prior === null ||
+    pregame === null ||
+    !wpModel.asOf ||
+    !wpModel.metrics ||
+    !wpAvailable(wpModel, src.seasonType, prior)
+  )
+    return <Note>Win probability not available for this matchup.</Note>;
+
+  const started = summary !== null && summary.state !== "pre";
+  const series = started ? wpSeries(summary, wpModel, prior) : [];
+  const periods = summary
+    ? Math.max(4, summary.period, ...summary.plays.map((p) => p.period))
+    : 4;
+  return (
+    <WinProbabilityCard
+      homeTricode={src.home.tricode}
+      awayTricode={src.away.tricode}
+      homeAccent={accents.home}
+      awayAccent={accents.away}
+      state={summary?.state ?? "pre"}
+      current={series.length ? series[series.length - 1].home : null}
+      pregame={pregame}
+      series={series}
+      espn={started ? espnSeries(summary) : []}
+      periods={periods}
+      asOf={wpModel.asOf}
+      metrics={wpModel.metrics}
+      note={
+        src.seasonType === 3 || src.seasonType === 5
+          ? "Play-in/playoff: extrapolated from regular-season data."
+          : undefined
+      }
+    />
+  );
+}
 
 function Detail({ summary, accents }: { summary: GameSummary; accents: Record<Side, string> }) {
   // On-court markers only while the game is in progress.
@@ -101,6 +170,7 @@ export function LiveGame() {
         tipOff={scheduled && game ? tipOffLabel(game.startTime) : null}
         live={sum?.state === "in"}
       />
+      <WinProb summary={sum} game={game} accents={accents} />
       {scheduled ? <Note>This game has not started yet.</Note> : null}
       {!sum && !scheduled && failedId === selectedId ? (
         <Note>Game details not available — select the game again to retry.</Note>

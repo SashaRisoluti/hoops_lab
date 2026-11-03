@@ -70,7 +70,10 @@ export function WinProbabilityCard({
   periods,
   asOf,
   metrics,
+  note,
 }: {
+  /** Optional small muted line under the footnote. */
+  note?: string;
   homeTricode: string;
   awayTricode: string;
   homeAccent: string;
@@ -142,8 +145,9 @@ export function WinProbabilityCard({
       <p className="mt-3 text-xs text-ink-soft">
         Pregame: {pre >= 50 ? `${homeTricode} ${pre}` : `${awayTricode} ${100 - pre}`}% (season net
         rating + home court, as of {asOf}) · fitted on {metrics.trainGames} games · held-out
-        log-loss {metrics.holdoutLogLoss.toFixed(3)} vs {metrics.baselineLogLoss.toFixed(3)}
+        log-loss {metrics.holdoutLogLoss.toFixed(3)} (baseline {metrics.baselineLogLoss.toFixed(3)})
       </p>
+      {note ? <p className="mt-1 text-xs text-ink-muted">{note}</p> : null}
     </section>
   );
 }
