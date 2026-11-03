@@ -30,7 +30,7 @@ const Note = ({ children }: { children: string }) => (
   <p className="card p-4 text-sm text-ink-soft">{children}</p>
 );
 
-const wpModel = wpModelJson as unknown as WinProbModel;
+const wpModel: WinProbModel = wpModelJson;
 
 function WinProb({
   summary,
@@ -42,7 +42,8 @@ function WinProb({
   accents: Record<Side, string>;
 }) {
   const src = summary ?? game;
-  if (!src) return null;
+  // A started game without its summary has no current number: never show the pregame one.
+  if (!src || (!summary && src.state !== "pre")) return null;
   const prior = priorDiff(wpModel, src.home.tricode, src.away.tricode);
   const pregame =
     prior === null

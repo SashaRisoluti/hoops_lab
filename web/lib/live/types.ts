@@ -133,6 +133,8 @@ export type WinProbModel = {
     ece: number;
     pregameLogLoss: number;
     constantLogLoss: number;
+    /** Games of the full refit (every season) behind the exported coefficients. */
+    fitGames: number;
   };
 };
 
