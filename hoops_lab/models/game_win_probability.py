@@ -22,13 +22,21 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import log_loss
 
+from hoops_lab.config import DEMO_SEASONS
 from hoops_lab.features.possession import _clock_seconds, _event_points, sort_chronological
+from hoops_lab.models.win_probability import predict_wp_frame, train_win_probability
 
 REGULATION_SECONDS = 2880.0
 PERIOD_SECONDS = 720.0
 #: Weight (in games) of last season's final net rating in the pregame prior.
 PRIOR_GAMES_K = 10.0
+#: Newest seasons held out by the quality gate; the older ones train.
+HOLDOUT_SEASONS = 2
+#: Calibration ceiling of the gate (10 equal-width bins). Never relaxed.
+MAX_ECE = 0.05
+_EPS = 1e-15
 
 STATE_COLUMNS = [
     "game_id",
@@ -117,27 +125,59 @@ def pregame_priors(box: pd.DataFrame, k: float = PRIOR_GAMES_K) -> pd.DataFrame:
 
 def current_priors(
     box: pd.DataFrame, season: str, k: float = PRIOR_GAMES_K
-) -> tuple[dict[str, float], str]:
-    """Tricode -> prior after every game of ``season``, plus the as-of date (``YYYY-MM-DD``)."""
+) -> tuple[dict[str, float], str | None]:
+    """Tricode -> prior after every game of ``season``, plus the as-of date (``YYYY-MM-DD``).
+
+    Every team of ``season`` or of the season before is included: a team without a game yet
+    (n = 0) gets last season's final net rating. The as-of date is the latest game behind the
+    priors (last season's final date before opening night); None without any game.
+    """
     ratings = _ratings_with_diff(box)
-    current = ratings.loc[ratings["season"] == season].sort_values("GAME_DATE")
-    if current.empty:
-        raise ValueError(f"no box scores for season {season}")
+    pool = ratings.loc[
+        (ratings["season"] == season) | (ratings["season"].map(_next_season) == season)
+    ].sort_values("GAME_DATE")
+    if pool.empty:
+        return {}, None
+    tricodes = pool.groupby("TEAM_ID")["TEAM_ABBREVIATION"].last()
     totals = (
-        current.groupby("TEAM_ID")
-        .agg(
-            diff=("diff", "sum"),
-            poss=("poss", "sum"),
-            n=("diff", "size"),
-            tricode=("TEAM_ABBREVIATION", "last"),
-        )
+        pool.loc[pool["season"] == season]
+        .groupby("TEAM_ID")
+        .agg(diff=("diff", "sum"), poss=("poss", "sum"), n=("diff", "size"))
+        .reindex(tricodes.index)
         .reset_index()
         .assign(season=season)
     )
+    totals["n"] = totals["n"].fillna(0)
     nr_last = pd.Series(_last_season_nr(ratings, totals), index=totals.index)
     prior = _blend(totals["n"], _net_rating(totals["diff"], totals["poss"]), nr_last, k)
-    as_of = current["GAME_DATE"].max().strftime("%Y-%m-%d")
-    return dict(zip(totals["tricode"], prior.astype(float), strict=True)), as_of
+    as_of = pool["GAME_DATE"].max().strftime("%Y-%m-%d")
+    return dict(zip(tricodes, prior.astype(float), strict=True)), as_of
+
+
+def _game_meta(games: pd.DataFrame, priors: pd.DataFrame) -> pd.DataFrame:
+    """``games`` rows with the label, the neutral flag and ``prior_diff`` (home - away).
+
+    Games lacking either team's prior are dropped.
+    """
+    prior = priors[["GAME_ID", "TEAM_ID", "prior"]].assign(GAME_ID=priors["GAME_ID"].astype(str))
+    meta = games.assign(
+        game_id=games["game_id"].astype(str),
+        neutral=games["neutral_site"].astype(bool),
+        home_won=games["home_pts"] > games["away_pts"],
+    )
+    for side in ("home", "away"):
+        side_prior = prior.rename(
+            columns={"GAME_ID": "game_id", "TEAM_ID": f"{side}_team_id", "prior": f"{side}_prior"}
+        )
+        meta = meta.merge(side_prior, on=["game_id", f"{side}_team_id"])
+    meta["prior_diff"] = meta["home_prior"] - meta["away_prior"]
+    return meta
+
+
+def pregame_states(games: pd.DataFrame, priors: pd.DataFrame) -> pd.DataFrame:
+    """The opening state (margin 0, full regulation left) of every game with both priors."""
+    meta = _game_meta(games, priors)
+    return meta.assign(margin=0.0, seconds_remaining=REGULATION_SECONDS)[STATE_COLUMNS]
 
 
 def build_states(pbp: pd.DataFrame, games: pd.DataFrame, priors: pd.DataFrame) -> pd.DataFrame:
@@ -155,36 +195,28 @@ def build_states(pbp: pd.DataFrame, games: pd.DataFrame, priors: pd.DataFrame) -
         ``pregame_priors`` output (GAME_ID, TEAM_ID, prior). Games lacking either team's
         prior are dropped.
 
-    Returns ``game_id, season, margin, seconds_remaining, neutral, prior_diff, home_won``.
-    The margin (home - away) is summed from scoring events; overtime counts down the extra
-    period only.
+    Returns ``game_id, season, margin, seconds_remaining, neutral, prior_diff, home_won``
+    (empty, with those columns, when no event matches a game). The margin (home - away) is
+    summed from scoring events of either side — events of any other team are skipped;
+    overtime counts down the extra period only.
     """
-    prior = priors[["GAME_ID", "TEAM_ID", "prior"]].assign(GAME_ID=priors["GAME_ID"].astype(str))
-    meta = games.assign(
-        game_id=games["game_id"].astype(str),
-        neutral=games["neutral_site"].astype(bool),
-        home_won=games["home_pts"] > games["away_pts"],
-    )
-    for side in ("home", "away"):
-        side_prior = prior.rename(
-            columns={"GAME_ID": "game_id", "TEAM_ID": f"{side}_team_id", "prior": f"{side}_prior"}
-        )
-        meta = meta.merge(side_prior, on=["game_id", f"{side}_team_id"])
-    meta["prior_diff"] = meta["home_prior"] - meta["away_prior"]
-
+    meta = _game_meta(games, priors)
     pbp = pbp.assign(gameId=pbp["gameId"].astype(str))
     pbp = pbp.loc[pbp["gameId"].isin(meta["game_id"])]
+    if pbp.empty:
+        return pd.DataFrame(columns=STATE_COLUMNS)
     events = pd.concat(
         [sort_chronological(game) for _, game in pbp.groupby("gameId", sort=False)],
         ignore_index=True,
     )
-    home = events["gameId"].map(meta.set_index("game_id")["home_team_id"])
-    team = events["teamId"].fillna(0)
+    sides = meta.set_index("game_id")
+    for_home = events["teamId"] == events["gameId"].map(sides["home_team_id"])
+    for_away = events["teamId"] == events["gameId"].map(sides["away_team_id"])
     points = _event_points(events)
-    signed = points.where(team == home, 0) - points.where((team > 0) & (team != home), 0)
+    signed = points.where(for_home, 0) - points.where(for_away, 0)
     margin = signed.groupby(events["gameId"]).cumsum()
 
-    scored = points > 0
+    scored = (points > 0) & (for_home | for_away)
     clock = _clock_seconds(events.loc[scored, "clock"])
     periods_left = (4 - events.loc[scored, "period"].astype(int)).clip(lower=0)
     scoring_states = pd.DataFrame(
@@ -193,17 +225,18 @@ def build_states(pbp: pd.DataFrame, games: pd.DataFrame, priors: pd.DataFrame) -
             "margin": margin[scored].astype(float),
             "seconds_remaining": periods_left * PERIOD_SECONDS + clock,
         }
+    ).merge(
+        meta[["game_id", "season", "neutral", "prior_diff", "home_won"]],
+        on="game_id",
+        validate="many_to_one",
     )
-    opening = pd.DataFrame(
-        {
-            "game_id": events["gameId"].unique(),
-            "margin": 0.0,
-            "seconds_remaining": REGULATION_SECONDS,
-        }
+    opening = meta.loc[meta["game_id"].isin(events["gameId"])].assign(
+        margin=0.0, seconds_remaining=REGULATION_SECONDS
     )
-    states = pd.concat([opening, scoring_states]).sort_values("game_id", kind="stable")
-    states = states.merge(meta[["game_id", "season", "neutral", "prior_diff", "home_won"]])
-    return states[STATE_COLUMNS].reset_index(drop=True)
+    states = pd.concat([opening[STATE_COLUMNS], scoring_states[STATE_COLUMNS]]).sort_values(
+        "game_id", kind="stable"
+    )
+    return states.reset_index(drop=True)
 
 
 def features(states: pd.DataFrame) -> np.ndarray:
@@ -266,3 +299,59 @@ def expected_calibration_error(y: np.ndarray, p: np.ndarray, bins: int = 10) -> 
         index, weights=p, minlength=bins
     )
     return float(np.abs(gap).sum() / p.size)
+
+
+def clipped_log_loss(y: np.ndarray, p: np.ndarray) -> float:
+    """Binary log-loss with ``p`` clipped to [1e-15, 1 - 1e-15].
+
+    ``predict`` saturates to exactly 0 or 1 on late big leads; clipping keeps the loss finite.
+    """
+    return float(log_loss(y, np.clip(p, _EPS, 1.0 - _EPS), labels=[0, 1]))
+
+
+def evaluate_holdout(db, k: float = PRIOR_GAMES_K) -> dict[str, float]:
+    """Gate metrics on a temporal holdout: the newest ``HOLDOUT_SEASONS`` of ``DEMO_SEASONS``.
+
+    The model and the baseline (``models.win_probability``: margin and time only) train on the
+    PBP states of the older seasons. The pregame check scores every held-out ``games`` row at
+    tip-off (margin 0, f = 1) against a constant equal to the training seasons' home-win rate.
+    """
+    box = db.query_df("SELECT * FROM box_scores_team")
+    games = db.query_df("SELECT * FROM games")
+    priors = pregame_priors(box, k)
+    states = build_states(db.query_df("SELECT * FROM play_by_play"), games, priors)
+
+    held_out = DEMO_SEASONS[-HOLDOUT_SEASONS:]
+    test_rows = states["season"].isin(held_out)
+    train, test = states.loc[~test_rows], states.loc[test_rows]
+    y_test = test["home_won"].astype(int).to_numpy()
+    model = fit(train)
+    p_test = predict(model, test)
+
+    minutes = {"minutes_remaining": lambda frame: frame["seconds_remaining"] / 60.0}
+    baseline = train_win_probability(train.assign(**minutes))
+    p_baseline = predict_wp_frame(baseline, test.assign(**minutes))
+
+    pregame = pregame_states(games, priors)
+    pregame_test = pregame.loc[pregame["season"].isin(held_out)]
+    y_pregame = pregame_test["home_won"].astype(int).to_numpy()
+    home_rate = pregame.loc[~pregame["season"].isin(held_out), "home_won"].mean()
+
+    return {
+        "trainGames": int(train["game_id"].nunique()),
+        "holdoutGames": int(test["game_id"].nunique()),
+        "holdoutLogLoss": clipped_log_loss(y_test, p_test),
+        "baselineLogLoss": clipped_log_loss(y_test, p_baseline),
+        "ece": expected_calibration_error(y_test, p_test),
+        "pregameLogLoss": clipped_log_loss(y_pregame, predict(model, pregame_test)),
+        "constantLogLoss": clipped_log_loss(y_pregame, np.full(len(y_pregame), home_rate)),
+    }
+
+
+def gate_passes(metrics: dict[str, float]) -> bool:
+    """Beat the baseline held out, stay calibrated (ECE <= 0.05) and beat a constant pregame."""
+    return bool(
+        metrics["holdoutLogLoss"] < metrics["baselineLogLoss"]
+        and metrics["ece"] <= MAX_ECE
+        and metrics["pregameLogLoss"] < metrics["constantLogLoss"]
+    )

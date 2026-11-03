@@ -8,14 +8,18 @@ import pytest
 from sklearn.linear_model import LogisticRegression
 
 from hoops_lab.models.game_win_probability import (
+    STATE_COLUMNS,
     build_states,
+    clipped_log_loss,
     coefficients,
     current_priors,
     expected_calibration_error,
     features,
     fit,
+    gate_passes,
     predict,
     pregame_priors,
+    pregame_states,
     team_game_ratings,
 )
 
@@ -134,6 +138,26 @@ def test_current_priors_include_every_game_of_the_season() -> None:
     assert as_of == "2021-10-24"
 
 
+def test_current_priors_keep_teams_that_have_not_played_yet() -> None:
+    box = _box()
+    box = box[box["GAME_ID"] != "0022200002"]  # in 2022-23 only A and B have played
+    priors, as_of = current_priors(box, "2022-23")
+
+    assert set(priors) == {"AAA", "BBB", "CCC"}
+    assert priors["CCC"] == pytest.approx(10.0)  # n = 0: C's 2021-22 final net rating
+    assert priors["AAA"] == pytest.approx((1 * 10 + 10 * 4 / 3) / 11)
+    assert priors["BBB"] == pytest.approx((1 * -10 + 10 * -7) / 11)
+    assert as_of == "2022-10-19"
+
+
+def test_current_priors_of_a_season_without_games_are_last_season_finals() -> None:
+    priors, as_of = current_priors(_box(), "2023-24")
+
+    # 2022-23 finals: A +10 and -20 over 200 poss, B -10 and C +20 over 100.
+    assert priors == pytest.approx({"AAA": -5.0, "BBB": -10.0, "CCC": 20.0})
+    assert as_of == "2022-10-19"
+
+
 def _pbp(rows: list[tuple]) -> pd.DataFrame:
     """PBPv3 rows: (actionNumber, period, clock, teamId, actionType, description, shotValue)."""
     frame = pd.DataFrame(
@@ -199,6 +223,36 @@ def test_build_states_sums_scoring_events_and_ignores_score_snapshots() -> None:
     assert not states["neutral"].any()
 
 
+def test_scoring_event_of_neither_side_is_skipped() -> None:
+    pbp = _pbp(
+        [
+            (2, 1, "PT11M00.00S", HOME, "Made Shot", "Home Jump Shot (2 PTS)", 2),
+            (3, 1, "PT10M00.00S", C, "Made Shot", "Stray Layup (2 PTS)", 2),
+            (4, 1, "PT09M00.00S", 0, "Made Shot", "Teamless Layup (2 PTS)", 2),
+        ]
+    )
+    states = build_states(pbp, _games(), _state_priors())
+
+    assert states["margin"].tolist() == [0, 2]
+    assert states["seconds_remaining"].tolist() == [2880, 2820]
+
+
+def test_build_states_without_events_is_an_empty_frame() -> None:
+    states = build_states(_pbp([]), _games(), _state_priors())
+
+    assert states.empty
+    assert list(states.columns) == STATE_COLUMNS
+
+
+def test_pregame_states_open_every_game_with_both_priors() -> None:
+    states = pregame_states(_games(neutral=True), _state_priors())
+
+    assert list(states.columns) == STATE_COLUMNS
+    row = states.iloc[0]
+    assert (row["margin"], row["seconds_remaining"]) == (0, 2880)
+    assert (row["prior_diff"], row["neutral"], row["home_won"]) == (4.0, True, True)
+
+
 def test_overtime_counts_down_the_extra_period_only() -> None:
     pbp = _pbp([(9, 5, "PT04M58.00S", HOME, "Made Shot", "Home Layup (2 PTS)", 2)])
     states = build_states(pbp, _games(neutral=True), _state_priors())
@@ -255,6 +309,37 @@ def test_expected_calibration_error() -> None:
     p = np.array([0.9, 0.1, 0.8, 0.3])
 
     assert expected_calibration_error(y, p) == pytest.approx(0.275)
+
+
+def test_clipped_log_loss_stays_finite_on_certain_predictions() -> None:
+    y = np.array([1, 0, 1])
+    p = np.array([1.0, 0.0, 0.5])
+
+    assert clipped_log_loss(y, p) == pytest.approx(np.log(2) / 3)
+    assert np.isfinite(clipped_log_loss(np.array([0]), np.array([1.0])))
+
+
+_PASSING = {
+    "holdoutLogLoss": 0.45,
+    "baselineLogLoss": 0.50,
+    "ece": 0.05,
+    "pregameLogLoss": 0.66,
+    "constantLogLoss": 0.69,
+}
+
+
+@pytest.mark.parametrize(
+    ("change", "passes"),
+    [
+        ({}, True),
+        ({"holdoutLogLoss": 0.50}, False),  # must beat the baseline strictly
+        ({"ece": 0.0501}, False),
+        ({"pregameLogLoss": 0.69}, False),  # must beat the constant strictly
+        ({"ece": float("nan")}, False),
+    ],
+)
+def test_gate_passes_truth_table(change: dict, passes: bool) -> None:
+    assert gate_passes({**_PASSING, **change}) is passes
 
 
 def test_coefficients_report_readable_parameters() -> None:

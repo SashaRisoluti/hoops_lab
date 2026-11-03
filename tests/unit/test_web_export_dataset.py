@@ -21,6 +21,7 @@ from scripts.export_web_data import (
     build_project_stats,
     build_shot_zones,
     build_team_ratings,
+    build_win_probability,
     export_dataset,
 )
 
@@ -347,7 +348,19 @@ def test_export_writes_the_expected_files(tmp_path: Path) -> None:
         "leaders/2025-26.json",
         "teams/2025-26.json",
         "shot-zones/2025-26.json",
+        "win-probability.json",
     }
+
+
+def test_win_probability_is_unavailable_without_play_by_play() -> None:
+    # The test database has no box scores or play-by-play to train the model on.
+    assert build_win_probability(_db()) == {"available": False}
+
+
+def test_export_writes_the_win_probability_model(tmp_path: Path) -> None:
+    export_dataset(_db(), tmp_path, ["2025-26"])
+    model = json.loads((tmp_path / "win-probability.json").read_text(encoding="utf-8"))
+    assert model["available"] is False
 
 
 def test_every_exported_file_is_valid_json(tmp_path: Path) -> None:

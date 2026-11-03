@@ -38,6 +38,16 @@ from dashboard.components.theme import (  # noqa: E402
 from hoops_lab.analytics.seasons import featured_season  # noqa: E402
 from hoops_lab.analytics.team_identity import league_ratings  # noqa: E402
 from hoops_lab.config import DEMO_SEASONS  # noqa: E402
+from hoops_lab.models.game_win_probability import (  # noqa: E402
+    PRIOR_GAMES_K,
+    build_states,
+    coefficients,
+    current_priors,
+    evaluate_holdout,
+    fit,
+    gate_passes,
+    pregame_priors,
+)
 from hoops_lab.storage.database import Database  # noqa: E402
 from hoops_lab.visuals.team_colors import pair_overrides  # noqa: E402
 
@@ -73,6 +83,9 @@ LEADER_CATEGORIES: tuple[tuple[str, str], ...] = (
     ("REB", "Rebounds per game"),
     ("TS_PCT", "True shooting"),
 )
+
+#: Tables the win-probability model trains on.
+WIN_PROBABILITY_TABLES = ("box_scores_team", "games", "play_by_play")
 
 _SOURCE = "dashboard/components/theme.py"
 
@@ -278,8 +291,46 @@ def build_shot_zones(db: Database, season: str, min_attempts: int = MIN_ZONE_ATT
     }
 
 
+def build_win_probability(db: Database) -> dict:
+    """The /live drifting-lead win-probability model, published only if it clears its gate.
+
+    The gate (``evaluate_holdout``) trains on the older seasons and scores the newest two.
+    When it passes, the coefficients are refitted on every season's PBP sample and shipped
+    with the newest season's pregame net ratings; otherwise only ``available: false`` and the
+    metrics. Floats are rounded to 6 decimals, so the file changes only with the data.
+    """
+    if not all(db.has_table(table) for table in WIN_PROBABILITY_TABLES):
+        return {"available": False}
+    raw = evaluate_holdout(db)
+    metrics = {key: round(value, 6) for key, value in raw.items()}
+    if not gate_passes(raw):
+        return {"available": False, "metrics": metrics}
+
+    box = db.query_df("SELECT * FROM box_scores_team")
+    states = build_states(
+        db.query_df("SELECT * FROM play_by_play"),
+        db.query_df("SELECT * FROM games"),
+        pregame_priors(box),
+    )
+    model = {key: round(value, 6) for key, value in coefficients(fit(states)).items()}
+    season = str(box["season"].max())
+    teams, as_of = current_priors(box, season)
+    return {
+        "available": True,
+        "coefficients": {key: model[key] for key in ("a", "b", "c")},
+        "homeCourtPts": model["homeCourtPts"],
+        "pointsPerNetRating": model["pointsPerNetRating"],
+        "scale": model["scale"],
+        "k": PRIOR_GAMES_K,
+        "season": season,
+        "asOf": as_of,
+        "teams": {tricode: round(prior, 6) for tricode, prior in sorted(teams.items())},
+        "metrics": metrics,
+    }
+
+
 def export_dataset(db: Database, root: Path, seasons: list[str]) -> list[Path]:
-    """Write the index plus per-season leaders and team ratings under ``root``."""
+    """Write the index, per-season leaders, team ratings and shot zones, and the WP model."""
     written = [_write_json(root / "index.json", build_index(db))]
     for season in seasons:
         written.append(_write_json(root / "leaders" / f"{season}.json", build_leaders(db, season)))
@@ -289,6 +340,7 @@ def export_dataset(db: Database, root: Path, seasons: list[str]) -> list[Path]:
         written.append(
             _write_json(root / "shot-zones" / f"{season}.json", build_shot_zones(db, season))
         )
+    written.append(_write_json(root / "win-probability.json", build_win_probability(db)))
     return written
 
 
