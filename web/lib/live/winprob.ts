@@ -44,7 +44,11 @@ export function wpAvailable(model: WinProbModel, seasonType: number, prior: numb
   return model.available && seasonType !== 1 && prior !== null;
 }
 
-/** Pregame point plus one point per score change; a finished game ends at 1 or 0. */
+/**
+ * Pregame point at t = 0, then one point per play (ESPN's granularity). In progress, a last
+ * point at the summary's clock when it is past the last play; finished, a final point at the
+ * end of the last period, 1 or 0 from the final score.
+ */
 export function wpSeries(summary: GameSummary, model: WinProbModel, prior: number): WpPoint[] {
   const at = (margin: number, remaining: number) =>
     homeWinProbability(model, {
@@ -53,24 +57,23 @@ export function wpSeries(summary: GameSummary, model: WinProbModel, prior: numbe
       priorDiff: prior,
       neutral: summary.neutralSite,
     }) ?? 0.5;
-  const pts: WpPoint[] = [{ t: 0, home: at(0, REG_SECONDS), margin: 0 }];
-  let prevHome = 0;
-  let prevAway = 0;
-  for (const p of summary.plays) {
-    if (p.homeScore === prevHome && p.awayScore === prevAway) continue;
-    prevHome = p.homeScore;
-    prevAway = p.awayScore;
-    const margin = p.homeScore - p.awayScore;
-    pts.push({
-      t: elapsedSeconds(p.period, p.clock),
-      home: at(margin, secondsRemaining(p.period, p.clock)),
-      margin,
-    });
-  }
+  const point = (period: number, clock: string, margin: number): WpPoint => ({
+    t: elapsedSeconds(period, clock),
+    home: at(margin, secondsRemaining(period, clock)),
+    margin,
+  });
+  const pts = summary.plays.map((p) => point(p.period, p.clock, p.homeScore - p.awayScore));
   pts.sort((a, b) => a.t - b.t);
-  if (summary.state === "post" && pts.length > 1) {
-    const last = pts[pts.length - 1];
-    last.home = last.margin > 0 ? 1 : 0;
+  pts.unshift({ t: 0, home: at(0, REG_SECONDS), margin: 0 });
+
+  const margin = summary.home.score - summary.away.score;
+  if (summary.state === "in") {
+    const now = point(summary.period, summary.clock, margin);
+    if (now.t > pts[pts.length - 1].t) pts.push(now);
+  } else if (summary.state === "post") {
+    const periods = Math.max(4, summary.period, ...summary.plays.map((p) => p.period));
+    const home = margin > 0 ? 1 : margin < 0 ? 0 : 0.5; // a final tie is impossible
+    pts.push({ t: REG_SECONDS + (periods - 4) * 300, home, margin });
   }
   return pts;
 }
