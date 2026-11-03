@@ -16,6 +16,7 @@ from scripts.export_web_data import (
     MIN_GAMES,
     MIN_MINUTES,
     MIN_ZONE_ATTEMPTS,
+    _write_json,
     build_index,
     build_leaders,
     build_project_stats,
@@ -361,6 +362,12 @@ def test_export_writes_the_win_probability_model(tmp_path: Path) -> None:
     export_dataset(_db(), tmp_path, ["2025-26"])
     model = json.loads((tmp_path / "win-probability.json").read_text(encoding="utf-8"))
     assert model["available"] is False
+
+
+def test_write_json_refuses_nan(tmp_path: Path) -> None:
+    # A NaN must fail the export, not ship as invalid JSON that breaks the site build.
+    with pytest.raises(ValueError):
+        _write_json(tmp_path / "x.json", {"metrics": {"ece": float("nan")}})
 
 
 def test_every_exported_file_is_valid_json(tmp_path: Path) -> None:

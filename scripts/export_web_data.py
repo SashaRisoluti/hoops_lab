@@ -108,9 +108,12 @@ def export_tokens(dest: Path) -> Path:
 
 
 def _write_json(dest: Path, payload: dict) -> Path:
-    """Write ``payload`` to ``dest`` as indented JSON, creating parent directories."""
+    """Write ``payload`` to ``dest`` as indented JSON, creating parent directories.
+
+    NaN/inf raise ``ValueError`` here: invalid JSON would otherwise break the site build.
+    """
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    dest.write_text(json.dumps(payload, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     return dest
 
 
