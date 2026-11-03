@@ -30,7 +30,7 @@ model *form* is kept, and its parameters are **fitted on hoops-lab's own data**.
 ## Non-goals
 
 - EPM, lineup-impact drift, any player-level term (we have no EPM; BPM may come later).
-- Timestral / PyTorch / any foundation model (needs a server or a GPU; not a static site).
+- Timestral / PyTorch / any foundation model in the product (needs a server or a GPU; not a static site). A later, optional **offline** benchmark of Timestral zero-shot against this model on the same held-out games is possible (separate environment, not in the deploy lock).
 - Betting data. ESPN's `pickcenter` spread is **not** used or shown (owner decision).
 - Changing the dashboard's existing model (`hoops_lab/models/win_probability.py`); it stays as
   it is and serves as the gate's baseline.
@@ -159,7 +159,7 @@ shape and that the export writes it.
   - `winProbability(model, { margin, secondsRemaining, priorDiff, neutral })` → home
     probability;
   - a series builder: one point per play with a score (elapsed game seconds, home
-    probability) plus the pregame point at t = 0;
+    probability, home − away margin) plus the pregame point at t = 0;
   - the ESPN series aligned to plays by `playId`.
   - Clock parsing must handle ESPN's "M:SS" and "S.s" formats and overtime.
   - Tests use exact values computed by hand from given coefficients.
@@ -168,6 +168,11 @@ shape and that the export writes it.
   - headline percentage per team (tricode + team swatch), a split bar, and a line chart over
     elapsed game time (quarters marked; OT extends the axis). Our model is a solid line, ESPN
     is a dashed line, with a legend; the two are distinguishable without colour.
+  - **Score margin on the same chart (owner request, 2026-11-03):** home − away points on a
+    **secondary right axis** sharing the X axis, with **0 aligned to the 50% line** so "home
+    leads" and "home favoured" sit on the same side. Drawn as a muted stepped area/line behind
+    the probability lines (scores change in steps), symmetric scale ±max(|margin|, 10) points
+    rounded up to 5, labelled in points, listed in the legend (mockup `wp-layout-v2`).
   - footnote: pregame %, "season net rating + home court", games fitted on, and the held-out
     log-loss of the model vs the baseline.
   - **Scheduled game:** only the pregame prediction (percentages + split bar).
