@@ -239,6 +239,16 @@ only when a game is in progress at load. Parsing and derivation live in `web/lib
 (tested with `npm test`, Node's built-in runner, against trimmed real ESPN payloads in
 `web/tests/fixtures/`).
 
+The selected game also gets a **win probability**: a pregame prediction before tip-off, then
+the live probability and its curve over the game, with ESPN's own line as a benchmark and the
+score margin on a second axis. The model is a no-intercept logistic "drifting lead" fitted in
+Python (`hoops_lab/models/game_win_probability.py`) on the play-by-play sample, using margin,
+time left and a **leak-free pregame net rating** (season to date before the game, blended with
+last season). The web export gates it on the two newest completed seasons: it must beat the
+dashboard's score-and-clock model on held-out log-loss and stay calibrated (ECE ≤ 0.05). It
+then writes `web/public/data/win-probability.json`, which the browser applies to ESPN's score
+and clock. No betting data and no player ratings are used.
+
 ### Dashboard — Streamlit Community Cloud
 
 - Main file path `dashboard/app.py`. The root [`app.py`](app.py) is a local launcher only;

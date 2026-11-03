@@ -89,6 +89,12 @@ From `box_scores_team` (one row per team per game, all 1 230 games a season):
 
 ### Quality gate (my call; integration test, skips without the DB like the others)
 
+> **Amended 2026-11-03 (final review, controller ruling):** the gate — both the integration test and the
+> export's self-gate — evaluates on the **two most recent completed regular seasons** (≥ 1230 games),
+> training strictly before them; the in-progress season is only logged. A replay showed the in-season
+> holdout's ECE above 0.05 for a season's first ~50 games (noise), which would have blocked the daily
+> refresh. Thresholds unchanged. Today: train 2021-22..2023-24, held-out 2024-25 + 2025-26.
+
 Train on the PBP sample of 2021-22…2024-25, evaluate on **2025-26 + 2026-27 to date** (about
 158 held-out games; one season alone, ~81 games of highly correlated states, is too noisy for
 a calibration check):

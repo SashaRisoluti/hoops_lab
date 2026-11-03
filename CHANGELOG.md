@@ -1,3 +1,28 @@
+## Win probability for the selected game on /live (2026-11-03)
+
+- **New card under the `/live` scorebar.**
+  - Before tip-off it shows a pregame prediction.
+  - During and after a game it shows the probability and its curve. Our model is a solid line,
+    ESPN's own `winprobability` a dashed benchmark, and the home − away score margin sits on a
+    right axis with 0 on the 50% line.
+  - Preseason games, unknown matchups and a gated-off model show "not available" instead of a
+    number.
+- **Model** (`hoops_lab/models/game_win_probability.py`):
+  - A no-intercept logistic drifting lead,
+    `z = a·margin/√f + b·√f·(1−neutral) + c·ΔNR·√f`, with f the fraction of the game left.
+  - Margins are summed from scoring events and match the box score on all 475 PBP games.
+  - The pregame net rating is leak-free: season to date strictly before the game date, from box
+    score possessions, blended with last season (k = 10).
+  - It is fitted with scikit-learn, so no new dependency.
+- **Gate:**
+  - It uses the two newest completed seasons and trains strictly before them. Today: log-loss
+    0.382 vs 0.443 for the dashboard's model, ECE 0.027, pregame 0.606 vs 0.688.
+  - A first version gated on the in-progress season. A replay showed its calibration error
+    above the limit for a season's first ~50 games, which would have blocked the daily refresh,
+    so the gate was moved to completed seasons only.
+  - The export prints `win probability gate PASS|FAIL`. On failure it writes
+    `available: false`, so the site build never breaks. JSON exports now refuse NaN.
+
 ## Live games page on the website (2026-11-02)
 
 - New `/live` page on the Vercel site. The visitor's browser reads the ESPN public API, so live

@@ -43,6 +43,20 @@ Last updated: 2026-11-02.
     tracking from substitutions, polling, halftime label. Known later items: UTA purple is
     2.83:1 on the card; `?game=` ids older than yesterday fall back silently; pill sits
     top-centre on purpose.
+- **Win probability on `/live` (2026-11-03):** spec
+  `docs/superpowers/specs/2026-11-03-live-win-probability-design.md`, plan
+  `docs/superpowers/plans/2026-11-03-live-win-probability.md`.
+  - Model: `hoops_lab/models/game_win_probability.py`, exported by `scripts/export_web_data.py`
+    to `web/public/data/win-probability.json`. The UI is `web/components/live/WinProbabilityCard.tsx`,
+    placed under the scorebar.
+  - Gate on the two newest completed seasons (2024-25 and 2025-26): log-loss 0.382 vs 0.443,
+    ECE 0.027, pregame 0.606 vs 0.688. The in-season metrics are only logged.
+  - The source demo app (AI Studio, "Timestral preprocessor") was moved out of the repo to
+    `C:\dev\nba-pbp-time-series-engine-(timestral-preprocessor)`. Only its model form was kept.
+  - Later, optional: an offline benchmark of Mistral's Timestral against this model, and adding
+    possession and foul-bonus features to the model.
+  - Near-identical accents such as MIA/LAL (both gold) are not recoloured; only identical pairs
+    are.
 - **Deployed 2026-07-31:** website https://hoops-lab.vercel.app/ (Vercel, root `web/`),
   dashboard https://hoopslab.streamlit.app/. HuggingFace Spaces retired. Single branch `main`.
 - **Worldcup26 UI restyle (Phase A + B): COMPLETE and merged.** Phase A at `ef4c8fc`, Phase B
