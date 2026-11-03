@@ -4,14 +4,14 @@ Modular NBA data-science framework — **historical analysis**, **pre-game scout
 
 | | |
 |---|---|
-| **Website** | [hoops-lab.vercel.app](https://hoops-lab.vercel.app/) — statically generated, real data, no cold start |
+| **Website** | [hoops-lab.vercel.app](https://hoops-lab.vercel.app/) — statically generated, real data, no cold start; [`/live`](https://hoops-lab.vercel.app/live) follows tonight's games with a win probability |
 | **Live dashboard** | [hoopslab.streamlit.app](https://hoopslab.streamlit.app/) — the full interactive tool (sleeps when idle) |
 
 ## What it does
 
 1. **Historical analysis** — explore seasons, teams, players, trends, traditional and advanced stats through fully dynamic filters (temporal, entity, contextual, statistical with AND/OR logic).
 2. **Pre-game scouting** — compare your team with the opponent and surface tactical advantages (shot profiles, lineup efficiency, Matchup Leverage Index).
-3. **Live & post-game analysis** — monitor the game in progress, compare live metrics vs historical baselines, raise tactical alerts and generate automated reports.
+3. **Live & post-game analysis** — monitor the game in progress, compare live metrics vs historical baselines, raise tactical alerts and generate automated reports. The public website's `/live` page shows any game in progress with a live win probability.
 
 ## Architecture
 
@@ -29,7 +29,7 @@ The framework exposes four independent interfaces over one analytics engine:
 |---|---|---|
 | Importable Python package | `hoops_lab/` | ✅ all 6 phases complete |
 | Streamlit dashboard (full tool) | `dashboard/` | ✅ 9 pages |
-| Public website (Next.js, static) | `web/` | ✅ live |
+| Public website (Next.js, static) | `web/` | ✅ live, incl. `/live` games page |
 | FastAPI REST API | `api/` | stub, not started |
 
 ## Project structure
@@ -49,7 +49,7 @@ hoops-lab/
 ├── dashboard/            # Streamlit UI (presentation only)
 ├── web/                  # Next.js public website (static, generated data)
 ├── scripts/              # CLI utilities incl. the web data export
-├── api/                  # FastAPI REST interface (Phase 4+)
+├── api/                  # FastAPI REST interface (stub)
 ├── data/                 # raw / processed / db (see .gitignore policy)
 ├── notebooks/            # exploratory analysis
 └── tests/                # unit / integration / fixtures
@@ -58,7 +58,7 @@ hoops-lab/
 ## Quickstart: run your own copy
 
 You need Git, [Git LFS](https://git-lfs.com) and Python 3.12+ (3.11 also works). Every season
-from 2021-22 onward comes with the clone through Git LFS (about 31 MB), so there is no history
+from 2021-22 onward comes with the clone through Git LFS (about 33 MB), so there is no history
 to download. Only the season in progress is refreshed.
 
 **1. Clone and set up**
@@ -157,9 +157,9 @@ The reference team is **never hard-coded**. To switch from the default (Dallas M
 
 ## Data strategy (public demo)
 
-- Every regular season in `DEMO_SEASONS` (2021-22 onwards) preloaded; the in-progress season is refreshed weekly (see "Refreshing the current season"). Until every team has played `FEATURED_MIN_TEAM_GAMES` games, the previous season stays the default view.
+- Every regular season in `DEMO_SEASONS` (2021-22 onwards) preloaded; the in-progress season is refreshed daily or weekly (see "Refreshing the current season"). Until every team has played `FEATURED_MIN_TEAM_GAMES` games, the previous season stays the default view.
 - League-wide player box scores and advanced stats; shot charts and play-by-play for a representative sample of games.
-- Pre-computed Parquet files in `data/processed/` are versioned in the repo with Git LFS (~30 MB); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because the hosting filesystem is ephemeral.
+- Pre-computed Parquet files in `data/processed/` are versioned in the repo with Git LFS (~33 MB, growing through the season); the DuckDB file is **rebuilt from Parquet at startup** (`ensure_db_ready()`) because the hosting filesystem is ephemeral.
 
 ## Shot Profile Visual Analytics
 
@@ -211,10 +211,15 @@ seasons, ready for a 5-season extension).
 ## Testing
 
 ```powershell
-pytest
+python -m pytest tests -q        # Python: unit + integration (integration needs the local DuckDB)
+cd web; npm test                 # website: /live parsing and win-probability logic
 ```
 
-Unit tests never hit the network; every advanced-stat formula is validated against known reference values.
+Unit tests never hit the network; every advanced-stat formula is validated against known
+reference values. Integration tests add quality gates on real data: the possession parser must
+reconstruct every final score, the shot model must beat its baseline on a temporal holdout, and
+the win-probability models are scored on held-out games. Design gates keep colours in one
+place (no hex literals outside the theme).
 
 ## Deployment
 
@@ -258,7 +263,7 @@ and clock. No betting data and no player ratings are used.
 - DuckDB is rebuilt at boot from the versioned demo parquet in `data/processed/`, because the
   hosting filesystem is ephemeral. Set `ENVIRONMENT=production` to disable live-API features.
 - The free tier sleeps when idle, so the first visit after a quiet period takes ~30s to wake.
-- A push is applied **in place**, without restarting the app. Data-only pushes (the weekly
+- A push is applied **in place**, without restarting the app. Data-only pushes (the scheduled
   refresh) are picked up automatically, because the database is keyed on a parquet
   fingerprint. After a push that changes Python code under `hoops_lab/`, **reboot the app**
   (Manage app → ⋮ → Reboot app). Streamlit only reloads modules under `dashboard/`, so the
@@ -267,11 +272,11 @@ and clock. No betting data and no player ratings are used.
   in-place pull, and a reboot re-clones.
 - NBA endpoints are unreachable from Streamlit Cloud: `cdn.nba.com` answers 403 and
   `stats.nba.com` times out. Live mode therefore shows a warning there and works when the
-  dashboard runs locally.
+  dashboard runs locally; the public live view is the website's `/live` page.
 
 ### Refreshing the current season
 
-One command, run weekly from a machine that can reach stats.nba.com (with the local
+One command, run daily or weekly from a machine that can reach stats.nba.com (with the local
 dashboard stopped, since it holds the DuckDB file):
 
 ```powershell
@@ -283,8 +288,9 @@ It downloads the newest season in `DEMO_SEASONS` (league data, per-team lineups 
 charts, a play-by-play sample), copies it into `data/processed/`, rebuilds DuckDB from exactly
 what ships, re-exports `web/public/data/`, then runs the full test suite (Streamlit AppTests
 included) as a safety gate: if anything fails, nothing is committed and the live dashboard is
-untouched. A full run makes ~140 throttled API calls plus the suite (~15 minutes). Weekly is
-deliberate: every refresh adds a new version of the season's LFS parquet.
+untouched. A full run makes ~140 throttled API calls plus the suite (~15 minutes). Every
+refresh that changes data adds a new version of the season's LFS parquet; see the LFS cost
+below.
 
 ### Automatic refresh (daily or weekly)
 

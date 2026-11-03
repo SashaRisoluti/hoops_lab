@@ -1,6 +1,6 @@
 # Session Resume Point
 
-Last updated: 2026-11-02.
+Last updated: 2026-11-03.
 
 ## Current state
 
@@ -58,7 +58,8 @@ Last updated: 2026-11-02.
   - Near-identical accents such as MIA/LAL (both gold) are not recoloured; only identical pairs
     are.
 - **Deployed 2026-07-31:** website https://hoops-lab.vercel.app/ (Vercel, root `web/`),
-  dashboard https://hoopslab.streamlit.app/. HuggingFace Spaces retired. Single branch `main`.
+  dashboard https://hoopslab.streamlit.app/. HuggingFace Spaces retired. Work happens on `main`; the merged remote branch `feat/live-web`
+  is stale (delete only with the owner's yes).
 - **Worldcup26 UI restyle (Phase A + B): COMPLETE and merged.** Phase A at `ef4c8fc`, Phase B
   `d278796..bba45af`, resume-point commit `2366992`.
 - **2026-07-30: OneDrive corruption recovered.** A PC shutdown mid-session left OneDrive
@@ -99,17 +100,17 @@ JSON-LD, generated OG card) done. Task 7 (Vercel deploy) done 2026-07-31.
 
 Confirmed by the user 2026-07-31: LinkedIn `https://www.linkedin.com/in/sasha-risoluti/`; the
 live dashboard is `https://hoopslab.streamlit.app/`. There is still **no custom domain** — note
-that `hoopslab.streamlit.app` is Streamlit Community Cloud and cannot host the Next.js app, so
-`site.url` currently holds the expected Vercel URL and must be corrected at deploy time.
+that `hoopslab.streamlit.app` is Streamlit Community Cloud and cannot host the Next.js app;
+`site.url` (`web/lib/site.ts`) is `https://hoops-lab.vercel.app`.
 
-Visual verification is set up: Playwright lives in the session scratchpad (`verify/shot.mjs`) and
-screenshots the running app at 1440px and 360px while checking for horizontal overflow and console
+Visual verification was done with a Playwright script kept in a session scratchpad (not in the
+repo) that screenshots the running app at 1440px and 360px while checking for horizontal overflow and console
 errors. Two real defects in Task 5 were invisible to the test suite and only surfaced this way —
 always screenshot before calling a page done.
 
 Build the web app with `cd web && npm run build`. It needs `NODE_EXTRA_CA_CERTS` set to the CA
-bundle (already a user env var) or `next/font/google` fails behind the corporate proxy — see
-[[hoops-lab-corporate-tls-git-lfs]].
+bundle (already a user env var) or `next/font/google` fails behind the corporate proxy (the same
+CA bundle git-lfs uses; see "Repo environment cautions" in `CLAUDE.md`).
 
 Still open: no custom domain (the site uses the free `*.vercel.app`).
 

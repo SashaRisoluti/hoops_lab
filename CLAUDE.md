@@ -18,6 +18,9 @@ python -m pytest tests/unit/test_possession.py::test_and_one_stays_one_possessio
 # Lint / format (config in pyproject.toml, line length 100)
 ruff check --fix . ; ruff format .
 
+# Website (from web/): logic tests, local dev server, production build (needs NODE_EXTRA_CA_CERTS here)
+npm test ; npm run dev ; npm run build
+
 # Dashboard (python -m keeps the repo root importable)
 python -m streamlit run dashboard/app.py
 
