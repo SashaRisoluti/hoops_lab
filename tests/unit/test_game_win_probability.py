@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
 from sklearn.linear_model import LogisticRegression
 
+import scripts.export_web_data as export
 from hoops_lab.models.game_win_probability import (
     STATE_COLUMNS,
     build_states,
     clipped_log_loss,
     coefficients,
+    completed_holdout_seasons,
     current_priors,
+    evaluate_holdout,
     expected_calibration_error,
     features,
     fit,
@@ -22,9 +27,10 @@ from hoops_lab.models.game_win_probability import (
     pregame_states,
     team_game_ratings,
 )
+from hoops_lab.storage.database import Database
 
-A, B, C = 1610612701, 1610612702, 1610612703
-TRICODE = {A: "AAA", B: "BBB", C: "CCC"}
+A, B, C, D = 1610612701, 1610612702, 1610612703, 1610612704
+TRICODE = {A: "AAA", B: "BBB", C: "CCC", D: "DDD"}
 HOME, AWAY = A, B
 GAME = "0022100001"
 
@@ -370,3 +376,135 @@ def test_inputs_are_not_mutated() -> None:
     for frame, original in zip((box, pbp, games, priors), originals, strict=True):
         pd.testing.assert_frame_equal(frame, original)
     pd.testing.assert_frame_equal(states, states_copy)
+
+
+# ---- temporal holdout -------------------------------------------------------
+
+#: season -> (date, home won A-B, home won C-D). Both games of a season share the date.
+_SEASONS = {
+    "2021-22": ("2021-10-20", True, False),
+    "2022-23": ("2022-10-20", True, False),
+    "2023-24": ("2023-10-20", True, True),
+}
+
+
+def _wp_db() -> Database:
+    """Three seasons of two games (A hosts B, C hosts D); the home side scores first."""
+    box, games, pbp = [], [], []
+    for i, (season, (date, *home_won)) in enumerate(_SEASONS.items()):
+        for j, ((home, away), won) in enumerate(zip([(A, B), (C, D)], home_won, strict=True)):
+            game_id = f"00{i}{j}"
+            home_pts, away_pts = (110, 100) if won else (100, 110)
+            box += _game(game_id, date, season, home, home_pts, away, away_pts)
+            games.append(
+                {
+                    "game_id": game_id,
+                    "season": season,
+                    "season_type": "Regular Season",
+                    "home_team_id": home,
+                    "away_team_id": away,
+                    "home_pts": home_pts,
+                    "away_pts": away_pts,
+                    "neutral_site": False,
+                }
+            )
+            pbp.append(
+                {
+                    "gameId": game_id,
+                    "actionNumber": 1,
+                    "period": 1,
+                    "clock": "PT11M00.00S",
+                    "teamId": home,
+                    "actionType": "Made Shot",
+                    "description": "Home Jump Shot (2 PTS)",
+                    "shotValue": 2,
+                }
+            )
+    db = Database(path=":memory:")
+    for name, rows in (("box_scores_team", box), ("games", games), ("play_by_play", pbp)):
+        db.connect().register(name, pd.DataFrame(rows))
+    return db
+
+
+def test_holdout_trains_only_on_seasons_before_the_held_out_ones() -> None:
+    metrics = evaluate_holdout(_wp_db(), ["2022-23"])
+
+    # 2023-24 is newer than the held-out season: it neither trains nor sets the home rate.
+    assert (metrics["trainGames"], metrics["holdoutGames"]) == (2, 2)
+    assert metrics["constantLogLoss"] == pytest.approx(np.log(2))  # 2021-22 home rate: 1/2
+
+
+def test_holdout_without_a_split_has_no_metrics_and_fails_the_gate() -> None:
+    db = _wp_db()
+
+    assert evaluate_holdout(db, ["2021-22"]) == {}  # nothing older to train on
+    assert evaluate_holdout(db, ["2030-31"]) == {}  # no held-out game
+    assert evaluate_holdout(db, []) == {}
+    assert gate_passes({}) is False
+
+
+def test_completed_holdout_seasons_are_the_newest_full_regular_seasons() -> None:
+    regular = ["2021-22"] * 1230 + ["2022-23"] * 1230 + ["2023-24"] * 1230 + ["2024-25"] * 1229
+    games = pd.DataFrame(
+        {
+            "season": regular + ["2024-25"] * 5,
+            # Playoff rows never complete a season.
+            "season_type": ["Regular Season"] * len(regular) + ["Playoffs"] * 5,
+        }
+    )
+    db = Database(path=":memory:")
+    db.connect().register("games", games)
+
+    assert completed_holdout_seasons(db) == ["2022-23", "2023-24"]
+    assert completed_holdout_seasons(db, n=1) == ["2023-24"]
+
+
+# ---- web export of the model ------------------------------------------------
+
+_GATE_METRICS = {"trainGames": 2, "holdoutGames": 2, **_PASSING}
+
+
+def test_export_withholds_a_model_that_fails_its_gate(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    failing = {**_GATE_METRICS, "ece": 0.08}
+    monkeypatch.setattr(export, "evaluate_holdout", lambda db, held_out: failing)
+
+    model = export.build_win_probability(_wp_db())
+
+    assert model == {"available": False, "metrics": {**failing, "fitGames": 6}}
+    assert "win probability gate FAIL" in capsys.readouterr().out
+
+
+def test_export_drops_metrics_that_are_not_finite(monkeypatch: pytest.MonkeyPatch) -> None:
+    broken = {**_GATE_METRICS, "ece": float("nan")}
+    monkeypatch.setattr(export, "evaluate_holdout", lambda db, held_out: broken)
+
+    assert export.build_win_probability(_wp_db()) == {"available": False}
+
+
+def test_export_without_a_completed_season_is_unavailable_and_never_nan(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    model = export.build_win_probability(_wp_db())  # no season has 1230 games
+
+    assert model == {"available": False}
+    json.dumps(model, allow_nan=False)
+    assert "win probability gate FAIL" in capsys.readouterr().out
+
+
+def test_export_ships_the_full_refit_with_last_season_priors_at_rollover(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(export, "evaluate_holdout", lambda db, held_out: _GATE_METRICS)
+    # The newest configured season has no game yet: its priors are 2023-24's finals.
+    monkeypatch.setattr(export, "DEMO_SEASONS", [*_SEASONS, "2024-25"])
+
+    model = export.build_win_probability(_wp_db())
+
+    assert model["available"] is True
+    assert model["season"] == "2024-25"
+    assert model["asOf"] == "2023-10-20"
+    assert model["teams"] == {"AAA": 10.0, "BBB": -10.0, "CCC": 10.0, "DDD": -10.0}
+    assert model["metrics"] == {**_GATE_METRICS, "fitGames": 6}
+    assert "win probability gate PASS" in capsys.readouterr().out

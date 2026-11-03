@@ -25,20 +25,36 @@ METRIC_KEYS = {
     "constantLogLoss",
 }
 
+#: Frozen split: the two newest completed seasons held out, the three before them trained.
+TRAIN_SEASONS = ["2021-22", "2022-23", "2023-24"]
+HELD_OUT_SEASONS = ["2024-25", "2025-26"]
+
+
+def _pbp_games(db: Database, seasons: list[str]) -> int:
+    marks = ", ".join("?" for _ in seasons)
+    row = db.fetchone(
+        f"SELECT COUNT(DISTINCT gameId) FROM play_by_play WHERE season IN ({marks})", seasons
+    )
+    return int(row[0]) if row else 0
+
 
 def test_drifting_lead_model_passes_the_gate_on_held_out_seasons() -> None:
-    metrics = evaluate_holdout(Database())
-    print(f"\nwin-probability gate metrics: {metrics}")
+    db = Database()
+    metrics = evaluate_holdout(db, HELD_OUT_SEASONS)
+    print(f"\nwin-probability gate metrics (held out {HELD_OUT_SEASONS}): {metrics}")
 
     assert set(metrics) == METRIC_KEYS
-    assert metrics["trainGames"] > 0 and metrics["holdoutGames"] > 0
+    assert metrics["trainGames"] == _pbp_games(db, TRAIN_SEASONS)
+    assert metrics["holdoutGames"] == _pbp_games(db, HELD_OUT_SEASONS)
     assert gate_passes(metrics), metrics
 
 
 def test_exported_model_has_the_contract_shape() -> None:
     model = build_win_probability(Database())
 
-    assert model["available"] is True
+    assert "available" in model
+    if not model["available"]:
+        return  # the gate failed: only the flag (and finite metrics) are published
     assert set(model) == {
         "available",
         "coefficients",
@@ -52,6 +68,6 @@ def test_exported_model_has_the_contract_shape() -> None:
         "metrics",
     }
     assert set(model["coefficients"]) == {"a", "b", "c"}
-    assert set(model["metrics"]) == METRIC_KEYS
+    assert set(model["metrics"]) == METRIC_KEYS | {"fitGames"}
     assert len(model["teams"]) == 30
     assert all(len(tricode) == 3 for tricode in model["teams"])

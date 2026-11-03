@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -42,6 +43,7 @@ from hoops_lab.models.game_win_probability import (  # noqa: E402
     PRIOR_GAMES_K,
     build_states,
     coefficients,
+    completed_holdout_seasons,
     current_priors,
     evaluate_holdout,
     fit,
@@ -297,17 +299,26 @@ def build_shot_zones(db: Database, season: str, min_attempts: int = MIN_ZONE_ATT
 def build_win_probability(db: Database) -> dict:
     """The /live drifting-lead win-probability model, published only if it clears its gate.
 
-    The gate (``evaluate_holdout``) trains on the older seasons and scores the newest two.
-    When it passes, the coefficients are refitted on every season's PBP sample and shipped
-    with the newest season's pregame net ratings; otherwise only ``available: false`` and the
-    metrics. Floats are rounded to 6 decimals, so the file changes only with the data.
+    The gate (``evaluate_holdout``) scores the two newest completed seasons
+    (``completed_holdout_seasons``) and trains on the seasons before them; the in-progress
+    season is evaluated too, for information only (printed, never gating). One
+    ``win probability gate PASS|FAIL`` line is printed, so the refresh log records it.
+
+    When the gate passes, the coefficients are refitted on every season's PBP sample
+    (``metrics.fitGames`` games) and shipped with the pregame net ratings of the newest
+    configured season (last season's finals before its first game). Otherwise only
+    ``available: false`` and the metrics, which are dropped unless all finite. Floats are
+    rounded to 6 decimals, so the file changes only with the data.
     """
     if not all(db.has_table(table) for table in WIN_PROBABILITY_TABLES):
         return {"available": False}
-    raw = evaluate_holdout(db)
-    metrics = {key: round(value, 6) for key, value in raw.items()}
-    if not gate_passes(raw):
-        return {"available": False, "metrics": metrics}
+    season = DEMO_SEASONS[-1]
+    held_out = completed_holdout_seasons(db)
+    raw = evaluate_holdout(db, held_out)
+    passed = gate_passes(raw)
+    print(f"win probability gate {'PASS' if passed else 'FAIL'} held-out={held_out} {raw}")
+    info = evaluate_holdout(db, [season])
+    print(f"win probability in-season (info only) held-out={[season]} {info}", flush=True)
 
     box = db.query_df("SELECT * FROM box_scores_team")
     states = build_states(
@@ -315,9 +326,18 @@ def build_win_probability(db: Database) -> dict:
         db.query_df("SELECT * FROM games"),
         pregame_priors(box),
     )
+    # fitGames rides along even on a failure: the site's type requires it with the metrics.
+    metrics = {key: round(value, 6) for key, value in raw.items()}
+    metrics["fitGames"] = int(states["game_id"].nunique())
+    finite = bool(raw) and all(math.isfinite(value) for value in raw.values())
+    unavailable = {"available": False, **({"metrics": metrics} if finite else {})}
+    if not passed:
+        return unavailable
+
     model = {key: round(value, 6) for key, value in coefficients(fit(states)).items()}
-    season = str(box["season"].max())
     teams, as_of = current_priors(box, season)
+    if as_of is None:  # no game this season or last: no priors to predict from
+        return unavailable
     return {
         "available": True,
         "coefficients": {key: model[key] for key in ("a", "b", "c")},

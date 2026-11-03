@@ -24,19 +24,22 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 
-from hoops_lab.config import DEMO_SEASONS
 from hoops_lab.features.possession import _clock_seconds, _event_points, sort_chronological
 from hoops_lab.models.win_probability import predict_wp_frame, train_win_probability
+from hoops_lab.storage.database import Database
 
 REGULATION_SECONDS = 2880.0
 PERIOD_SECONDS = 720.0
 #: Weight (in games) of last season's final net rating in the pregame prior.
 PRIOR_GAMES_K = 10.0
-#: Newest seasons held out by the quality gate; the older ones train.
+#: Completed seasons held out by the quality gate; the seasons before them train.
 HOLDOUT_SEASONS = 2
+#: Regular-season games of a complete season (30 teams x 82 / 2).
+SEASON_GAMES = 1230
 #: Calibration ceiling of the gate (10 equal-width bins). Never relaxed.
 MAX_ECE = 0.05
 _EPS = 1e-15
+_GATE_KEYS = {"holdoutLogLoss", "baselineLogLoss", "ece", "pregameLogLoss", "constantLogLoss"}
 
 STATE_COLUMNS = [
     "game_id",
@@ -270,7 +273,12 @@ def predict(model: LogisticRegression, states: pd.DataFrame) -> np.ndarray:
 
 
 def coefficients(model: LogisticRegression) -> dict[str, float]:
-    """Raw coefficients plus readable ones: home court and net-rating drift in points, scale."""
+    """Raw coefficients plus readable ratios of them.
+
+    ``homeCourtPts = b/a``, ``pointsPerNetRating = c/a`` and ``scale = 1/a`` are **model
+    ratios** in margin units, not literal points: they move (``pointsPerNetRating`` between
+    about 1.7 and 2.0) with the seasons the model trains on.
+    """
     a, b, c = (float(value) for value in model.coef_[0])
 
     def per_a(value: float) -> float:
@@ -309,21 +317,48 @@ def clipped_log_loss(y: np.ndarray, p: np.ndarray) -> float:
     return float(log_loss(y, np.clip(p, _EPS, 1.0 - _EPS), labels=[0, 1]))
 
 
-def evaluate_holdout(db, k: float = PRIOR_GAMES_K) -> dict[str, float]:
-    """Gate metrics on a temporal holdout: the newest ``HOLDOUT_SEASONS`` of ``DEMO_SEASONS``.
+def completed_holdout_seasons(db: Database, n: int = HOLDOUT_SEASONS) -> list[str]:
+    """The newest ``n`` seasons with a complete regular season (``SEASON_GAMES`` games rows).
+
+    The gate holds these out, so its split moves forward only when a season completes.
+    """
+    complete = db.query_df(
+        "SELECT season FROM games WHERE season_type = 'Regular Season' "
+        "GROUP BY season HAVING COUNT(*) >= ? ORDER BY season",
+        [SEASON_GAMES],
+    )["season"].tolist()
+    return complete[-n:] if n > 0 else []
+
+
+def evaluate_holdout(
+    db: Database, held_out: list[str], k: float = PRIOR_GAMES_K
+) -> dict[str, float]:
+    """Gate metrics on a temporal holdout: ``held_out`` seasons scored, earlier seasons trained.
 
     The model and the baseline (``models.win_probability``: margin and time only) train on the
-    PBP states of the older seasons. The pregame check scores every held-out ``games`` row at
-    tip-off (margin 0, f = 1) against a constant equal to the training seasons' home-win rate.
+    PBP states of the seasons strictly before ``min(held_out)``; seasons after it that are not
+    held out are ignored. The pregame check scores every held-out ``games`` row at tip-off
+    (margin 0, f = 1) against a constant equal to the training seasons' home-win rate.
+
+    Returns ``{}`` when either side of the split (PBP states or pregame games) is empty, so
+    ``gate_passes`` fails and no NaN is produced.
     """
+    if not held_out:
+        return {}
     box = db.query_df("SELECT * FROM box_scores_team")
     games = db.query_df("SELECT * FROM games")
     priors = pregame_priors(box, k)
     states = build_states(db.query_df("SELECT * FROM play_by_play"), games, priors)
+    pregame = pregame_states(games, priors)
 
-    held_out = DEMO_SEASONS[-HOLDOUT_SEASONS:]
-    test_rows = states["season"].isin(held_out)
-    train, test = states.loc[~test_rows], states.loc[test_rows]
+    first = min(held_out)
+    train = states.loc[states["season"] < first]
+    test = states.loc[states["season"].isin(held_out)]
+    pregame_train = pregame.loc[pregame["season"] < first]
+    pregame_test = pregame.loc[pregame["season"].isin(held_out)]
+    if min(len(train), len(test), len(pregame_train), len(pregame_test)) == 0:
+        return {}
+
     y_test = test["home_won"].astype(int).to_numpy()
     model = fit(train)
     p_test = predict(model, test)
@@ -332,10 +367,8 @@ def evaluate_holdout(db, k: float = PRIOR_GAMES_K) -> dict[str, float]:
     baseline = train_win_probability(train.assign(**minutes))
     p_baseline = predict_wp_frame(baseline, test.assign(**minutes))
 
-    pregame = pregame_states(games, priors)
-    pregame_test = pregame.loc[pregame["season"].isin(held_out)]
     y_pregame = pregame_test["home_won"].astype(int).to_numpy()
-    home_rate = pregame.loc[~pregame["season"].isin(held_out), "home_won"].mean()
+    home_rate = pregame_train["home_won"].mean()
 
     return {
         "trainGames": int(train["game_id"].nunique()),
@@ -349,7 +382,12 @@ def evaluate_holdout(db, k: float = PRIOR_GAMES_K) -> dict[str, float]:
 
 
 def gate_passes(metrics: dict[str, float]) -> bool:
-    """Beat the baseline held out, stay calibrated (ECE <= 0.05) and beat a constant pregame."""
+    """Beat the baseline held out, stay calibrated (ECE <= 0.05) and beat a constant pregame.
+
+    Missing metrics (``evaluate_holdout`` had no split) fail.
+    """
+    if not _GATE_KEYS <= metrics.keys():
+        return False
     return bool(
         metrics["holdoutLogLoss"] < metrics["baselineLogLoss"]
         and metrics["ece"] <= MAX_ECE
