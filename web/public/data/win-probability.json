@@ -44,12 +44,13 @@
     "WAS": -6.863523
   },
   "metrics": {
-    "trainGames": 317,
-    "holdoutGames": 158,
-    "holdoutLogLoss": 0.376436,
-    "baselineLogLoss": 0.442695,
-    "ece": 0.042789,
-    "pregameLogLoss": 0.603554,
-    "constantLogLoss": 0.68769
+    "trainGames": 235,
+    "holdoutGames": 163,
+    "holdoutLogLoss": 0.381696,
+    "baselineLogLoss": 0.443359,
+    "ece": 0.026846,
+    "pregameLogLoss": 0.605685,
+    "constantLogLoss": 0.68839,
+    "fitGames": 475
   }
 }
