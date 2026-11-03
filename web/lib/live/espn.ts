@@ -146,10 +146,13 @@ export function parseSummary(raw: unknown): GameSummary {
     plays,
     neutralSite: comp.neutralSite === true,
     seasonType: num(obj(header.season).type) || 2,
-    espnWinProbability: arr(root.winprobability).map((w) => ({
-      playId: str(obj(w).playId),
-      home: num(obj(w).homeWinPercentage),
-    })),
+    // An entry without a finite percentage is dropped, never charted as a fake 0%.
+    espnWinProbability: arr(root.winprobability).flatMap((w) => {
+      const home = obj(w).homeWinPercentage;
+      return typeof home === "number" && Number.isFinite(home)
+        ? [{ playId: str(obj(w).playId), home }]
+        : [];
+    }),
   };
 }
 

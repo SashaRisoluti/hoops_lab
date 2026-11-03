@@ -140,6 +140,22 @@ test("parseSummary win probability, season type, neutral site", () => {
   assert.equal(d.neutralSite, false);
 });
 
+test("parseSummary drops win probability entries without a finite percentage", () => {
+  const r = raw("espn-summary-final.json");
+  r.winprobability = [
+    { homeWinPercentage: 0.4, playId: "a" },
+    { homeWinPercentage: null, playId: "b" },
+    { playId: "c" },
+    { homeWinPercentage: "n/a", playId: "d" },
+    { homeWinPercentage: Number.NaN, playId: "e" },
+    { homeWinPercentage: 0, playId: "f" },
+  ];
+  assert.deepEqual(parseSummary(r).espnWinProbability, [
+    { playId: "a", home: 0.4 },
+    { playId: "f", home: 0 },
+  ]);
+});
+
 test("parseScoreboard season type and neutral site", () => {
   const r = raw("espn-scoreboard-today.json");
   r.events[0].season = { type: 1 };
