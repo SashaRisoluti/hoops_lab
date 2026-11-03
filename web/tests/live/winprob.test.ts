@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  displayPct,
   elapsedSeconds,
   espnSeries,
   homeWinProbability,
@@ -157,6 +158,11 @@ test("espnSeries drops unknown ids", () => {
   assert.equal(pts.length, 2);
   assert.equal(pts[0].t, elapsedSeconds(a.period, a.clock));
   assert.equal(pts[1].home, 0.6);
+});
+
+test("displayPct clamps to 1–99 only while live", () => {
+  assert.deepEqual([0.996, 0.004, 0.5, 0.015].map((p) => displayPct(p, true)), [99, 1, 50, 2]);
+  assert.deepEqual([1, 0, 0.996].map((p) => displayPct(p, false)), [100, 0, 100]);
 });
 
 test("wpAvailable", () => {

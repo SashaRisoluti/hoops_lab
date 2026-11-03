@@ -40,6 +40,12 @@ export function priorDiff(model: WinProbModel, homeTricode: string, awayTricode:
   return h === undefined || a === undefined ? null : h - a;
 }
 
+/** A probability as a whole percentage; while live, clamped to 1–99 (nothing is certain yet). */
+export function displayPct(p: number, live: boolean): number {
+  const v = Math.round(p * 100);
+  return live ? Math.min(99, Math.max(1, v)) : v;
+}
+
 export function wpAvailable(model: WinProbModel, seasonType: number, prior: number | null): boolean {
   return model.available && seasonType !== 1 && prior !== null;
 }

@@ -1,5 +1,6 @@
 import { periodLabel } from "@/lib/live/format";
 import type { EspnWpPoint, GameState, WpPoint } from "@/lib/live/types";
+import { displayPct } from "@/lib/live/winprob";
 
 const QUARTER = 720;
 const REGULATION = 2880;
@@ -9,8 +10,6 @@ const OVERTIME = 300;
 const W = 1000;
 const H = 100;
 const NO_SCALE = { vectorEffect: "non-scaling-stroke" } as const;
-
-const pct = (p: number) => Math.round(p * 100);
 
 /** Elapsed game seconds → `Q3 4:58`; a buzzer play at t = 720 reads `Q1 0:00`. */
 function clockAt(t: number): string {
@@ -87,13 +86,15 @@ export function WinProbabilityCard({
   /** Periods to lay out on the x axis, at least 4; each one beyond 4 adds a 5-minute OT. */
   periods: number;
   asOf: string;
-  metrics: { trainGames: number; holdoutLogLoss: number; baselineLogLoss: number };
+  metrics: { fitGames: number; holdoutGames: number; holdoutLogLoss: number; baselineLogLoss: number };
 }) {
   const started = state !== "pre";
-  const homePct = pct(started ? (current ?? pregame) : pregame);
+  const live = state === "in";
+  // Headline numbers are clamped to 1–99 while live; the curve itself stays exact.
+  const homePct = displayPct(started ? (current ?? pregame) : pregame, live);
   const lastEspn = started ? espn[espn.length - 1] : undefined;
-  const espnPct = lastEspn ? pct(lastEspn.home) : 0;
-  const pre = pct(pregame);
+  const espnPct = lastEspn ? displayPct(lastEspn.home, live) : 0;
+  const pre = displayPct(pregame, false);
   const lead = (m: number) =>
     m === 0 ? "tied" : `${m > 0 ? homeTricode : awayTricode} +${Math.abs(m)}`;
 
@@ -132,7 +133,7 @@ export function WinProbabilityCard({
         <Chart
           homeTricode={homeTricode}
           awayTricode={awayTricode}
-          live={state === "in"}
+          live={live}
           homePct={homePct}
           espnPct={lastEspn ? espnPct : null}
           series={series}
@@ -144,8 +145,9 @@ export function WinProbabilityCard({
 
       <p className="mt-3 text-xs text-ink-soft">
         Pregame: {pre >= 50 ? `${homeTricode} ${pre}` : `${awayTricode} ${100 - pre}`}% (season net
-        rating + home court, as of {asOf}) · fitted on {metrics.trainGames} games · held-out
-        log-loss {metrics.holdoutLogLoss.toFixed(3)} (baseline {metrics.baselineLogLoss.toFixed(3)})
+        rating + home court, as of {asOf}) · fitted on {metrics.fitGames} games · held-out
+        log-loss {metrics.holdoutLogLoss.toFixed(3)} on {metrics.holdoutGames} games (score-and-clock
+        baseline {metrics.baselineLogLoss.toFixed(3)})
       </p>
       {note ? <p className="mt-1 text-xs text-ink-muted">{note}</p> : null}
     </section>
@@ -275,8 +277,8 @@ function Chart({
               return (
                 <rect key={i} x={from} width={Math.max(0, to - from)} y={0} height={H} fill="transparent">
                   <title>
-                    {`${clockAt(s.t)} · ${homeTricode} ${pct(s.home)}%` +
-                      (e === null ? "" : ` (ESPN ${pct(e)}%)`) +
+                    {`${clockAt(s.t)} · ${homeTricode} ${displayPct(s.home, live)}%` +
+                      (e === null ? "" : ` (ESPN ${displayPct(e, live)}%)`) +
                       ` · ${lead(s.margin)}`}
                   </title>
                 </rect>
@@ -317,10 +319,12 @@ function Chart({
           <span aria-hidden className="h-0.5 w-4 rounded-full bg-primary-soft" />
           Hoops Lab model
         </li>
-        <li className="flex items-center gap-1.5">
-          <span aria-hidden className="w-4 border-t-2 border-dashed border-ink-soft" />
-          ESPN
-        </li>
+        {espn.length ? (
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden className="w-4 border-t-2 border-dashed border-ink-soft" />
+            ESPN
+          </li>
+        ) : null}
         <li className="flex items-center gap-1.5">
           <span aria-hidden className="h-2.5 w-4 border-t border-ink-muted bg-ink-muted/20" />
           Score margin (right axis, home − away)
