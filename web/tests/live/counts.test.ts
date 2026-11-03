@@ -11,6 +11,7 @@ const live = () => parseSummary(fixture("espn-summary-live.json"));
 function withPlay(g: GameSummary, p: Partial<Play>): GameSummary {
   const c = structuredClone(g);
   c.plays.push({
+    id: "", homeScore: 0, awayScore: 0,
     seq: 99999, type: "", text: "", period: c.period, clock: "1:00", teamId: "19",
     scoringPlay: false, scoreValue: 0, shootingPlay: false, coordinate: null, participants: [],
     ...p,

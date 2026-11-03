@@ -9,6 +9,7 @@ const sorted = (ids: string[]) => [...ids].sort();
 
 function play(over: Partial<Play>): Play {
   return {
+    id: "", homeScore: 0, awayScore: 0,
     seq: 99999, type: "", text: "", period: 4, clock: "0:00", teamId: null,
     scoringPlay: false, scoreValue: 0, shootingPlay: false, coordinate: null, participants: [],
     ...over,

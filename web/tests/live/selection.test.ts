@@ -13,6 +13,8 @@ const game = (id: string, state: ScoreboardGame["state"], startTime: string): Sc
   state,
   startTime,
   statusDetail: "",
+  neutralSite: false,
+  seasonType: 2,
   home: { tricode: "BOS", score: null },
   away: { tricode: "ORL", score: null },
 });

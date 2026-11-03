@@ -7,6 +7,7 @@ import type { GameSummary, Play } from "../../lib/live/types.ts";
 
 function shot(teamId: string, x: number, y: number, extra: Partial<Play> = {}): Play {
   return {
+    id: "", homeScore: 0, awayScore: 0,
     seq: 1, type: "Jump Shot", text: "shot", period: 1, clock: "1:00", teamId,
     scoringPlay: false, scoreValue: 0, shootingPlay: true, coordinate: { x, y }, participants: [],
     ...extra,

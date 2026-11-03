@@ -8,6 +8,8 @@ const game = (id: string, state: GameState): ScoreboardGame => ({
   state,
   startTime: "2026-11-03T00:00Z",
   statusDetail: "",
+  neutralSite: false,
+  seasonType: 2,
   home: { tricode: "BOS", score: null },
   away: { tricode: "ORL", score: null },
 });
