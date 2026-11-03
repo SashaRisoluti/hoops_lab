@@ -50,12 +50,15 @@ function parsePlay(raw: unknown): Play {
   const p = obj(raw);
   const teamId = str(obj(p.team).id);
   return {
+    id: str(p.id),
     seq: num(p.sequenceNumber),
     type: str(obj(p.type).text),
     text: str(p.text),
     period: num(obj(p.period).number),
     clock: str(obj(p.clock).displayValue),
     teamId: teamId || null,
+    homeScore: num(p.homeScore),
+    awayScore: num(p.awayScore),
     scoringPlay: p.scoringPlay === true,
     scoreValue: num(p.scoreValue),
     shootingPlay: p.shootingPlay === true,
@@ -141,6 +144,12 @@ export function parseSummary(raw: unknown): GameSummary {
     away: parseSide(find("away"), "away"),
     boxes: parseBoxes(root.boxscore),
     plays,
+    neutralSite: comp.neutralSite === true,
+    seasonType: num(obj(header.season).type) || 2,
+    espnWinProbability: arr(root.winprobability).map((w) => ({
+      playId: str(obj(w).playId),
+      home: num(obj(w).homeWinPercentage),
+    })),
   };
 }
 
@@ -150,7 +159,8 @@ export function parseScoreboard(raw: unknown): Scoreboard {
   const games = arr(root.events).map((e): ScoreboardGame => {
     const ev = obj(e);
     const state = parseState(obj(obj(ev.status).type).state);
-    const competitors = arr(obj(arr(ev.competitions)[0]).competitors);
+    const comp = obj(arr(ev.competitions)[0]);
+    const competitors = arr(comp.competitors);
     const side = (s: Side) => {
       const c = obj(competitors.find((x) => obj(x).homeAway === s));
       return {
@@ -165,6 +175,8 @@ export function parseScoreboard(raw: unknown): Scoreboard {
       statusDetail: str(obj(obj(ev.status).type).detail),
       home: side("home"),
       away: side("away"),
+      neutralSite: comp.neutralSite === true,
+      seasonType: num(obj(ev.season).type) || 2,
     };
   });
   return { day: str(obj(root.day).date) || null, games };

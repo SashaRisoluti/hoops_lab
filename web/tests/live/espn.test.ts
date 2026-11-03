@@ -111,3 +111,42 @@ test("parseScoreboard past day", () => {
   assert.deepEqual(g.away, { tricode: "BOS", score: 108 });
   assert.deepEqual(g.home, { tricode: "ORL", score: 97 });
 });
+
+type Raw = Record<string, any>;
+const raw = (name: string) => structuredClone(fixture(name)) as Raw;
+
+test("parseSummary play ids and running scores", () => {
+  const g = parseSummary(fixture("espn-summary-final.json"));
+  assert.equal(g.plays.find((p) => p.seq === 72)!.id, "40190990372");
+  const last = g.plays[g.plays.length - 1];
+  assert.equal(typeof last.homeScore, "number");
+  assert.equal(parseSummary({ plays: [{}] }).plays[0].homeScore, 0);
+  assert.equal(parseSummary({ plays: [{ homeScore: 5, awayScore: 7 }] }).plays[0].awayScore, 7);
+});
+
+test("parseSummary win probability, season type, neutral site", () => {
+  const r = raw("espn-summary-final.json");
+  r.winprobability = [{ homeWinPercentage: 0.376, tiePercentage: 0, playId: "4019099034" }];
+  r.header.season = { year: 2026, type: 3 };
+  r.header.competitions[0].neutralSite = true;
+  const g = parseSummary(r);
+  assert.deepEqual(g.espnWinProbability, [{ playId: "4019099034", home: 0.376 }]);
+  assert.equal(g.seasonType, 3);
+  assert.equal(g.neutralSite, true);
+
+  const d = parseSummary(fixture("espn-summary-final.json"));
+  assert.deepEqual(d.espnWinProbability, []);
+  assert.equal(d.seasonType, 2);
+  assert.equal(d.neutralSite, false);
+});
+
+test("parseScoreboard season type and neutral site", () => {
+  const r = raw("espn-scoreboard-today.json");
+  r.events[0].season = { type: 1 };
+  r.events[0].competitions[0].neutralSite = true;
+  const s = parseScoreboard(r);
+  assert.equal(s.games[0].seasonType, 1);
+  assert.equal(s.games[0].neutralSite, true);
+  assert.equal(s.games[1].seasonType, 2);
+  assert.equal(s.games[1].neutralSite, false);
+});
