@@ -34,6 +34,8 @@ export type SummaryTeam = {
 };
 
 export type Play = {
+  /** ESPN play id; `winprobability` entries reference it as `playId`. */
+  id: string;
   seq: number;
   type: string;
   text: string;
@@ -47,6 +49,9 @@ export type Play = {
   coordinate: { x: number; y: number } | null;
   /** Athlete ids; for a substitution `[entering, leaving]`. */
   participants: string[];
+  /** Running score after the play. */
+  homeScore: number;
+  awayScore: number;
 };
 
 export type PlayerLine = {
@@ -78,6 +83,11 @@ export type GameSummary = {
   away: SummaryTeam;
   boxes: TeamBox[];
   plays: Play[];
+  neutralSite: boolean;
+  /** ESPN season type: 1 preseason, 2 regular season, 3 postseason, 5 play-in. */
+  seasonType: number;
+  /** ESPN's own home win probability per play (0–1), the benchmark line. */
+  espnWinProbability: { playId: string; home: number }[];
 };
 
 export type ScoreboardGame = {
@@ -87,9 +97,44 @@ export type ScoreboardGame = {
   statusDetail: string;
   home: { tricode: string; score: number | null };
   away: { tricode: string; score: number | null };
+  neutralSite: boolean;
+  /** ESPN season type: 1 preseason, 2 regular season, 3 postseason, 5 play-in. */
+  seasonType: number;
 };
 
 export type Scoreboard = { day: string | null; games: ScoreboardGame[] };
+
+/** A point of our win-probability curve: elapsed game seconds, home win probability, home − away. */
+export type WpPoint = { t: number; home: number; margin: number };
+
+/** A point of ESPN's benchmark curve, placed at its play's elapsed time. */
+export type EspnWpPoint = { t: number; home: number };
+
+/**
+ * `web/public/data/win-probability.json`, written by `scripts/export_web_data.py`.
+ * `available: false` (gate failed or not exported yet) carries no coefficients.
+ */
+export type WinProbModel = {
+  available: boolean;
+  coefficients?: { a: number; b: number; c: number };
+  homeCourtPts?: number;
+  pointsPerNetRating?: number;
+  scale?: number;
+  k?: number;
+  season?: string;
+  asOf?: string;
+  /** NBA tricode → pregame net rating. */
+  teams?: Record<string, number>;
+  metrics?: {
+    trainGames: number;
+    holdoutGames: number;
+    holdoutLogLoss: number;
+    baselineLogLoss: number;
+    ece: number;
+    pregameLogLoss: number;
+    constantLogLoss: number;
+  };
+};
 
 export type TeamCounts = { home: number; away: number };
 

@@ -48,7 +48,7 @@
 ### Task 0 (controller): web contract
 
 - `web/lib/live/types.ts`:
-  - `Play.id: string`;
+  - `Play.id: string`, `Play.homeScore: number`, `Play.awayScore: number` (running score after the play);
   - `GameSummary.neutralSite: boolean`, `seasonType: number`, `espnWinProbability: { playId: string; home: number }[]`;
   - `ScoreboardGame.neutralSite: boolean`, `seasonType: number`;
   - new types `WpPoint = { t: number; home: number; margin: number }`, `EspnWpPoint = { t: number; home: number }`, and `WinProbModel` (the JSON shape below).
@@ -112,7 +112,7 @@
 
 **Files:** Modify `web/lib/live/espn.ts`, `web/tests/live/espn.test.ts`.
 
-**Interfaces — Consumes:** the Task 0 types. **Produces:** `parseSummary` fills `Play.id`, `neutralSite`, `seasonType`, `espnWinProbability`; `parseScoreboard` fills `neutralSite` and `seasonType`.
+**Interfaces — Consumes:** the Task 0 types. **Produces:** `parseSummary` fills `Play.id`, `Play.homeScore`/`awayScore` (ESPN `homeScore`/`awayScore`, default 0), `neutralSite`, `seasonType`, `espnWinProbability`; `parseScoreboard` fills `neutralSite` and `seasonType`.
 
 - [ ] **Step 1: Failing tests** (clone the parsed fixtures' raw JSON in-test and add fields; do not edit fixture files):
   - Play ids: the play with seq 72 has `id` "40190990372".
