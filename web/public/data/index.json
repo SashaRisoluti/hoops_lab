@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T08:33:03+00:00",
+  "generatedAt": "2026-11-04T08:07:07+00:00",
   "generatedFrom": "data/db/hoops_lab.duckdb",
   "seasons": [
     "2026-27",
@@ -195,13 +195,13 @@
   "summary": {
     "seasons": 6,
     "teams": 30,
-    "games": 6242,
-    "players": 1082,
-    "shots": 1107585,
-    "possessions": 92245
+    "games": 6257,
+    "players": 1083,
+    "shots": 1110180,
+    "possessions": 92538
   },
   "project": {
-    "tests": 334,
-    "modules": 56
+    "tests": 372,
+    "modules": 57
   }
 }
