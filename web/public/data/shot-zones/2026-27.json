@@ -1,54 +1,54 @@
 {
   "season": "2026-27",
   "minAttempts": 200,
-  "totalAttempts": 21327,
+  "totalAttempts": 27109,
   "zones": [
     {
       "zone": "Above the Break 3",
-      "attempts": 6698,
-      "share": 0.3140619871524359,
-      "fgPct": 0.34278889220662884,
-      "pointsPerShot": 1.0283666766198865,
+      "attempts": 8488,
+      "share": 0.3131063484451658,
+      "fgPct": 0.3451932139491046,
+      "pointsPerShot": 1.0355796418473138,
       "isThree": true
     },
     {
       "zone": "Restricted Area",
-      "attempts": 5946,
-      "share": 0.2788015192010128,
-      "fgPct": 0.6612848974100235,
-      "pointsPerShot": 1.322569794820047,
+      "attempts": 7500,
+      "share": 0.2766608875281272,
+      "fgPct": 0.6585333333333333,
+      "pointsPerShot": 1.3170666666666666,
       "isThree": false
     },
     {
       "zone": "In The Paint (Non-RA)",
-      "attempts": 4086,
-      "share": 0.19158812772541847,
-      "fgPct": 0.4397944199706314,
-      "pointsPerShot": 0.8795888399412628,
+      "attempts": 5236,
+      "share": 0.19314618761296987,
+      "fgPct": 0.44461420932009166,
+      "pointsPerShot": 0.8892284186401833,
       "isThree": false
     },
     {
       "zone": "Mid-Range",
-      "attempts": 2154,
-      "share": 0.100998733999156,
-      "fgPct": 0.39740018570102137,
-      "pointsPerShot": 0.7948003714020427,
+      "attempts": 2757,
+      "share": 0.10170054225533956,
+      "fgPct": 0.40007254261878855,
+      "pointsPerShot": 0.8001450852375771,
       "isThree": false
     },
     {
       "zone": "Left Corner 3",
-      "attempts": 1310,
-      "share": 0.06142448539410137,
-      "fgPct": 0.366412213740458,
-      "pointsPerShot": 1.0984732824427481,
+      "attempts": 1681,
+      "share": 0.062008926924637574,
+      "fgPct": 0.3581201665675193,
+      "pointsPerShot": 1.0737656157049376,
       "isThree": true
     },
     {
       "zone": "Right Corner 3",
-      "attempts": 1133,
-      "share": 0.053125146527875464,
-      "fgPct": 0.3451015004413063,
-      "pointsPerShot": 1.0353045013239188,
+      "attempts": 1447,
+      "share": 0.053377107233760004,
+      "fgPct": 0.35729094678645473,
+      "pointsPerShot": 1.0718728403593643,
       "isThree": true
     }
   ]
