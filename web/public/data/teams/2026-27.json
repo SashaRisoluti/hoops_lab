@@ -11,23 +11,23 @@
       "defRating": 112.2,
       "netRating": 2.1,
       "pace": 103.46,
-      "offRatingPctl": 63.33333333333333,
-      "defRatingPctl": 61.66666666666667,
-      "netRatingPctl": 53.333333333333336
+      "offRatingPctl": 56.666666666666664,
+      "defRatingPctl": 60.0,
+      "netRatingPctl": 56.666666666666664
     },
     {
       "id": 1610612738,
       "tricode": "BOS",
       "name": "Boston Celtics",
-      "wins": 8,
+      "wins": 9,
       "losses": 2,
-      "offRating": 117.9,
-      "defRating": 106.3,
-      "netRating": 11.6,
-      "pace": 96.79,
-      "offRatingPctl": 86.66666666666667,
-      "defRatingPctl": 90.0,
-      "netRatingPctl": 98.33333333333333
+      "offRating": 118.5,
+      "defRating": 106.1,
+      "netRating": 12.4,
+      "pace": 96.9,
+      "offRatingPctl": 90.0,
+      "defRatingPctl": 93.33333333333333,
+      "netRatingPctl": 100.0
     },
     {
       "id": 1610612751,
@@ -40,7 +40,7 @@
       "netRating": -9.1,
       "pace": 99.86,
       "offRatingPctl": 10.0,
-      "defRatingPctl": 26.666666666666668,
+      "defRatingPctl": 30.0,
       "netRatingPctl": 20.0
     },
     {
@@ -67,7 +67,7 @@
       "defRating": 123.6,
       "netRating": -16.2,
       "pace": 104.78,
-      "offRatingPctl": 16.666666666666664,
+      "offRatingPctl": 20.0,
       "defRatingPctl": 3.3333333333333335,
       "netRatingPctl": 3.3333333333333335
     },
@@ -81,9 +81,9 @@
       "defRating": 113.4,
       "netRating": 1.4,
       "pace": 100.55,
-      "offRatingPctl": 70.0,
+      "offRatingPctl": 66.66666666666666,
       "defRatingPctl": 46.666666666666664,
-      "netRatingPctl": 50.0
+      "netRatingPctl": 53.333333333333336
     },
     {
       "id": 1610612742,
@@ -95,7 +95,7 @@
       "defRating": 110.2,
       "netRating": 4.5,
       "pace": 100.14,
-      "offRatingPctl": 66.66666666666666,
+      "offRatingPctl": 63.33333333333333,
       "defRatingPctl": 70.0,
       "netRatingPctl": 63.33333333333333
     },
@@ -109,8 +109,8 @@
       "defRating": 114.0,
       "netRating": 0.1,
       "pace": 98.03,
-      "offRatingPctl": 60.0,
-      "defRatingPctl": 33.33333333333333,
+      "offRatingPctl": 53.333333333333336,
+      "defRatingPctl": 36.666666666666664,
       "netRatingPctl": 46.666666666666664
     },
     {
@@ -123,8 +123,8 @@
       "defRating": 105.7,
       "netRating": 7.7,
       "pace": 99.2,
-      "offRatingPctl": 51.66666666666667,
-      "defRatingPctl": 93.33333333333333,
+      "offRatingPctl": 50.0,
+      "defRatingPctl": 96.66666666666667,
       "netRatingPctl": 80.0
     },
     {
@@ -151,8 +151,8 @@
       "defRating": 109.0,
       "netRating": 9.4,
       "pace": 97.5,
-      "offRatingPctl": 93.33333333333333,
-      "defRatingPctl": 73.33333333333333,
+      "offRatingPctl": 90.0,
+      "defRatingPctl": 75.0,
       "netRatingPctl": 90.0
     },
     {
@@ -165,7 +165,7 @@
       "defRating": 113.1,
       "netRating": -3.3,
       "pace": 101.59,
-      "offRatingPctl": 30.0,
+      "offRatingPctl": 33.33333333333333,
       "defRatingPctl": 53.333333333333336,
       "netRatingPctl": 43.333333333333336
     },
@@ -174,14 +174,14 @@
       "tricode": "LAC",
       "name": "LA Clippers",
       "wins": 2,
-      "losses": 7,
-      "offRating": 110.2,
-      "defRating": 113.9,
-      "netRating": -3.7,
-      "pace": 100.94,
-      "offRatingPctl": 33.33333333333333,
-      "defRatingPctl": 36.666666666666664,
-      "netRatingPctl": 40.0
+      "losses": 8,
+      "offRating": 110.0,
+      "defRating": 115.8,
+      "netRating": -5.8,
+      "pace": 100.95,
+      "offRatingPctl": 36.666666666666664,
+      "defRatingPctl": 23.333333333333332,
+      "netRatingPctl": 26.666666666666668
     },
     {
       "id": 1610612747,
@@ -207,36 +207,36 @@
       "defRating": 108.6,
       "netRating": 7.0,
       "pace": 100.95,
-      "offRatingPctl": 73.33333333333333,
-      "defRatingPctl": 76.66666666666667,
-      "netRatingPctl": 73.33333333333333
+      "offRatingPctl": 70.0,
+      "defRatingPctl": 80.0,
+      "netRatingPctl": 71.66666666666667
     },
     {
       "id": 1610612748,
       "tricode": "MIA",
       "name": "Miami Heat",
-      "wins": 4,
+      "wins": 5,
       "losses": 6,
-      "offRating": 111.1,
-      "defRating": 116.8,
-      "netRating": -5.6,
-      "pace": 102.88,
+      "offRating": 111.3,
+      "defRating": 115.9,
+      "netRating": -4.6,
+      "pace": 102.8,
       "offRatingPctl": 40.0,
-      "defRatingPctl": 18.333333333333332,
-      "netRatingPctl": 30.0
+      "defRatingPctl": 20.0,
+      "netRatingPctl": 40.0
     },
     {
       "id": 1610612749,
       "tricode": "MIL",
       "name": "Milwaukee Bucks",
       "wins": 1,
-      "losses": 9,
-      "offRating": 106.5,
-      "defRating": 119.6,
-      "netRating": -13.1,
-      "pace": 101.75,
+      "losses": 10,
+      "offRating": 105.8,
+      "defRating": 120.5,
+      "netRating": -14.7,
+      "pace": 100.5,
       "offRatingPctl": 13.333333333333334,
-      "defRatingPctl": 13.333333333333334,
+      "defRatingPctl": 6.666666666666667,
       "netRatingPctl": 6.666666666666667
     },
     {
@@ -264,49 +264,49 @@
       "netRating": -4.7,
       "pace": 101.83,
       "offRatingPctl": 43.333333333333336,
-      "defRatingPctl": 18.333333333333332,
-      "netRatingPctl": 36.666666666666664
+      "defRatingPctl": 16.666666666666664,
+      "netRatingPctl": 35.0
     },
     {
       "id": 1610612752,
       "tricode": "NYK",
       "name": "New York Knicks",
-      "wins": 5,
+      "wins": 6,
       "losses": 4,
-      "offRating": 114.1,
-      "defRating": 108.3,
-      "netRating": 5.8,
-      "pace": 96.28,
-      "offRatingPctl": 56.666666666666664,
-      "defRatingPctl": 80.0,
-      "netRatingPctl": 70.0
+      "offRating": 115.7,
+      "defRating": 107.3,
+      "netRating": 8.3,
+      "pace": 95.45,
+      "offRatingPctl": 73.33333333333333,
+      "defRatingPctl": 86.66666666666667,
+      "netRatingPctl": 83.33333333333334
     },
     {
       "id": 1610612760,
       "tricode": "OKC",
       "name": "Oklahoma City Thunder",
       "wins": 8,
-      "losses": 2,
-      "offRating": 113.4,
-      "defRating": 105.5,
-      "netRating": 8.0,
-      "pace": 98.85,
-      "offRatingPctl": 51.66666666666667,
-      "defRatingPctl": 96.66666666666667,
-      "netRatingPctl": 83.33333333333334
+      "losses": 3,
+      "offRating": 112.7,
+      "defRating": 107.4,
+      "netRating": 5.3,
+      "pace": 98.73,
+      "offRatingPctl": 46.666666666666664,
+      "defRatingPctl": 83.33333333333334,
+      "netRatingPctl": 66.66666666666666
     },
     {
       "id": 1610612753,
       "tricode": "ORL",
       "name": "Orlando Magic",
-      "wins": 2,
+      "wins": 3,
       "losses": 7,
-      "offRating": 107.6,
-      "defRating": 116.1,
-      "netRating": -8.5,
-      "pace": 98.64,
+      "offRating": 107.9,
+      "defRating": 114.9,
+      "netRating": -7.1,
+      "pace": 98.42,
       "offRatingPctl": 23.333333333333332,
-      "defRatingPctl": 23.333333333333332,
+      "defRatingPctl": 26.666666666666668,
       "netRatingPctl": 23.333333333333332
     },
     {
@@ -314,55 +314,55 @@
       "tricode": "PHI",
       "name": "Philadelphia 76ers",
       "wins": 9,
-      "losses": 2,
-      "offRating": 110.3,
-      "defRating": 107.6,
-      "netRating": 2.7,
-      "pace": 100.45,
-      "offRatingPctl": 36.666666666666664,
-      "defRatingPctl": 83.33333333333334,
-      "netRatingPctl": 56.666666666666664
+      "losses": 3,
+      "offRating": 109.8,
+      "defRating": 109.0,
+      "netRating": 0.8,
+      "pace": 100.25,
+      "offRatingPctl": 30.0,
+      "defRatingPctl": 75.0,
+      "netRatingPctl": 50.0
     },
     {
       "id": 1610612756,
       "tricode": "PHX",
       "name": "Phoenix Suns",
-      "wins": 3,
+      "wins": 4,
       "losses": 6,
-      "offRating": 112.6,
-      "defRating": 120.6,
-      "netRating": -8.1,
-      "pace": 98.44,
-      "offRatingPctl": 46.666666666666664,
-      "defRatingPctl": 6.666666666666667,
-      "netRatingPctl": 26.666666666666668
+      "offRating": 114.6,
+      "defRating": 119.3,
+      "netRating": -4.7,
+      "pace": 98.7,
+      "offRatingPctl": 60.0,
+      "defRatingPctl": 11.666666666666666,
+      "netRatingPctl": 35.0
     },
     {
       "id": 1610612757,
       "tricode": "POR",
       "name": "Portland Trail Blazers",
-      "wins": 6,
+      "wins": 7,
       "losses": 3,
-      "offRating": 117.6,
-      "defRating": 112.2,
-      "netRating": 5.5,
-      "pace": 101.44,
-      "offRatingPctl": 83.33333333333334,
-      "defRatingPctl": 61.66666666666667,
-      "netRatingPctl": 66.66666666666666
+      "offRating": 118.5,
+      "defRating": 111.5,
+      "netRating": 7.0,
+      "pace": 101.05,
+      "offRatingPctl": 90.0,
+      "defRatingPctl": 63.33333333333333,
+      "netRatingPctl": 71.66666666666667
     },
     {
       "id": 1610612758,
       "tricode": "SAC",
       "name": "Sacramento Kings",
       "wins": 1,
-      "losses": 9,
-      "offRating": 107.5,
-      "defRating": 120.1,
-      "netRating": -12.6,
-      "pace": 101.7,
-      "offRatingPctl": 20.0,
-      "defRatingPctl": 10.0,
+      "losses": 10,
+      "offRating": 107.2,
+      "defRating": 119.3,
+      "netRating": -12.1,
+      "pace": 101.23,
+      "offRatingPctl": 16.666666666666664,
+      "defRatingPctl": 11.666666666666666,
       "netRatingPctl": 10.0
     },
     {
@@ -375,9 +375,9 @@
       "defRating": 106.7,
       "netRating": 11.6,
       "pace": 99.38,
-      "offRatingPctl": 90.0,
-      "defRatingPctl": 86.66666666666667,
-      "netRatingPctl": 98.33333333333333
+      "offRatingPctl": 83.33333333333334,
+      "defRatingPctl": 90.0,
+      "netRatingPctl": 96.66666666666667
     },
     {
       "id": 1610612761,
@@ -398,13 +398,13 @@
       "tricode": "UTA",
       "name": "Utah Jazz",
       "wins": 1,
-      "losses": 9,
-      "offRating": 102.8,
-      "defRating": 114.5,
-      "netRating": -11.7,
-      "pace": 101.04,
+      "losses": 10,
+      "offRating": 103.2,
+      "defRating": 114.3,
+      "netRating": -11.1,
+      "pace": 101.13,
       "offRatingPctl": 6.666666666666667,
-      "defRatingPctl": 30.0,
+      "defRatingPctl": 33.33333333333333,
       "netRatingPctl": 16.666666666666664
     },
     {
@@ -419,7 +419,7 @@
       "pace": 100.09,
       "offRatingPctl": 26.666666666666668,
       "defRatingPctl": 50.0,
-      "netRatingPctl": 33.33333333333333
+      "netRatingPctl": 30.0
     }
   ]
 }
