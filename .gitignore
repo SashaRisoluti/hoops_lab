@@ -15,7 +15,7 @@ dist/
 .env
 .streamlit/secrets.toml
 .superpowers/
-.docs/superpowers/
+docs/superpowers
 
 # IDE preview exports
 README.html
