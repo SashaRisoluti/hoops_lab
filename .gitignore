@@ -14,10 +14,13 @@ dist/
 # Secrets & local config
 .env
 .streamlit/secrets.toml
+.superpowers/
+.docs/superpowers/
 
 # IDE preview exports
 README.html
 README_files/
+CLAUDE.md
 
 # Locally downloaded team logos (the app hotlinks the NBA CDN instead;
 # trademarked assets stay out of the public repo)
