@@ -1,11 +1,12 @@
 # 🏀 Hoops Lab
 
-Modular NBA data-science framework — **historical analysis**, **pre-game scouting** and **live game intelligence** — built as a professional sports-analytics portfolio project.
-
-| | |
-|---|---|
-| **Website** | [hoops-lab.vercel.app](https://hoops-lab.vercel.app/) — statically generated, real data, no cold start; [`/live`](https://hoops-lab.vercel.app/live) follows tonight's games with a win probability |
-| **Live dashboard** | [hoopslab.streamlit.app](https://hoopslab.streamlit.app/) — the full interactive tool (sleeps when idle) |
+> **TL;DR** — A production-style data product built end to end by one person: scheduled ingestion from the NBA API into Parquet and DuckDB, a tested analytics package (~375 tests), probabilistic models (game win probability, shot quality, lineup recommender) and three ways to consume them: an importable Python package, a 9-page Streamlit tool and a statically generated Next.js website with live win probability.
+>
+> **What it demonstrates beyond basketball:** idempotent data pipelines with daily refresh · calibrated probability models (the same discipline as a credit PD model) · separation between business logic and presentation · deployment on Vercel and Streamlit Community Cloud.
+>
+> ![Calibration plot: predicted vs observed home win rate by decile, 2025-26 held out](docs/img/calibration.png)
+>
+> 🔗 [Website](https://hoops-lab.vercel.app/) · [Live games](https://hoops-lab.vercel.app/live) · [Dashboard](https://hoopslab.streamlit.app/)
 
 ## What it does
 
@@ -30,7 +31,6 @@ The framework exposes four independent interfaces over one analytics engine:
 | Importable Python package | `hoops_lab/` | ✅ all 6 phases complete |
 | Streamlit dashboard (full tool) | `dashboard/` | ✅ 9 pages |
 | Public website (Next.js, static) | `web/` | ✅ live, incl. `/live` games page |
-| FastAPI REST API | `api/` | stub, not started |
 
 ## Project structure
 
@@ -49,7 +49,6 @@ hoops-lab/
 ├── dashboard/            # Streamlit UI (presentation only)
 ├── web/                  # Next.js public website (static, generated data)
 ├── scripts/              # CLI utilities incl. the web data export
-├── api/                  # FastAPI REST interface (stub)
 ├── data/                 # raw / processed / db (see .gitignore policy)
 ├── notebooks/            # exploratory analysis
 └── tests/                # unit / integration / fixtures
