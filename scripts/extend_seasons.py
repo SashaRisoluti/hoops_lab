@@ -33,6 +33,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from hoops_lab.ingestion.historical import (  # noqa: E402
+    PBP_RANDOM_SEED,
     HistoricalDownloader,
     random_season_game_ids,
     sample_game_ids_per_team,
@@ -40,9 +41,6 @@ from hoops_lab.ingestion.historical import (  # noqa: E402
 from hoops_lab.ingestion.schemas import DownloadResult  # noqa: E402
 from hoops_lab.models.game_win_probability import SEASON_GAMES  # noqa: E402
 from hoops_lab.storage.seed import PROCESSED_DATA_DIR  # noqa: E402
-
-#: Seed of the whole-season PBP sample: the same command always picks the same games.
-PBP_SEED = 0
 
 
 def extend_season(downloader: HistoricalDownloader, season: str, skip_pbp: bool) -> int:
@@ -66,7 +64,7 @@ def extend_pbp_sample(
     downloader: HistoricalDownloader,
     season: str,
     n: int,
-    seed: int = PBP_SEED,
+    seed: int = PBP_RANDOM_SEED,
     processed_dir: Path = PROCESSED_DATA_DIR,
 ) -> DownloadResult:
     """Union ``n`` whole-season random games with the published PBP sample of ``season``.

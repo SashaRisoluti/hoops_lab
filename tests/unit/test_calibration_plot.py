@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,6 +16,7 @@ from scripts.calibration_plot import (
     fit_calibrators,
     pick_calibrator,
     reliability_table,
+    whole_season_game_ids,
 )
 
 
@@ -89,3 +92,17 @@ def test_cluster_bootstrap_interval_brackets_point_estimate() -> None:
     lo, hi = cluster_bootstrap_ece(y, p, groups, n_boot=200)
 
     assert 0.0 <= lo < expected_calibration_error(y, p) < hi
+
+
+def test_whole_season_game_ids_is_the_seeded_regular_season_sample(tmp_path: Path) -> None:
+    regular = [f"00225{i:05d}" for i in range(300)]
+    playoffs = [f"00425{i:05d}" for i in range(10)]
+    pd.DataFrame({"GAME_ID": (regular + playoffs) * 2}).to_parquet(
+        tmp_path / "team_box_2025-26.parquet"
+    )
+
+    ids = whole_season_game_ids("2025-26", tmp_path)
+
+    assert len(ids) == 250
+    assert ids <= set(regular)
+    assert ids == whole_season_game_ids("2025-26", tmp_path)

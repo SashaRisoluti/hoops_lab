@@ -2,9 +2,10 @@
 
 The model (``hoops_lab.models.game_win_probability``) is trained on every season strictly
 before the newest complete regular season and scored on that season's PBP states (tip-off
-plus every scoring event), the same temporal split as the export gate. States are binned
-into deciles of predicted home-win probability (equal-count bins); each point is a bin's
-mean prediction against its observed home-win rate.
+plus every scoring event), the same temporal split as the export gate. Only the whole-season
+random games are scored (see :func:`whole_season_game_ids`); training keeps every PBP game.
+States are binned into deciles of predicted home-win probability (equal-count bins); each
+point is a bin's mean prediction against its observed home-win rate.
 
 Post-hoc calibration is tested without touching the held-out season: a base model is fitted
 on the seasons before the calibration season (the one right before the held-out season),
@@ -46,6 +47,11 @@ from sklearn.linear_model import LogisticRegression  # noqa: E402
 from sklearn.model_selection import GroupKFold  # noqa: E402
 
 from dashboard.components.theme import TOKENS  # noqa: E402
+from hoops_lab.ingestion.historical import (  # noqa: E402
+    PBP_RANDOM_GAMES,
+    PBP_RANDOM_SEED,
+    random_season_game_ids,
+)
 from hoops_lab.models.game_win_probability import (  # noqa: E402
     build_states,
     completed_holdout_seasons,
@@ -56,6 +62,7 @@ from hoops_lab.models.game_win_probability import (  # noqa: E402
     pregame_priors,
 )
 from hoops_lab.storage.database import Database  # noqa: E402
+from hoops_lab.storage.seed import PROCESSED_DATA_DIR  # noqa: E402
 
 OUT_PATH = "docs/img/calibration.png"
 BINS = 10
@@ -148,6 +155,16 @@ def cluster_bootstrap_ece(
     return float(lo), float(hi)
 
 
+def whole_season_game_ids(season: str, processed_dir: Path = PROCESSED_DATA_DIR) -> set[str]:
+    """The seeded whole-season random PBP games of ``season``.
+
+    The rest of the PBP sample is each team's last games (the final fortnight), which is not
+    representative of the season, so the calibration set and the held-out season use only these.
+    """
+    team_box = pd.read_parquet(Path(processed_dir) / f"team_box_{season}.parquet")
+    return set(random_season_game_ids(team_box, PBP_RANDOM_GAMES, PBP_RANDOM_SEED))
+
+
 def _logit(model: LogisticRegression, states: pd.DataFrame) -> np.ndarray:
     return model.decision_function(features(states))
 
@@ -218,8 +235,15 @@ def main(argv: list[str] | None = None) -> int:
     cal_season = earlier[-1]
 
     train = states.loc[states["season"] < season]
-    test = states.loc[states["season"] == season]
-    cal = states.loc[states["season"] == cal_season]
+    # Evaluate on the whole-season random games only; training keeps every PBP game.
+    test = states.loc[
+        (states["season"] == season) & states["game_id"].isin(whole_season_game_ids(season))
+    ]
+    cal = states.loc[
+        (states["season"] == cal_season) & states["game_id"].isin(whole_season_game_ids(cal_season))
+    ]
+    if test.empty or cal.empty:
+        raise SystemExit("no whole-season random PBP games: run scripts/extend_seasons.py")
     y, y_cal, y_train = (frame["home_won"].astype(int).to_numpy() for frame in (test, cal, train))
 
     # Raw: the shipped recipe, trained on every season before the held-out one.
@@ -254,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
     sample_home = float(test.drop_duplicates("game_id")["home_won"].mean())
 
     title = (
-        f"Game win probability, {season} held out: PBP sample {first} to {last}\n"
+        f"Game win probability, {season} held out: whole-season random sample {first} to {last}\n"
         f"({test['game_id'].nunique()} games, {len(y):,} states; home wins {sample_home:.0%} "
         f"vs {season_home:.0%} full season)\n"
         f"chosen calibrator: {chosen} (5-fold game CV on {cal_season}, lowest Brier)"
@@ -266,7 +290,7 @@ def main(argv: list[str] | None = None) -> int:
     print(cv.to_string(float_format="%.4f"))
     print(f"chosen: {chosen}")
     print(f"held-out {season}: {test['game_id'].nunique()} games, {first} to {last}")
-    print(f"home win rate: PBP sample {sample_home:.3f} vs full regular season {season_home:.3f}")
+    print(f"home win rate: sample {sample_home:.3f} vs full regular season {season_home:.3f}")
     for label in curves:
         print(f"  {label}")
     print(
@@ -274,7 +298,7 @@ def main(argv: list[str] | None = None) -> int:
         f"{expected_calibration_error(y, p_raw):.4f}, game-cluster bootstrap 95% "
         f"[{ece_lo:.3f}, {ece_hi:.3f}]"
     )
-    print(f"-> {out.relative_to(ROOT)}")
+    print(f"-> {out}")
     return 0
 
 

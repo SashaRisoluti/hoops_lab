@@ -103,6 +103,12 @@ def sample_game_ids_per_team(team_box: pd.DataFrame, per_team: int) -> list[str]
     return sorted(ids)
 
 
+#: The published whole-season PBP sample (scripts/extend_seasons.py --pbp-random 250).
+#: Same seed, same games: scripts/calibration_plot.py rebuilds the sample from it.
+PBP_RANDOM_GAMES = 250
+PBP_RANDOM_SEED = 0
+
+
 def random_season_game_ids(team_box: pd.DataFrame, n: int, seed: int = 0) -> list[str]:
     """A seeded uniform sample of ``n`` regular-season GAME_IDs across the whole season (sorted).
 
