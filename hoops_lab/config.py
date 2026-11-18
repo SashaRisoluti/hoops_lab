@@ -46,4 +46,9 @@ DEMO_SEASONS: list[str] = [
 #: Games every team must have played before a season becomes the default one
 #: (dashboard season selector, website, live baselines). Until then the previous
 #: season stays featured, so early-season samples never drive a headline view.
-FEATURED_MIN_TEAM_GAMES: int = int(os.getenv("FEATURED_MIN_TEAM_GAMES", "10"))
+#: Must stay >= every default minimum-games filter on a featured-season view (player
+#: page, website leaders), or those views render empty.
+FEATURED_MIN_TEAM_GAMES: int = int(os.getenv("FEATURED_MIN_TEAM_GAMES", "30"))
+
+#: Default "Min games played" of the Player Analyzer's comparison population.
+PLAYER_POPULATION_MIN_GAMES: int = 30

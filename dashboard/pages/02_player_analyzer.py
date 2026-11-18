@@ -23,6 +23,7 @@ from dashboard.components.search_select import search_select  # noqa: E402
 from dashboard.components.team_rail import render_team_rail  # noqa: E402
 from dashboard.components.theme import inject_theme, render_command_bar  # noqa: E402
 from hoops_lab.analytics.player_profile import player_on_off, radar_percentiles  # noqa: E402
+from hoops_lab.config import PLAYER_POPULATION_MIN_GAMES  # noqa: E402
 from hoops_lab.features.percentiles import percentile_rank  # noqa: E402
 from hoops_lab.filters.entity import EntityFilter  # noqa: E402
 from hoops_lab.filters.query_builder import QueryRequest, run_query  # noqa: E402
@@ -57,7 +58,7 @@ team_id, team_abbr, season = render_team_rail(database)
 
 st.sidebar.header("🔍 Comparison population")
 min_minutes = st.sidebar.slider("Min minutes per game", 0.0, 40.0, 15.0, 1.0)
-min_games = st.sidebar.slider("Min games played", 0, 82, 30, 1)
+min_games = st.sidebar.slider("Min games played", 0, 82, PLAYER_POPULATION_MIN_GAMES, 1)
 st.sidebar.caption("Every percentile on this page refers to this population.")
 
 population = run_query(
