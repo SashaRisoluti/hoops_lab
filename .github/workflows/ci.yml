@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Parquet data lives on Git LFS: cache the objects so each run downloads only what changed.
       - name: List LFS objects
         run: git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: .git/lfs
           key: lfs-${{ hashFiles('.lfs-assets-id') }}
@@ -22,7 +22,7 @@ jobs:
       - name: Pull LFS objects
         run: git lfs pull
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip

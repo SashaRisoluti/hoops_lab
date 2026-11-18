@@ -47,7 +47,9 @@ def test_brier_score_hand_computed() -> None:
     assert brier_score(np.array([0, 1, 1]), np.array([0.1, 0.8, 0.5])) == pytest.approx(0.10)
 
 
-def _miscalibrated(n: int = 6000, scale: float = 2.0, seed: int = 0):
+def _miscalibrated(
+    n: int = 6000, scale: float = 2.0, seed: int = 0
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Logits ``z`` whose true probability is sigmoid(scale * z): under-confident by ``scale``."""
     rng = np.random.default_rng(seed)
     z = rng.normal(0.0, 1.0, n)
@@ -82,7 +84,8 @@ def test_choose_calibrator_fixes_strong_miscalibration() -> None:
 
     assert set(cv.index) == {"none", "temperature", "platt", "isotonic"}
     assert chosen != "none"
-    assert cv.loc[chosen, "brier"] < cv.loc["none", "brier"]
+    brier = cv["brier"].astype(float)
+    assert brier[chosen] < brier["none"]
 
 
 def test_cluster_bootstrap_interval_brackets_point_estimate() -> None:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pandas as pd
@@ -16,7 +17,7 @@ def _team_box(games: int) -> pd.DataFrame:
     return pd.DataFrame({"GAME_ID": ids + ids})
 
 
-def test_refuses_an_incomplete_season(tmp_path) -> None:
+def test_refuses_an_incomplete_season(tmp_path: Path) -> None:
     _team_box(400).to_parquet(tmp_path / "team_box_2026-27.parquet", index=False)
     client = MagicMock()
     downloader = HistoricalDownloader(client=client, raw_dir=tmp_path / "raw")
@@ -26,7 +27,7 @@ def test_refuses_an_incomplete_season(tmp_path) -> None:
     client.fetch_df.assert_not_called()
 
 
-def test_unions_random_games_with_the_published_sample(tmp_path) -> None:
+def test_unions_random_games_with_the_published_sample(tmp_path: Path) -> None:
     _team_box(1230).to_parquet(tmp_path / "team_box_2021-22.parquet", index=False)
     published = pd.DataFrame({"gameId": ["0022101230"], "actionNumber": [1]})
     published.to_parquet(tmp_path / "play_by_play_sample_2021-22.parquet", index=False)

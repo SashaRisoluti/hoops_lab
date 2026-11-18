@@ -39,7 +39,9 @@ def test_the_full_export_stays_inside_the_size_budget(tmp_path: Path) -> None:
 
 def test_every_exported_file_parses(tmp_path: Path) -> None:
     db = Database()
-    for path in export_dataset(db, tmp_path, [featured_season(db)]):
+    season = featured_season(db)
+    assert season is not None
+    for path in export_dataset(db, tmp_path, [season]):
         json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -47,6 +49,7 @@ def test_leaders_match_the_database_exactly() -> None:
     """The site must not disagree with the dashboard about a number."""
     db = Database()
     season = featured_season(db)
+    assert season is not None
     exported = build_leaders(db, season)
     points = next(c for c in exported["categories"] if c["key"] == "PTS")
 
@@ -63,7 +66,9 @@ def test_leaders_match_the_database_exactly() -> None:
 
 def test_every_team_resolves_to_a_tricode_and_accent() -> None:
     db = Database()
-    ratings = build_team_ratings(db, featured_season(db))
+    season = featured_season(db)
+    assert season is not None
+    ratings = build_team_ratings(db, season)
     assert len(ratings["teams"]) == 30
     assert all(team["tricode"] for team in ratings["teams"])
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -37,7 +38,7 @@ GAME = "0022100001"
 
 def _team_row(
     game_id: str, date: str, season: str, team: int, opp: int, pts: int, opp_pts: int, home: bool
-) -> dict:
+) -> dict[str, Any]:
     """One box_scores_team row whose counting stats estimate 100 possessions."""
     sep = " vs. " if home else " @ "
     return {
@@ -58,7 +59,7 @@ def _team_row(
 
 def _game(
     game_id: str, date: str, season: str, home: int, home_pts: int, away: int, away_pts: int
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     return [
         _team_row(game_id, date, season, home, away, home_pts, away_pts, home=True),
         _team_row(game_id, date, season, away, home, away_pts, home_pts, home=False),
@@ -164,7 +165,7 @@ def test_current_priors_of_a_season_without_games_are_last_season_finals() -> No
     assert as_of == "2022-10-19"
 
 
-def _pbp(rows: list[tuple]) -> pd.DataFrame:
+def _pbp(rows: list[tuple[Any, ...]]) -> pd.DataFrame:
     """PBPv3 rows: (actionNumber, period, clock, teamId, actionType, description, shotValue)."""
     frame = pd.DataFrame(
         rows,
@@ -344,7 +345,7 @@ _PASSING = {
         ({"ece": float("nan")}, False),
     ],
 )
-def test_gate_passes_truth_table(change: dict, passes: bool) -> None:
+def test_gate_passes_truth_table(change: dict[str, Any], passes: bool) -> None:
     assert gate_passes({**_PASSING, **change}) is passes
 
 

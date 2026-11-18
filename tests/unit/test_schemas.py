@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
@@ -27,7 +29,7 @@ def test_rejects_inconsistent_season_years() -> None:
 
 def test_rejects_unknown_season_type() -> None:
     with pytest.raises(ValidationError):
-        HistoricalDownloadRequest(seasons=["2023-24"], season_type="Summer League")
+        HistoricalDownloadRequest(seasons=["2023-24"], season_type="Summer League")  # type: ignore[arg-type]
 
 
 def test_rejects_empty_seasons_list() -> None:
@@ -37,4 +39,4 @@ def test_rejects_empty_seasons_list() -> None:
 
 def test_download_result_rejects_negative_rows() -> None:
     with pytest.raises(ValidationError):
-        DownloadResult(dataset="player_box", season="2023-24", rows=-1, path="x.parquet")
+        DownloadResult(dataset="player_box", season="2023-24", rows=-1, path=Path("x.parquet"))

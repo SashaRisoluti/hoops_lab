@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import Any
 from unittest.mock import MagicMock
 
 import pandas as pd
@@ -18,7 +19,7 @@ from hoops_lab.ingestion.live import (
 )
 
 
-def _game(game_id: str, status: int, text: str) -> dict:
+def _game(game_id: str, status: int, text: str) -> dict[str, Any]:
     return {
         "gameId": game_id,
         "gameStatus": status,

@@ -6,6 +6,8 @@ Altair chart and never touches the network or the database.
 
 from __future__ import annotations
 
+from typing import Any
+
 import altair as alt
 import pandas as pd
 import pytest
@@ -21,7 +23,7 @@ from hoops_lab.visuals.altair_charts import (
 )
 
 
-def _assert_serializable_chart(chart: object) -> dict:
+def _assert_serializable_chart(chart: object) -> dict[str, Any]:
     assert isinstance(chart, alt.TopLevelMixin)
     spec = chart.to_dict()
     assert isinstance(spec, dict)

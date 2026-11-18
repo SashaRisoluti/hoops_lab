@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 
 from dashboard.components.theme import (
@@ -48,7 +50,7 @@ def test_zone_bucket_groups_shot_zones() -> None:
     assert zone_bucket("Backcourt") is None
 
 
-def _game_rows(n: int, efg: float, tov: float, pm: float) -> list[dict]:
+def _game_rows(n: int, efg: float, tov: float, pm: float) -> list[dict[str, Any]]:
     return [{"OFF_EFG": efg, "OFF_TOV_PCT": tov, "PLUS_MINUS": pm} for _ in range(n)]
 
 

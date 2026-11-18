@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -23,7 +25,7 @@ from hoops_lab.visuals.shot_maps import player_shot_map, team_shot_map  # noqa: 
 
 
 @pytest.fixture(autouse=True)
-def _close_figures():
+def _close_figures() -> Iterator[None]:
     yield
     plt.close("all")
 

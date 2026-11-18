@@ -8,6 +8,7 @@ tenths of feet, origin at the hoop.
 from __future__ import annotations
 
 import math
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -33,7 +34,7 @@ def _shot(
     season: str = "2025-26",
     shot_type: str = "2PT Field Goal",
     distance: int = 5,
-) -> dict:
+) -> dict[str, Any]:
     return {
         "PLAYER_ID": player,
         "PLAYER_NAME": f"Player {player}",

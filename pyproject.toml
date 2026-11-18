@@ -47,7 +47,7 @@ testpaths = ["tests"]
 [tool.mypy]
 python_version = "3.11"
 strict = true
-files = ["hoops_lab", "scripts", "dashboard", "app.py"]
+files = ["hoops_lab", "scripts", "dashboard", "app.py", "tests"]
 # scripts/ and dashboard/ are folders run from the repo root, not installed packages.
 explicit_package_bases = true
 

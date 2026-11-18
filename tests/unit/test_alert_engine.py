@@ -25,7 +25,10 @@ def _possessions(rows: list[tuple[int, int, str]]) -> pd.DataFrame:
 
 
 def _state(
-    possessions: pd.DataFrame, home_stats=None, away_stats=None, clock="PT06M00.00S"
+    possessions: pd.DataFrame,
+    home_stats: TeamLiveStats | None = None,
+    away_stats: TeamLiveStats | None = None,
+    clock: str = "PT06M00.00S",
 ) -> GameState:
     return GameState(
         home_id=HOME,
@@ -108,6 +111,7 @@ def test_no_alerts_on_calm_game() -> None:
     # Pace baseline matched to the live estimate to keep the pace rule quiet.
     state = _state(_possessions(rows), home_stats=normal, away_stats=normal)
     live_pace = state.pace_estimate
+    assert live_pace is not None
     alerts = evaluate_alerts(state, _baselines(pace=live_pace))
 
     assert alerts == []

@@ -7,6 +7,8 @@ engine, not just well-formed strings.
 
 from __future__ import annotations
 
+from datetime import date
+
 import pandas as pd
 import pytest
 from pydantic import ValidationError
@@ -56,7 +58,7 @@ def db() -> Database:
 
 def test_unknown_base_table_is_rejected() -> None:
     with pytest.raises(ValidationError):
-        QueryRequest(base="players; DROP TABLE players")
+        QueryRequest(base="players; DROP TABLE players")  # type: ignore[arg-type]
 
 
 def test_unsafe_column_names_are_rejected() -> None:
@@ -177,7 +179,7 @@ def test_date_range_execution(db: Database) -> None:
     request = QueryRequest(
         base="player_game",
         columns=["GAME_ID"],
-        temporal=TemporalFilter(date_from="2024-01-04", date_to="2024-01-06"),
+        temporal=TemporalFilter(date_from=date(2024, 1, 4), date_to=date(2024, 1, 6)),
     )
     result = run_query(db, request)
     assert set(result["GAME_ID"]) == {"g2"}

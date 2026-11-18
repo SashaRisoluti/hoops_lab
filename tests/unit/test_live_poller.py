@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import Any
 
 import pandas as pd
 import pytest
@@ -10,26 +11,29 @@ import pytest
 import hoops_lab.live.poller as poller_module
 from hoops_lab.live.poller import LIVE_FEED, STATS_FALLBACK, LivePoller
 
+#: (call counts per fetcher, mutable clock) from the fake_feed fixture.
+FakeFeed = tuple[dict[str, int], list[float]]
+
 
 def _blocked(*args: object) -> None:
     raise ValueError("Expecting value: line 1 column 1 (char 0)")  # what a CDN 403 looks like
 
 
 @pytest.fixture
-def fake_feed(monkeypatch: pytest.MonkeyPatch) -> tuple[dict[str, int], list[float]]:
+def fake_feed(monkeypatch: pytest.MonkeyPatch) -> FakeFeed:
     """Stub every fetcher and the clock; return (call counts, clock)."""
     calls = {"scoreboard": 0, "pbp": 0, "stats_scoreboard": 0, "stats_pbp": 0}
     now = [100.0]
 
-    def scoreboard() -> list[dict]:
+    def scoreboard() -> list[dict[str, Any]]:
         calls["scoreboard"] += 1
         return []
 
-    def play_by_play(game_id: str) -> list[dict]:
+    def play_by_play(game_id: str) -> list[dict[str, Any]]:
         calls["pbp"] += 1
         return []
 
-    def stats_scoreboard(client: object, game_date: object) -> list[dict]:
+    def stats_scoreboard(client: object, game_date: object) -> list[dict[str, Any]]:
         calls["stats_scoreboard"] += 1
         return [{"gameId": "g1"}]
 
@@ -45,7 +49,9 @@ def fake_feed(monkeypatch: pytest.MonkeyPatch) -> tuple[dict[str, int], list[flo
     return calls, now
 
 
-def test_play_by_play_refreshes_on_every_poll_after_the_scoreboard(fake_feed) -> None:
+def test_play_by_play_refreshes_on_every_poll_after_the_scoreboard(
+    fake_feed: FakeFeed,
+) -> None:
     calls, now = fake_feed
     poller = LivePoller(min_interval=2.0)
 
@@ -57,7 +63,9 @@ def test_play_by_play_refreshes_on_every_poll_after_the_scoreboard(fake_feed) ->
     assert (calls["scoreboard"], calls["pbp"]) == (5, 5)
 
 
-def test_calls_inside_the_interval_are_served_from_cache(fake_feed) -> None:
+def test_calls_inside_the_interval_are_served_from_cache(
+    fake_feed: FakeFeed,
+) -> None:
     calls, now = fake_feed
     poller = LivePoller(min_interval=2.0)
 
@@ -69,7 +77,7 @@ def test_calls_inside_the_interval_are_served_from_cache(fake_feed) -> None:
     assert (calls["scoreboard"], calls["pbp"]) == (1, 1)
 
 
-def test_each_game_has_its_own_clock(fake_feed) -> None:
+def test_each_game_has_its_own_clock(fake_feed: FakeFeed) -> None:
     calls, _ = fake_feed
     poller = LivePoller(min_interval=2.0)
 
@@ -79,7 +87,7 @@ def test_each_game_has_its_own_clock(fake_feed) -> None:
     assert calls["pbp"] == 2
 
 
-def test_live_feed_is_used_when_it_answers(fake_feed) -> None:
+def test_live_feed_is_used_when_it_answers(fake_feed: FakeFeed) -> None:
     calls, _ = fake_feed
     poller = LivePoller(min_interval=2.0)
 
@@ -89,7 +97,9 @@ def test_live_feed_is_used_when_it_answers(fake_feed) -> None:
     assert calls["stats_scoreboard"] == 0
 
 
-def test_scoreboard_falls_back_to_stats_when_the_live_feed_fails(fake_feed, monkeypatch) -> None:
+def test_scoreboard_falls_back_to_stats_when_the_live_feed_fails(
+    fake_feed: FakeFeed, monkeypatch: pytest.MonkeyPatch
+) -> None:
     calls, _ = fake_feed
     monkeypatch.setattr(poller_module, "fetch_live_scoreboard", _blocked)
     poller = LivePoller(min_interval=2.0)
@@ -100,7 +110,9 @@ def test_scoreboard_falls_back_to_stats_when_the_live_feed_fails(fake_feed, monk
     assert calls["stats_scoreboard"] == 1
 
 
-def test_live_actions_are_adapted_to_the_stats_contract(fake_feed, monkeypatch) -> None:
+def test_live_actions_are_adapted_to_the_stats_contract(
+    fake_feed: FakeFeed, monkeypatch: pytest.MonkeyPatch
+) -> None:
     action = {
         "actionNumber": 2,
         "period": 1,
@@ -118,7 +130,9 @@ def test_live_actions_are_adapted_to_the_stats_contract(fake_feed, monkeypatch) 
     assert (events["gameId"] == "g1").all()
 
 
-def test_stats_play_by_play_is_used_as_is_in_chronological_order(fake_feed, monkeypatch) -> None:
+def test_stats_play_by_play_is_used_as_is_in_chronological_order(
+    fake_feed: FakeFeed, monkeypatch: pytest.MonkeyPatch
+) -> None:
     pbp = pd.DataFrame(
         {
             "gameId": ["g1"] * 3,
@@ -139,7 +153,9 @@ def test_stats_play_by_play_is_used_as_is_in_chronological_order(fake_feed, monk
     assert poller.source == STATS_FALLBACK
 
 
-def test_both_sources_failing_raises_connection_error(fake_feed, monkeypatch) -> None:
+def test_both_sources_failing_raises_connection_error(
+    fake_feed: FakeFeed, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(poller_module, "fetch_live_scoreboard", _blocked)
     monkeypatch.setattr(poller_module, "fetch_stats_scoreboard", _blocked)
 
