@@ -1,11 +1,14 @@
 # 🏀 Hoops Lab
 
-Modular NBA data-science framework — **historical analysis**, **pre-game scouting** and **live game intelligence** — built as a professional sports-analytics portfolio project.
-
-| | |
-|---|---|
-| **Website** | [hoops-lab.vercel.app](https://hoops-lab.vercel.app/) — statically generated, real data, no cold start; [`/live`](https://hoops-lab.vercel.app/live) follows tonight's games with a win probability |
-| **Live dashboard** | [hoopslab.streamlit.app](https://hoopslab.streamlit.app/) — the full interactive tool (sleeps when idle) |
+> **TL;DR** — A production-style data product built end to end by one person: scheduled ingestion from the NBA API into Parquet and DuckDB, a tested analytics package (~375 tests), probabilistic models (game win probability, shot quality, lineup recommender) and three ways to consume them: an importable Python package, a 9-page Streamlit tool and a statically generated Next.js website with live win probability.
+>
+> **What it demonstrates beyond basketball:** idempotent data pipelines with daily refresh · probability models validated out of time with calibration diagnostics (the same discipline as a credit PD model) · separation between business logic and presentation · deployment on Vercel and Streamlit Community Cloud.
+>
+> ![Reliability diagram: predicted vs observed home win rate by decile on the 2025-26 held-out sample, raw model and three post-hoc calibrators](docs/img/calibration.png)
+>
+> **Calibration:** the game win-probability model has ECE 0.016 on its training seasons but **0.085 on the held-out season** (2025-26: 81 play-by-play games, all from its last two weeks; 95% game-cluster bootstrap interval 0.058–0.142). That fortnight had 65% home wins against 55% over the full season. Temperature, Platt and isotonic calibrators, chosen by game-grouped cross-validation on 2024-25 only, did not beat the raw model on Brier, so none is applied (on 2025-26 they score ECE 0.082, 0.108 and 0.104). In-game states of one game are correlated, so the bins are not independent samples. A whole-season play-by-play sample is being built to re-evaluate.
+>
+> 🔗 [Website](https://hoops-lab.vercel.app/) · [Live games](https://hoops-lab.vercel.app/live) · [Dashboard](https://hoopslab.streamlit.app/)
 
 ## What it does
 
@@ -30,7 +33,6 @@ The framework exposes four independent interfaces over one analytics engine:
 | Importable Python package | `hoops_lab/` | ✅ all 6 phases complete |
 | Streamlit dashboard (full tool) | `dashboard/` | ✅ 9 pages |
 | Public website (Next.js, static) | `web/` | ✅ live, incl. `/live` games page |
-| FastAPI REST API | `api/` | stub, not started |
 
 ## Project structure
 
@@ -49,7 +51,6 @@ hoops-lab/
 ├── dashboard/            # Streamlit UI (presentation only)
 ├── web/                  # Next.js public website (static, generated data)
 ├── scripts/              # CLI utilities incl. the web data export
-├── api/                  # FastAPI REST interface (stub)
 ├── data/                 # raw / processed / db (see .gitignore policy)
 ├── notebooks/            # exploratory analysis
 └── tests/                # unit / integration / fixtures
