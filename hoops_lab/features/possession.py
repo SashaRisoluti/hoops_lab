@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import logging
 import re
+from typing import Any
 
 import pandas as pd
 
@@ -110,9 +111,9 @@ def _segment_game(
     home_id: int,
     home_score: pd.Series,
     away_score: pd.Series,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Walk one game's chronologically-ordered events into possession rows."""
-    results: list[dict] = []
+    results: list[dict[str, Any]] = []
     offense: int | None = None
     last_miss_team: int | None = None
     start_home, start_away = 0.0, 0.0
@@ -207,7 +208,7 @@ def build_possessions(pbp: pd.DataFrame) -> pd.DataFrame:
     One row per possession: game_id, possession_number, offense_team_id,
     period, points, ended_by.
     """
-    results: list[dict] = []
+    results: list[dict[str, Any]] = []
 
     for game_id, game in pbp.groupby("gameId", sort=False):
         game = sort_chronological(game)
@@ -235,11 +236,13 @@ def build_possessions(pbp: pd.DataFrame) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    import io
     import sys
 
     from hoops_lab.storage.database import Database
 
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
     db = Database()

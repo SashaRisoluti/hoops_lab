@@ -13,6 +13,8 @@ baseline behind the hoop to just past half court).
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -87,14 +89,14 @@ def _profile_one_group(
     made_col: str,
     zone_col: str,
     n_bins_total: int,
-) -> dict:
+) -> dict[str, Any]:
     """Profile features for one already-binned player/team group."""
     n = len(shots)
     zones = shots[zone_col].map(ZONE_FEATURES)
     made = shots[made_col].astype(float)
     points = _shot_points(shots)
 
-    features: dict = {"total_attempts": n}
+    features: dict[str, Any] = {"total_attempts": n}
 
     for key in ZONE_KEYS:
         in_zone = zones == key
@@ -146,11 +148,11 @@ def _build_profile(
     n_bins_total = bins[0] * bins[1]
     name_col = {"player_id": "PLAYER_NAME", "team_id": "TEAM_NAME"}[group_out]
 
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for group_id, group in binned.groupby(group_col, sort=True):
         if len(group) < min_attempts:
             continue
-        meta: dict = {
+        meta: dict[str, Any] = {
             group_out: group_id,
             "season": season_label or str(group[season_col].iloc[0]),
         }

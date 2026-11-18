@@ -269,7 +269,7 @@ def fit(states: pd.DataFrame) -> LogisticRegression:
 
 def predict(model: LogisticRegression, states: pd.DataFrame) -> np.ndarray:
     """Home win probability of each state."""
-    return model.predict_proba(features(states))[:, 1]
+    return np.asarray(model.predict_proba(features(states))[:, 1], dtype=float)
 
 
 def coefficients(model: LogisticRegression) -> dict[str, float]:

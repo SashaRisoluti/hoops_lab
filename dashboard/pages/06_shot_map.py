@@ -59,7 +59,7 @@ st.caption(
 )
 
 sql = "SELECT * FROM shots WHERE season = ? AND TEAM_ID = ?"
-params: list = [season, team_id]
+params: list[object] = [season, team_id]
 if players:
     sql += f" AND PLAYER_NAME IN ({', '.join('?' for _ in players)})"
     params.extend(players)

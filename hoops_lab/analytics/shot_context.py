@@ -9,12 +9,14 @@ play-by-play is downloaded.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 
 from hoops_lab.storage.database import Database
 
 
-def assisted_summary(db: Database, shots: pd.DataFrame) -> dict | None:
+def assisted_summary(db: Database, shots: pd.DataFrame) -> dict[str, Any] | None:
     """Assisted share of the made shots covered by play-by-play.
 
     Parameters

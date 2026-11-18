@@ -8,6 +8,8 @@ standing ranks real wins.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 
 #: ShotChartDetail SHOT_ZONE_BASIC -> design zone bucket (None = excluded).
@@ -51,7 +53,7 @@ def zone_bucket(shot_zone_basic: str) -> str | None:
     return _ZONE_BUCKETS.get(shot_zone_basic)
 
 
-def overview_flags(games: pd.DataFrame, window: int = 5) -> list[dict]:
+def overview_flags(games: pd.DataFrame, window: int = 5) -> list[dict[str, Any]]:
     """Tactical flags from the last ``window`` games vs the season baseline.
 
     Parameters
@@ -65,7 +67,7 @@ def overview_flags(games: pd.DataFrame, window: int = 5) -> list[dict]:
     Flags as dicts with rule / severity (HIGH, MED, LOW) / message; a single
     LOW "all clear" flag when nothing stands out.
     """
-    flags: list[dict] = []
+    flags: list[dict[str, Any]] = []
     if len(games) <= window:
         return [
             {

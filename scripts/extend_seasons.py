@@ -21,6 +21,7 @@ Run from the repo root::
 from __future__ import annotations
 
 import argparse
+import io
 import logging
 import sys
 from pathlib import Path
@@ -121,5 +122,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     main()

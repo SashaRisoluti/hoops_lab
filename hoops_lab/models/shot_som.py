@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -102,7 +103,7 @@ def assign_som_coordinates(
     return coords
 
 
-def summarize_som_map(coords: pd.DataFrame, grid_size: tuple[int, int]) -> dict:
+def summarize_som_map(coords: pd.DataFrame, grid_size: tuple[int, int]) -> dict[str, Any]:
     """Readable synthesis of the trained map.
 
     Args:

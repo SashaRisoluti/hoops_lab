@@ -7,11 +7,13 @@ The widget layer is deliberately thin: every widget value funnels into
 
 from __future__ import annotations
 
+from typing import Any
+
 import streamlit as st
 
 from hoops_lab.filters.entity import EntityFilter
 from hoops_lab.filters.query_builder import QueryRequest
-from hoops_lab.filters.statistical import StatFilter, StatFilterGroup
+from hoops_lab.filters.statistical import StatFilterGroup
 from hoops_lab.filters.temporal import TemporalFilter
 
 #: Fields offered by the dynamic statistical-filter builder (player_season_full view).
@@ -73,9 +75,14 @@ def build_request(
     """
     stats = None
     if stat_rows:
-        stats = StatFilterGroup(
-            logic=logic,
-            filters=[StatFilter(field=field, op=op, value=value) for field, op, value in stat_rows],
+        # model_validate: the widget strings are checked against the Literal types at runtime.
+        stats = StatFilterGroup.model_validate(
+            {
+                "logic": logic,
+                "filters": [
+                    {"field": field, "op": op, "value": value} for field, op, value in stat_rows
+                ],
+            }
         )
     return QueryRequest(
         base="player_season_full",
@@ -86,7 +93,7 @@ def build_request(
     )
 
 
-def _default_row() -> dict:
+def _default_row() -> dict[str, Any]:
     return {"field": "AST", "op": ">", "value": 5.0, "value2": 10.0}
 
 

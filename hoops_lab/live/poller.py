@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable
-from typing import TypeVar
+from typing import Any, TypeVar, cast
 
 import pandas as pd
 
@@ -71,7 +71,7 @@ class LivePoller:
         if key not in self._cache or now - self._fetched_at[key] >= self.min_interval:
             self._cache[key] = fetch()
             self._fetched_at[key] = now
-        return self._cache[key]
+        return cast(T, self._cache[key])
 
     def _fetch(self, live: Callable[[], T], stats: Callable[[], T]) -> T:
         """Live CDN first, stats.nba.com when it fails; records which one answered."""
@@ -89,7 +89,7 @@ class LivePoller:
         self.source, self.updated_at = source, pd.Timestamp.now(tz="America/New_York")
         return result
 
-    def scoreboard(self) -> list[dict]:
+    def scoreboard(self) -> list[dict[str, Any]]:
         """Tonight's games (cached within the polling interval)."""
         return self._get(
             "scoreboard",

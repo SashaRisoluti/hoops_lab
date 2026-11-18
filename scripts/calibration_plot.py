@@ -29,6 +29,7 @@ import argparse
 import sys
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 # Repo root importable regardless of how the script is launched.
 ROOT = Path(__file__).resolve().parents[1]
@@ -112,8 +113,9 @@ def fit_calibrators(z: np.ndarray, y: np.ndarray) -> dict[str, Calibrator]:
 
 def pick_calibrator(cv: pd.DataFrame) -> str:
     """Lowest cross-validated Brier; ``none`` unless another method is strictly lower."""
-    best = cv["brier"].idxmin()
-    return best if cv.loc[best, "brier"] < cv.loc["none", "brier"] else "none"
+    brier = cv["brier"].astype(float)
+    best = str(brier.idxmin())
+    return best if brier[best] < brier["none"] else "none"
 
 
 def choose_calibrator(
@@ -166,12 +168,12 @@ def whole_season_game_ids(season: str, processed_dir: Path = PROCESSED_DATA_DIR)
 
 
 def _logit(model: LogisticRegression, states: pd.DataFrame) -> np.ndarray:
-    return model.decision_function(features(states))
+    return np.asarray(model.decision_function(features(states)), dtype=float)
 
 
 def plot(curves: dict[str, tuple[pd.DataFrame, str]], title: str, out: Path) -> None:
     """Draw the reliability curves (label -> (table, style key)) and save them as PNG."""
-    styles = {
+    styles: dict[str, dict[str, Any]] = {
         "raw": {"color": TOKENS["primary"], "linestyle": "-", "marker": "o", "linewidth": 2},
         "temperature": {"color": TOKENS["good"], "linestyle": "--", "marker": "s"},
         "platt": {"color": TOKENS["mid"], "linestyle": "-.", "marker": "^"},

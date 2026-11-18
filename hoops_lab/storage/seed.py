@@ -263,9 +263,11 @@ def seed_database(
 
 
 if __name__ == "__main__":
+    import io
     import sys
 
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
     database = Database()

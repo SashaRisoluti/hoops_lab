@@ -181,11 +181,11 @@ def render_shot_archetypes_section(
         profiles = _season_profiles(database, season, min_attempts)
 
     total_shots = _season_shot_count(database, season)
-    grid = (
-        auto_grid_size(len(included))
-        if grid_choice == "auto"
-        else tuple(int(v) for v in grid_choice.split(" × "))
-    )
+    if grid_choice == "auto":
+        grid = auto_grid_size(len(included))
+    else:
+        rows, cols = (int(v) for v in grid_choice.split(" × "))
+        grid = (rows, cols)
 
     meta_cols = st.columns(6)
     meta_cols[0].metric("Season shots", f"{total_shots:,}")

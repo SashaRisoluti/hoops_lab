@@ -23,6 +23,7 @@ import math
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 # Repo root importable regardless of how the script is launched.
 ROOT = Path(__file__).resolve().parents[1]
@@ -109,7 +110,7 @@ def export_tokens(dest: Path) -> Path:
     return dest
 
 
-def _write_json(dest: Path, payload: dict) -> Path:
+def _write_json(dest: Path, payload: dict[str, Any]) -> Path:
     """Write ``payload`` to ``dest`` as indented JSON, creating parent directories.
 
     NaN/inf raise ``ValueError`` here: invalid JSON would otherwise break the site build.
@@ -127,7 +128,7 @@ def _rows(db: Database, table: str) -> int:
         return 0
 
 
-def build_project_stats(root: Path) -> dict:
+def build_project_stats(root: Path) -> dict[str, Any]:
     """Counts describing the codebase itself, for the About page.
 
     Derived from the source tree rather than written down, so the page cannot quote a
@@ -146,7 +147,7 @@ def build_project_stats(root: Path) -> dict:
     return {"tests": tests, "modules": modules}
 
 
-def build_index(db: Database) -> dict:
+def build_index(db: Database) -> dict[str, Any]:
     """Build the small index every page loads: seasons, teams and headline counts."""
     teams = db.query_df("SELECT team_id, full_name, abbreviation FROM teams ORDER BY abbreviation")
     seasons = sorted(db.query_df("SELECT season FROM seasons")["season"].tolist(), reverse=True)
@@ -159,12 +160,12 @@ def build_index(db: Database) -> dict:
         "featuredSeason": featured_season(db),
         "teams": [
             {
-                "id": int(row.team_id),
-                "tricode": row.abbreviation,
-                "name": row.full_name,
-                "accent": TEAM_ACCENTS_READABLE.get(row.abbreviation),
+                "id": int(row["team_id"]),
+                "tricode": row["abbreviation"],
+                "name": row["full_name"],
+                "accent": TEAM_ACCENTS_READABLE.get(row["abbreviation"]),
             }
-            for row in teams.itertuples()
+            for row in teams.to_dict("records")
         ],
         "summary": {
             "seasons": len(seasons),
@@ -188,7 +189,7 @@ def build_leaders(
     top_n: int = TOP_N,
     min_games: int = MIN_GAMES,
     min_minutes: float = MIN_MINUTES,
-) -> dict:
+) -> dict[str, Any]:
     """Build the per-season leaderboards, after applying the minimum-sample filter."""
     players = db.query_df(
         "SELECT PLAYER_ID, PLAYER_NAME, TEAM_ABBREVIATION, GP, MIN, "
@@ -206,12 +207,12 @@ def build_leaders(
                 "label": label,
                 "leaders": [
                     {
-                        "playerId": int(row.PLAYER_ID),
-                        "name": row.PLAYER_NAME,
-                        "tricode": row.TEAM_ABBREVIATION,
-                        "value": float(getattr(row, column)),
+                        "playerId": int(row["PLAYER_ID"]),
+                        "name": row["PLAYER_NAME"],
+                        "tricode": row["TEAM_ABBREVIATION"],
+                        "value": float(row[column]),
                     }
-                    for row in ranked.itertuples()
+                    for row in ranked.to_dict("records")
                 ],
             }
         )
@@ -224,38 +225,40 @@ def build_leaders(
     }
 
 
-def build_team_ratings(db: Database, season: str) -> dict:
+def build_team_ratings(db: Database, season: str) -> dict[str, Any]:
     """Build the per-season team ratings, reusing the dashboard's own analytics."""
     ratings = league_ratings(db, season)
     tricodes = db.query_df("SELECT team_id, abbreviation FROM teams")
     lookup = dict(zip(tricodes["team_id"], tricodes["abbreviation"], strict=True))
 
-    def _value(raw: object) -> float | None:
+    def _value(raw: Any) -> float | None:
         return None if pd.isna(raw) else float(raw)
 
     return {
         "season": season,
         "teams": [
             {
-                "id": int(row.TEAM_ID),
-                "tricode": lookup.get(row.TEAM_ID),
-                "name": row.TEAM_NAME,
-                "wins": int(row.W),
-                "losses": int(row.L),
-                "offRating": _value(row.OFF_RATING),
-                "defRating": _value(row.DEF_RATING),
-                "netRating": _value(row.NET_RATING),
-                "pace": _value(row.PACE),
-                "offRatingPctl": _value(row.OFF_RATING_PCTL),
-                "defRatingPctl": _value(row.DEF_RATING_PCTL),
-                "netRatingPctl": _value(row.NET_RATING_PCTL),
+                "id": int(row["TEAM_ID"]),
+                "tricode": lookup.get(row["TEAM_ID"]),
+                "name": row["TEAM_NAME"],
+                "wins": int(row["W"]),
+                "losses": int(row["L"]),
+                "offRating": _value(row["OFF_RATING"]),
+                "defRating": _value(row["DEF_RATING"]),
+                "netRating": _value(row["NET_RATING"]),
+                "pace": _value(row["PACE"]),
+                "offRatingPctl": _value(row["OFF_RATING_PCTL"]),
+                "defRatingPctl": _value(row["DEF_RATING_PCTL"]),
+                "netRatingPctl": _value(row["NET_RATING_PCTL"]),
             }
-            for row in ratings.itertuples()
+            for row in ratings.to_dict("records")
         ],
     }
 
 
-def build_shot_zones(db: Database, season: str, min_attempts: int = MIN_ZONE_ATTEMPTS) -> dict:
+def build_shot_zones(
+    db: Database, season: str, min_attempts: int = MIN_ZONE_ATTEMPTS
+) -> dict[str, Any]:
     """League-wide efficiency per shot zone for one season.
 
     Points per shot is what makes the zones comparable: a 35% three is worth more than
@@ -284,19 +287,19 @@ def build_shot_zones(db: Database, season: str, min_attempts: int = MIN_ZONE_ATT
         "totalAttempts": total,
         "zones": [
             {
-                "zone": row.zone,
-                "attempts": int(row.attempts),
-                "share": float(row.attempts) / total if total else 0.0,
-                "fgPct": float(row.fg_pct),
-                "pointsPerShot": float(row.points_per_shot),
-                "isThree": float(row.three_share) > 0.5,
+                "zone": row["zone"],
+                "attempts": int(row["attempts"]),
+                "share": float(row["attempts"]) / total if total else 0.0,
+                "fgPct": float(row["fg_pct"]),
+                "pointsPerShot": float(row["points_per_shot"]),
+                "isThree": float(row["three_share"]) > 0.5,
             }
-            for row in zones.itertuples()
+            for row in zones.to_dict("records")
         ],
     }
 
 
-def build_win_probability(db: Database) -> dict:
+def build_win_probability(db: Database) -> dict[str, Any]:
     """The /live drifting-lead win-probability model, published only if it clears its gate.
 
     The gate (``evaluate_holdout``) scores the two newest completed seasons

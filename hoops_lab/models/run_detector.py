@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 
 RUN_COLUMNS = [
@@ -25,7 +27,7 @@ def detect_runs(
     swing reaches ``threshold``; overlapping windows for the same team are
     merged into a single run with its total points.
     """
-    runs: list[dict] = []
+    runs: list[dict[str, Any]] = []
     for game_id, game in possessions.groupby("game_id", sort=False):
         game = game.sort_values("possession_number").reset_index(drop=True)
         teams = game["offense_team_id"].unique()
@@ -33,7 +35,7 @@ def detect_runs(
             continue
         team_a, team_b = int(teams[0]), int(teams[1])
 
-        current: dict | None = None
+        current: dict[str, Any] | None = None
         for start in range(0, len(game) - window + 1):
             chunk = game.iloc[start : start + window]
             pts_a = int(chunk.loc[chunk["offense_team_id"] == team_a, "points"].sum())

@@ -18,6 +18,7 @@ PBPv3 already is the stats-format contract.
 from __future__ import annotations
 
 from datetime import date
+from typing import Any
 
 import pandas as pd
 from nba_api.stats.endpoints import playbyplayv3, scoreboardv3
@@ -42,7 +43,7 @@ _SIMPLE_ACTIONS = {
 }
 
 
-def adapt_live_actions(actions: list[dict], game_id: str) -> pd.DataFrame:
+def adapt_live_actions(actions: list[dict[str, Any]], game_id: str) -> pd.DataFrame:
     """Convert live-feed actions to the stats-format event contract."""
     rows = []
     for action in actions:
@@ -97,7 +98,7 @@ def nba_today(now: pd.Timestamp | None = None) -> date:
     return (eastern - pd.Timedelta(hours=6)).date()
 
 
-def pickable_games(games: list[dict]) -> dict[str, dict]:
+def pickable_games(games: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """In-progress games first, then finished ones, keyed by gameId (scheduled dropped)."""
     started = sorted(
         (g for g in games if g.get("gameStatus") in (2, 3)), key=lambda g: g["gameStatus"]
@@ -105,30 +106,37 @@ def pickable_games(games: list[dict]) -> dict[str, dict]:
     return {str(g["gameId"]): g for g in started}
 
 
-def game_label(game: dict) -> str:
+def game_label(game: dict[str, Any]) -> str:
     """'AWY @ HOM — <status text>' picker label (status text: 'Q3 5:32', 'Final', ...)."""
     away, home = game["awayTeam"]["teamTricode"], game["homeTeam"]["teamTricode"]
     return f"{away} @ {home} — {str(game.get('gameStatusText', '')).strip()}"
 
 
-def fetch_live_scoreboard() -> list[dict]:
+def fetch_live_scoreboard() -> list[dict[str, Any]]:
     """Today's games from the live scoreboard (network)."""
     from nba_api.live.nba.endpoints import scoreboard
 
-    return scoreboard.ScoreBoard(timeout=LIVE_TIMEOUT).get_dict()["scoreboard"]["games"]
+    rows: list[dict[str, Any]] = scoreboard.ScoreBoard(timeout=LIVE_TIMEOUT).get_dict()[
+        "scoreboard"
+    ]["games"]
+    return rows
 
 
-def fetch_live_play_by_play(game_id: str) -> list[dict]:
+def fetch_live_play_by_play(game_id: str) -> list[dict[str, Any]]:
     """All actions so far for a live game (network)."""
     from nba_api.live.nba.endpoints import playbyplay
 
-    return playbyplay.PlayByPlay(game_id, timeout=LIVE_TIMEOUT).get_dict()["game"]["actions"]
+    rows: list[dict[str, Any]] = playbyplay.PlayByPlay(game_id, timeout=LIVE_TIMEOUT).get_dict()[
+        "game"
+    ]["actions"]
+    return rows
 
 
-def fetch_stats_scoreboard(client: NBAApiClient, game_date: date) -> list[dict]:
+def fetch_stats_scoreboard(client: NBAApiClient, game_date: date) -> list[dict[str, Any]]:
     """One night's games from stats.nba.com ScoreboardV3 (same shape as the live feed)."""
     endpoint = client._call(scoreboardv3.ScoreboardV3, game_date=game_date.isoformat())
-    return endpoint.get_dict()["scoreboard"]["games"]
+    rows: list[dict[str, Any]] = endpoint.get_dict()["scoreboard"]["games"]
+    return rows
 
 
 def fetch_stats_play_by_play(client: NBAApiClient, game_id: str) -> pd.DataFrame:

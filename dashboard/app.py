@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import streamlit as st  # noqa: E402
+from sklearn.linear_model import LogisticRegression  # noqa: E402
 
 from dashboard.components import overview_cards as cards  # noqa: E402
 from dashboard.components.data_access import get_database  # noqa: E402
@@ -193,7 +194,7 @@ with row_a[1]:
 with row_a[2]:
 
     @st.cache_resource
-    def _wp_model(excluded_game: str):
+    def _wp_model(excluded_game: str) -> LogisticRegression | None:
         states = build_states_from_db(database)
         train = states.loc[states["game_id"] != excluded_game]
         return train_win_probability(train) if len(train) else None
