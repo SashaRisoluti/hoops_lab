@@ -137,3 +137,73 @@ def test_recent_team_game_ids_filters_sorts_and_limits() -> None:
         }
     )
     assert recent_team_game_ids(team_box, team_id=1, n=2) == ["004", "003"]
+
+
+def _pbp(game_id: str, events: int = 2) -> pd.DataFrame:
+    return pd.DataFrame({"gameId": [game_id] * events, "actionNumber": list(range(1, events + 1))})
+
+
+def test_random_season_game_ids_is_seeded_unique_and_regular_season_only() -> None:
+    from hoops_lab.ingestion.historical import random_season_game_ids
+
+    regular = [f"00225{i:05d}" for i in range(1, 41)]
+    team_box = pd.DataFrame(
+        {"GAME_ID": regular + regular + ["0042500101", "0062500001"]}  # two rows per game
+    )
+
+    picked = random_season_game_ids(team_box, n=10, seed=7)
+
+    assert len(picked) == 10
+    assert len(set(picked)) == 10
+    assert all(game_id.startswith("002") for game_id in picked)
+    assert picked == sorted(picked)
+    assert picked == random_season_game_ids(team_box, n=10, seed=7)
+    assert picked != random_season_game_ids(team_box, n=10, seed=8)
+    # Asking for more than the season has returns every regular-season game once.
+    assert random_season_game_ids(team_box, n=500) == regular
+
+
+def test_resumable_pbp_unions_existing_and_skips_checkpointed_games(tmp_path) -> None:
+    client = MagicMock()
+    client.fetch_df.return_value = _pbp("C")
+    downloader = HistoricalDownloader(client=client, raw_dir=tmp_path)
+    checkpoint = tmp_path / "pbp_games" / "2023-24"
+    checkpoint.mkdir(parents=True)
+    _pbp("B").to_parquet(checkpoint / "B.parquet", index=False)  # done by an earlier run
+    existing = _pbp("A", events=3)
+
+    result = downloader.download_play_by_play_resumable(["A", "B", "C"], "2023-24", existing)
+
+    # A is already in the published sample and B is checkpointed: only C hits the network.
+    assert client.fetch_df.call_count == 1
+    assert client.fetch_df.call_args.kwargs == {"game_id": "C"}
+    saved = pd.read_parquet(result.path)
+    assert result.path == tmp_path / "play_by_play_sample_2023-24.parquet"
+    assert saved.groupby("gameId").size().to_dict() == {"A": 3, "B": 2, "C": 2}
+    assert (checkpoint / "C.parquet").exists()
+
+
+def test_resumable_pbp_failed_game_is_skipped_then_retried(tmp_path) -> None:
+    client = MagicMock()
+    client.fetch_df.side_effect = [RuntimeError("timeout"), _pbp("Y")]
+    downloader = HistoricalDownloader(client=client, raw_dir=tmp_path)
+
+    first = downloader.download_play_by_play_resumable(["X", "Y"], "2023-24")
+
+    assert sorted(pd.read_parquet(first.path)["gameId"].unique()) == ["Y"]
+
+    client.fetch_df.side_effect = [_pbp("X")]
+    second = downloader.download_play_by_play_resumable(["X", "Y"], "2023-24")
+
+    assert client.fetch_df.call_count == 3  # only X retried
+    assert sorted(pd.read_parquet(second.path)["gameId"].unique()) == ["X", "Y"]
+
+
+def test_resumable_pbp_never_checkpoints_an_empty_game(tmp_path) -> None:
+    client = MagicMock()
+    client.fetch_df.return_value = pd.DataFrame()
+    downloader = HistoricalDownloader(client=client, raw_dir=tmp_path)
+
+    downloader.download_play_by_play_resumable(["E"], "2023-24", _pbp("A"))
+
+    assert not (tmp_path / "pbp_games" / "2023-24" / "E.parquet").exists()

@@ -103,6 +103,18 @@ def sample_game_ids_per_team(team_box: pd.DataFrame, per_team: int) -> list[str]
     return sorted(ids)
 
 
+def random_season_game_ids(team_box: pd.DataFrame, n: int, seed: int = 0) -> list[str]:
+    """A seeded uniform sample of ``n`` regular-season GAME_IDs across the whole season (sorted).
+
+    Unlike :func:`sample_game_ids_per_team` (each team's most recent games, i.e. the season's
+    final fortnight), every regular-season game is equally likely, so the sample represents
+    the season. Returns every regular-season game when ``n`` exceeds them.
+    """
+    ids = pd.Series(team_box["GAME_ID"].astype(str).unique())
+    ids = ids[ids.str.startswith("002")]  # regular season; 004 playoffs, 006 NBA Cup final
+    return sorted(ids.sample(min(n, len(ids)), random_state=seed))
+
+
 class HistoricalDownloader:
     """Downloads historical NBA data and stores it as Parquet in ``raw_dir``.
 
@@ -248,6 +260,48 @@ class HistoricalDownloader:
         frames = [
             self.client.fetch_df(playbyplayv3.PlayByPlayV3, game_id=game_id) for game_id in game_ids
         ]
+        df = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+        return self._save(df, "play_by_play_sample", season)
+
+    def download_play_by_play_resumable(
+        self, game_ids: list[str], season: str, existing: pd.DataFrame | None = None
+    ) -> DownloadResult:
+        """Download play-by-play game by game with on-disk checkpoints, unioned with ``existing``.
+
+        Each game is saved to ``raw_dir/pbp_games/<season>/<GAME_ID>.parquet`` as soon as it
+        arrives, so an interrupted run resumes where it stopped. Games already in ``existing``
+        (the published sample) or already checkpointed are skipped. A failed or empty game is
+        logged and left for the next run. The merged file is ``existing`` plus every
+        checkpointed game of ``game_ids``.
+        """
+        checkpoint = self.raw_dir / "pbp_games" / season
+        checkpoint.mkdir(parents=True, exist_ok=True)
+        have = set() if existing is None else set(existing["gameId"].astype(str))
+        todo = [g for g in game_ids if g not in have and not (checkpoint / f"{g}.parquet").exists()]
+        logger.info("%s: %d games requested, %d to download", season, len(game_ids), len(todo))
+        for done, game_id in enumerate(todo, 1):
+            try:
+                df = self.client.fetch_df(playbyplayv3.PlayByPlayV3, game_id=game_id)
+            except Exception:
+                logger.exception("%s %s failed; rerun to retry", season, game_id)
+                continue
+            if df.empty:
+                logger.warning("%s %s returned no events; rerun to retry", season, game_id)
+                continue
+            tmp = checkpoint / f"{game_id}.parquet.tmp"
+            df.to_parquet(tmp, index=False)
+            tmp.replace(
+                checkpoint / f"{game_id}.parquet"
+            )  # atomic: a kill never leaves half a file
+            logger.info("%s %d/%d %s: %d events", season, done, len(todo), game_id, len(df))
+
+        files = [checkpoint / f"{g}.parquet" for g in game_ids if g not in have]
+        frames = [pd.read_parquet(path) for path in files if path.exists()]
+        missing = len(files) - len(frames)
+        if missing:
+            logger.warning("%s: %d games still missing; rerun the same command", season, missing)
+        if existing is not None:
+            frames.insert(0, existing)
         df = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
         return self._save(df, "play_by_play_sample", season)
 
