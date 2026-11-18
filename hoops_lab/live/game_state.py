@@ -144,7 +144,7 @@ class GameState:
             clock_sec = 0.0
         period_length = 12.0 if self.period <= 4 else 5.0
         completed = min(self.period - 1, 4) * 12.0 + max(self.period - 5, 0) * 5.0
-        return completed + (period_length - clock_sec / 60.0)
+        return float(completed + (period_length - clock_sec / 60.0))
 
     @property
     def pace_estimate(self) -> float | None:

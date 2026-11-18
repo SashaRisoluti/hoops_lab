@@ -93,7 +93,7 @@ class Database:
         with self.lock:
             return self.connect().execute(sql, params or []).df()
 
-    def fetchone(self, sql: str, params: list[Any] | None = None) -> tuple | None:
+    def fetchone(self, sql: str, params: list[Any] | None = None) -> tuple[Any, ...] | None:
         """Run a query and return its first row (None when there is none)."""
         with self.lock:
             return self.connect().execute(sql, params or []).fetchone()

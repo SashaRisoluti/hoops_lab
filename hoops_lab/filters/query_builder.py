@@ -12,7 +12,7 @@ percentiles always refer to the filtered population.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 import pandas as pd
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -95,13 +95,13 @@ class QueryRequest(BaseModel):
         return self
 
 
-def build_query(request: QueryRequest) -> tuple[str, list]:
+def build_query(request: QueryRequest) -> tuple[str, list[Any]]:
     """Translate a :class:`QueryRequest` into ``(sql, parameters)``."""
     spec = BASE_TABLES[request.base]
 
     select = ", ".join(f'"{c}"' for c in request.columns) if request.columns else "*"
 
-    where_parts: list[tuple[str, list]] = []
+    where_parts: list[tuple[str, list[Any]]] = []
     where_parts.extend(request.temporal.where_parts())
     where_parts.extend(request.entity.where_parts())
     where_parts.extend(request.contextual.where_parts())
@@ -110,7 +110,7 @@ def build_query(request: QueryRequest) -> tuple[str, list]:
         if fragment:
             where_parts.append((fragment, params))
 
-    qualify_parts: list[tuple[str, list]] = []
+    qualify_parts: list[tuple[str, list[Any]]] = []
     if request.stats:
         qualify_parts.extend(request.stats.qualify_sql())
     if spec.lastn_partition:
@@ -119,7 +119,7 @@ def build_query(request: QueryRequest) -> tuple[str, list]:
             qualify_parts.append(last_n)
 
     sql = f'SELECT {select} FROM "{spec.table}"'
-    parameters: list = []
+    parameters: list[Any] = []
 
     if where_parts:
         sql += " WHERE " + " AND ".join(fragment for fragment, _ in where_parts)

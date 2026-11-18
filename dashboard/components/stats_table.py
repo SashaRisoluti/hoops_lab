@@ -61,9 +61,9 @@ def render_stats_table(df: pd.DataFrame) -> list[str]:
     view = df[identity + selected]
 
     if selected and len(view) <= MAX_STYLED_ROWS:
-        styled = view.style.background_gradient(subset=selected, cmap=SEMANTIC_CMAP).format(
-            precision=2, subset=selected
-        )
+        styled = view.style.background_gradient(
+            subset=pd.Index(selected), cmap=SEMANTIC_CMAP
+        ).format(precision=2, subset=pd.Index(selected))
         st.dataframe(styled, hide_index=True, use_container_width=True)
     else:
         if len(view) > MAX_STYLED_ROWS:

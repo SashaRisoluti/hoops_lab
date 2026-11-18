@@ -17,7 +17,7 @@ def get_baselines(db: Database, team_id: int, season: str) -> dict[str, float]:
     )
     if rows.empty:
         return {}
-    return {k: float(v) for k, v in rows.iloc[0].items()}
+    return {str(k): float(v) for k, v in rows.iloc[0].items()}
 
 
 def comparison_table(

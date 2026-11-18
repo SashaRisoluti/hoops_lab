@@ -9,15 +9,19 @@ dist/
 # Tooling caches
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
 .ipynb_checkpoints/
 
 # Secrets & local config
 .env
 .streamlit/secrets.toml
+.superpowers/
+docs/superpowers
 
 # IDE preview exports
 README.html
 README_files/
+CLAUDE.md
 
 # Locally downloaded team logos (the app hotlinks the NBA CDN instead;
 # trademarked assets stay out of the public repo)
@@ -38,3 +42,6 @@ web/.next/
 web/out/
 web/.vercel/
 web/tsconfig.tsbuildinfo
+
+# Agent worktrees (local only)
+.claude/

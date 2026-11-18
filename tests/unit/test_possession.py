@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 
 from hoops_lab.features.possession import build_possessions
@@ -19,7 +21,7 @@ def _ev(
     period: int = 1,
     shot_value: int = 0,
     clock: str = "PT06M00.00S",  # constant by default: actionNumber breaks the tie
-) -> dict:
+) -> dict[str, Any]:
     return {
         "gameId": "g1",
         "actionNumber": action_number,

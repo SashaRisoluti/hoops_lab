@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 import pandas as pd  # noqa: E402
 import plotly.express as px  # noqa: E402
 import streamlit as st  # noqa: E402
+from sklearn.linear_model import LogisticRegression  # noqa: E402
 
 from dashboard.components.alert_panel import render_alert_panel  # noqa: E402
 from dashboard.components.data_access import get_database  # noqa: E402
@@ -59,7 +60,7 @@ team_id, team_abbr, season = render_team_rail(database)
 
 
 @st.cache_resource
-def _wp_model(excluded_game: str):
+def _wp_model(excluded_game: str) -> LogisticRegression | None:
     """Win probability model trained on every OTHER sampled game (no leakage)."""
     states = build_states_from_db(database)
     train = states.loc[states["game_id"] != excluded_game]
@@ -197,6 +198,8 @@ if mode == "Live (nba_api)":
             format_func=lambda gid: game_label(games[gid]),
             key="live_game_pick",
         )
+        if game_id is None or live_season is None:
+            return
         game = games[game_id]
         try:
             events = poller.events(game_id)
@@ -244,6 +247,8 @@ else:
     ]
     with st.sidebar:
         chosen = search_select("Game", labels, key="replay_game_pick")
+    if chosen is None:
+        st.stop()
     row = replay_games.iloc[labels.index(chosen)]
     home_id, away_id = int(row["home_team_id"]), int(row["away_team_id"])
     home_abbr, away_abbr = row["home_abbr"], row["away_abbr"]

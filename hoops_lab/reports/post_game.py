@@ -7,7 +7,10 @@ per the demo data strategy).
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
+from sklearn.pipeline import Pipeline
 
 from hoops_lab.features.four_factors import four_factors
 from hoops_lab.models.run_detector import detect_runs
@@ -17,7 +20,7 @@ from hoops_lab.storage.database import Database
 _COUNTS = "FGM, FG3M, FGA, FTA, FTM, TOV, OREB, DREB"
 
 
-def game_header(db: Database, game_id: str) -> dict:
+def game_header(db: Database, game_id: str) -> dict[str, Any]:
     """Teams, date, season and final score for one game."""
     row = db.query_df(
         """
@@ -31,7 +34,7 @@ def game_header(db: Database, game_id: str) -> dict:
         """,
         [game_id],
     ).iloc[0]
-    return row.to_dict()
+    return {str(k): v for k, v in row.items()}
 
 
 def game_four_factors(db: Database, game_id: str) -> pd.DataFrame:
@@ -51,7 +54,7 @@ def game_four_factors(db: Database, game_id: str) -> pd.DataFrame:
     return four_factors(counts)
 
 
-def shot_quality_summary(db: Database, game_id: str, shot_model) -> dict | None:
+def shot_quality_summary(db: Database, game_id: str, shot_model: Pipeline) -> dict[str, Any] | None:
     """Actual vs expected points for the game's tracked shots (if any)."""
     shots = db.query_df("SELECT * FROM shots WHERE GAME_ID = ?", [game_id])
     if shots.empty or shot_model is None:
@@ -101,10 +104,10 @@ def game_runs(db: Database, game_id: str) -> pd.DataFrame:
 
 
 def generate_insights(
-    header: dict,
+    header: dict[str, Any],
     factors: pd.DataFrame,
     runs: pd.DataFrame,
-    shots: dict | None,
+    shots: dict[str, Any] | None,
     teams_by_id: dict[int, str],
 ) -> list[str]:
     """3-5 readable bullets distilled from the report sections."""

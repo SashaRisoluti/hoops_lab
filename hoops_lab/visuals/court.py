@@ -8,6 +8,8 @@ exactly the LOC_X/LOC_Y convention — so shot frames plot with no transform.
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -43,11 +45,11 @@ def draw_court(
     if ax is None:
         fig, ax = plt.subplots(figsize=(6, 5.6))
     else:
-        fig = ax.figure
+        fig = cast(Figure, ax.figure)
 
     fig.patch.set_facecolor(bg_color)
     ax.set_facecolor(bg_color)
-    common = {"color": line_color, "lw": lw, "fill": False}
+    common: dict[str, Any] = {"color": line_color, "lw": lw, "fill": False}
 
     elements = [
         Circle((0, 0), radius=7.5, **common),  # hoop

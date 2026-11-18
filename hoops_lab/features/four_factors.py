@@ -45,7 +45,9 @@ def four_factors(df: pd.DataFrame, opp_prefix: str = "OPP_") -> pd.DataFrame:
     rebounds.
     """
     out = df.copy()
-    opp = lambda col: out[f"{opp_prefix}{col}"]  # noqa: E731
+
+    def opp(col: str) -> pd.Series:
+        return out[f"{opp_prefix}{col}"]
 
     out["OFF_EFG"] = _safe_div(out["FGM"] + 0.5 * out["FG3M"], out["FGA"])
     out["OFF_TOV_PCT"] = _safe_div(

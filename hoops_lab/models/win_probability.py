@@ -9,11 +9,16 @@ training arrives when PBP coverage is extended.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
 from hoops_lab.features.possession import _clock_seconds, sort_chronological
+
+if TYPE_CHECKING:
+    from hoops_lab.storage.database import Database
 
 REGULATION_MINUTES = 48.0
 
@@ -61,7 +66,7 @@ def build_game_states(events: pd.DataFrame, home_won: dict[str, bool]) -> pd.Dat
     return pd.DataFrame(rows)
 
 
-def build_states_from_db(db) -> pd.DataFrame:
+def build_states_from_db(db: Database) -> pd.DataFrame:
     """Game states for every ingested PBP game, labelled from final scores."""
     events = db.query_df("SELECT * FROM play_by_play")
     finals = db.query_df(
@@ -85,7 +90,7 @@ def train_win_probability(states: pd.DataFrame) -> LogisticRegression:
 def predict_wp_frame(model: LogisticRegression, states: pd.DataFrame) -> np.ndarray:
     """Home win probability for a frame of (margin, minutes_remaining) rows."""
     featured = _add_features(states)
-    return model.predict_proba(featured[["margin", "margin_time"]])[:, 1]
+    return np.asarray(model.predict_proba(featured[["margin", "margin_time"]])[:, 1], dtype=float)
 
 
 def wp_curve(model: LogisticRegression, events: pd.DataFrame) -> pd.DataFrame:

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 import pytest
 
@@ -19,7 +21,7 @@ def _ev(
     shot_value: int = 2,
     clock: str = "PT06M00.00S",
     description: str = "",
-) -> dict:
+) -> dict[str, Any]:
     return {
         "gameId": "g1",
         "actionNumber": n,

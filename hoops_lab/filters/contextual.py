@@ -7,7 +7,7 @@ this model grows with it.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -22,7 +22,7 @@ class ContextualFilter(BaseModel):
         """True when any contextual constraint is set."""
         return self.location is not None
 
-    def where_parts(self) -> list[tuple[str, list]]:
+    def where_parts(self) -> list[tuple[str, list[Any]]]:
         """WHERE fragments + parameters."""
         if self.location == "home":
             return [('"MATCHUP" LIKE ?', ["% vs. %"])]

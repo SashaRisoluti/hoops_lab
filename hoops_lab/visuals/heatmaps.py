@@ -8,6 +8,8 @@ picture — the visual identity of a KMeans cluster.
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
@@ -74,7 +76,8 @@ def shot_density_heatmap(
     binned = build_spatial_bins(shots_df, x_col=x_col, y_col=y_col, bins=bins)
     counts = np.zeros((bins[1], bins[0]))
     cell_counts = binned.groupby(["bin_y", "bin_x"]).size()
-    for (by, bx), count in cell_counts.items():
+    for key, count in cell_counts.items():
+        by, bx = cast(tuple[int, int], key)
         counts[by, bx] = count
 
     fig, ax = draw_court()
@@ -128,7 +131,8 @@ def compute_efficiency_grid(
 
     binned = build_spatial_bins(shots_df, x_col=x_col, y_col=y_col, bins=bins)
     grouped = binned.groupby(["bin_y", "bin_x"])[made_col].agg(["count", "mean"])
-    for (by, bx), row in grouped.iterrows():
+    for key, row in grouped.iterrows():
+        by, bx = cast(tuple[int, int], key)
         attempts[by, bx] = row["count"]
         if row["count"] >= min_attempts:
             efficiency[by, bx] = row["mean"]

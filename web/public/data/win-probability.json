@@ -1,13 +1,13 @@
 {
   "available": true,
   "coefficients": {
-    "a": 0.082757,
-    "b": 0.253659,
-    "c": 0.175306
+    "a": 0.085345,
+    "b": 0.242492,
+    "c": 0.136653
   },
-  "homeCourtPts": 3.065093,
-  "pointsPerNetRating": 2.118315,
-  "scale": 12.083537,
+  "homeCourtPts": 2.841315,
+  "pointsPerNetRating": 1.601189,
+  "scale": 11.717163,
   "k": 10.0,
   "season": "2026-27",
   "asOf": "2026-11-10",
@@ -44,13 +44,13 @@
     "WAS": -8.165144
   },
   "metrics": {
-    "trainGames": 235,
-    "holdoutGames": 163,
-    "holdoutLogLoss": 0.381696,
-    "baselineLogLoss": 0.443359,
-    "ece": 0.026846,
-    "pregameLogLoss": 0.605685,
+    "trainGames": 943,
+    "holdoutGames": 633,
+    "holdoutLogLoss": 0.429509,
+    "baselineLogLoss": 0.460064,
+    "ece": 0.015977,
+    "pregameLogLoss": 0.606677,
     "constantLogLoss": 0.68839,
-    "fitGames": 479
+    "fitGames": 1657
   }
 }

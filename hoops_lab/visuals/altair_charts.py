@@ -36,7 +36,7 @@ def _require(data: pd.DataFrame, columns: list[str]) -> None:
 
 def _dark(chart: alt.Chart) -> alt.Chart:
     """Apply the shared dark styling to a chart."""
-    return (
+    styled: alt.Chart = (
         chart.configure(background="transparent")
         .configure_view(stroke=None)
         .configure_axis(
@@ -49,6 +49,7 @@ def _dark(chart: alt.Chart) -> alt.Chart:
         .configure_legend(labelColor=TEXT_MUTED, titleColor=TEXT_MUTED)
         .configure_title(color=TEXT)
     )
+    return styled
 
 
 def build_four_factors_chart(data: pd.DataFrame, title: str = "Four Factors") -> alt.Chart:

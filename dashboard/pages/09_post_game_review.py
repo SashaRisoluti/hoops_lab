@@ -15,6 +15,8 @@ if str(ROOT) not in sys.path:
 
 import plotly.express as px  # noqa: E402
 import streamlit as st  # noqa: E402
+from sklearn.linear_model import LogisticRegression  # noqa: E402
+from sklearn.pipeline import Pipeline  # noqa: E402
 
 from dashboard.components.data_access import (  # noqa: E402
     get_database,
@@ -80,19 +82,21 @@ labels = [
 ]
 with st.sidebar:
     chosen = search_select("Game (📊 = play-by-play available)", labels, key="review_game_pick")
+if chosen is None:
+    st.stop()
 selected_game = games.iloc[labels.index(chosen)]
 game_id = str(selected_game["game_id"])
 has_pbp = bool(selected_game["has_pbp"])
 
 
 @st.cache_resource
-def _shot_model(excluded_game: str):
+def _shot_model(excluded_game: str) -> Pipeline | None:
     shots = database.query_df("SELECT * FROM shots WHERE GAME_ID != ?", [excluded_game])
     return train_shot_quality(shots) if len(shots) else None
 
 
 @st.cache_resource
-def _wp_model(excluded_game: str):
+def _wp_model(excluded_game: str) -> LogisticRegression | None:
     states = build_states_from_db(database)
     train = states.loc[states["game_id"] != excluded_game]
     return train_win_probability(train) if len(train) else None
@@ -158,7 +162,7 @@ with wp_col:
 
         swings = scoring["wp_home"].diff().abs()
         if swings.notna().any():
-            key_event = scoring.loc[swings.idxmax()]
+            key_event = scoring.loc[[swings.idxmax()]].iloc[0]
             st.caption(
                 f"Biggest swing ({swings.max():+.1%}): {key_event['description']} "
                 f"(Q{int(key_event['period'])})."

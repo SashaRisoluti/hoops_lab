@@ -6,6 +6,8 @@ every analysis must guard against small samples.
 
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -17,9 +19,9 @@ class EntityFilter(BaseModel):
     min_minutes: float | None = Field(default=None, ge=0)
     min_games: int | None = Field(default=None, ge=0)
 
-    def where_parts(self) -> list[tuple[str, list]]:
+    def where_parts(self) -> list[tuple[str, list[Any]]]:
         """WHERE fragments + parameters."""
-        parts: list[tuple[str, list]] = []
+        parts: list[tuple[str, list[Any]]] = []
         if self.team_ids:
             placeholders = ", ".join("?" for _ in self.team_ids)
             parts.append((f'"TEAM_ID" IN ({placeholders})', list(self.team_ids)))

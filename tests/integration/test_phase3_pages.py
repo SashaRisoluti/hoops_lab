@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from streamlit.testing.v1 import AppTest
 
 from hoops_lab.config import DB_PATH
 
@@ -13,9 +14,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def _run(page: str, timeout: int = 120):
-    from streamlit.testing.v1 import AppTest
-
+def _run(page: str, timeout: int = 120) -> AppTest:
     at = AppTest.from_file(f"dashboard/pages/{page}", default_timeout=timeout)
     at.run()
     assert not at.exception, f"{page} raised: {at.exception}"

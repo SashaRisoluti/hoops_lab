@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -33,7 +35,7 @@ def zone_efficiency(shots: pd.DataFrame) -> pd.DataFrame:
     return zones.sort_values("attempts", ascending=False).reset_index(drop=True)
 
 
-def _court_shapes() -> list[dict]:
+def _court_shapes() -> list[dict[str, Any]]:
     """Minimal half-court geometry in stats.nba.com coordinates (hoop at 0,0)."""
     line = {"line_color": COURT_LINE, "line_width": 1.5}
     return [

@@ -12,6 +12,7 @@ ratings are not derivable — plus/minus per 48 remains the two-way signal.
 from __future__ import annotations
 
 import itertools
+from typing import Any
 
 import pandas as pd
 
@@ -62,7 +63,7 @@ def player_combinations(
     Each 5-man row contributes its counts to all C(5, size) combinations it
     contains; summing across rows yields the combination's exact totals.
     """
-    records: list[dict] = []
+    records: list[dict[str, Any]] = []
     for _, row in df.iterrows():
         ids = parse_lineup_players(row["GROUP_ID"])
         base = {col: row[col] for col in SUM_COLS if col in df.columns}

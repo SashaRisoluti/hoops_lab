@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import copy
 import json
+from typing import Any
 
 import streamlit as st
 
@@ -182,7 +183,7 @@ def tokens_json() -> str:
     return json.dumps(TOKENS, indent=2)
 
 
-_PLOTLY_LAYOUT: dict = dict(
+_PLOTLY_LAYOUT: dict[str, Any] = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(family=FONT_BODY, color=TEXT),
@@ -190,7 +191,7 @@ _PLOTLY_LAYOUT: dict = dict(
 )
 
 
-def plotly_layout() -> dict:
+def plotly_layout() -> dict[str, Any]:
     """Fresh copy of the shared Plotly layout kwargs.
 
     Returns:

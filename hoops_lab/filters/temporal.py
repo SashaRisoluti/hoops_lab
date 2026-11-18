@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from datetime import date
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -35,9 +36,9 @@ class TemporalFilter(BaseModel):
         """True when the filter only makes sense on per-game rows."""
         return bool(self.last_n_games or self.date_from or self.date_to)
 
-    def where_parts(self) -> list[tuple[str, list]]:
+    def where_parts(self) -> list[tuple[str, list[Any]]]:
         """WHERE fragments + parameters (everything except last_n_games)."""
-        parts: list[tuple[str, list]] = []
+        parts: list[tuple[str, list[Any]]] = []
         if self.seasons:
             placeholders = ", ".join("?" for _ in self.seasons)
             parts.append((f"season IN ({placeholders})", list(self.seasons)))
@@ -47,7 +48,7 @@ class TemporalFilter(BaseModel):
             parts.append(('CAST("GAME_DATE" AS DATE) <= ?', [str(self.date_to)]))
         return parts
 
-    def qualify_part(self, partition_col: str) -> tuple[str, list] | None:
+    def qualify_part(self, partition_col: str) -> tuple[str, list[Any]] | None:
         """QUALIFY fragment keeping each entity's most recent N games."""
         if not self.last_n_games:
             return None

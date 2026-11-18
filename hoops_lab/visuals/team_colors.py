@@ -59,7 +59,7 @@ def rgb_distance(left: str, right: str) -> float:
     """Return the Euclidean distance between two colors in RGB space."""
     a = hex_to_rgb(left)
     b = hex_to_rgb(right)
-    return sum((x - y) ** 2 for x, y in zip(a, b, strict=True)) ** 0.5
+    return float(sum((x - y) ** 2 for x, y in zip(a, b, strict=True)) ** 0.5)
 
 
 def hue_delta(left: str, right: str) -> float:

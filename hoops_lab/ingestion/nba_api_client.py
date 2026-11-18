@@ -115,7 +115,8 @@ class NBAApiClient:
             Keyword arguments forwarded to the endpoint constructor.
         """
         endpoint = self._call(endpoint_cls, **params)
-        return endpoint.get_data_frames()[dataset_index]
+        frame: pd.DataFrame = endpoint.get_data_frames()[dataset_index]
+        return frame
 
     @staticmethod
     def team_id_from_name(full_name: str) -> int:
@@ -219,10 +220,12 @@ def run_smoke_test(season: str = "2023-24", save: bool = True) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    import io
     import sys
 
     # Windows consoles may default to cp1252, which cannot print players like
     # Luka Dončić — force UTF-8 for the smoke-test output.
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     run_smoke_test()

@@ -91,7 +91,7 @@ def _make_db(tmp_path: Path) -> tuple[Database, Path]:
     return db, raw_dir
 
 
-def test_ensure_db_ready_builds_database_from_parquet(tmp_path) -> None:
+def test_ensure_db_ready_builds_database_from_parquet(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
 
     seeded = db.ensure_db_ready(raw_dir=raw_dir)
@@ -103,7 +103,7 @@ def test_ensure_db_ready_builds_database_from_parquet(tmp_path) -> None:
     assert db.ensure_db_ready(raw_dir=raw_dir) is False
 
 
-def test_games_derived_with_home_away_and_season(tmp_path) -> None:
+def test_games_derived_with_home_away_and_season(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
     db.ensure_db_ready(raw_dir=raw_dir)
 
@@ -120,7 +120,7 @@ def test_games_derived_with_home_away_and_season(tmp_path) -> None:
     assert not game["neutral_site"]
 
 
-def test_neutral_site_games_kept_and_flagged(tmp_path) -> None:
+def test_neutral_site_games_kept_and_flagged(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
     db.ensure_db_ready(raw_dir=raw_dir)
 
@@ -135,7 +135,7 @@ def test_neutral_site_games_kept_and_flagged(tmp_path) -> None:
     assert game["away_pts"] == 95
 
 
-def test_players_keep_latest_season_row(tmp_path) -> None:
+def test_players_keep_latest_season_row(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
     db.ensure_db_ready(raw_dir=raw_dir)
 
@@ -146,7 +146,7 @@ def test_players_keep_latest_season_row(tmp_path) -> None:
     assert players.iloc[0]["last_season"] == "2024-25"
 
 
-def test_teams_loaded_from_static_data(tmp_path) -> None:
+def test_teams_loaded_from_static_data(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
     db.ensure_db_ready(raw_dir=raw_dir)
 
@@ -155,7 +155,7 @@ def test_teams_loaded_from_static_data(tmp_path) -> None:
     assert dallas.iloc[0]["full_name"] == "Dallas Mavericks"
 
 
-def test_missing_parquet_datasets_are_skipped(tmp_path) -> None:
+def test_missing_parquet_datasets_are_skipped(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
     db.ensure_db_ready(raw_dir=raw_dir)
 
@@ -164,7 +164,7 @@ def test_missing_parquet_datasets_are_skipped(tmp_path) -> None:
     assert not db.has_table("shots")
 
 
-def test_player_season_full_view_joins_advanced(tmp_path) -> None:
+def test_player_season_full_view_joins_advanced(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
     db.ensure_db_ready(raw_dir=raw_dir)
 
@@ -177,7 +177,7 @@ def test_player_season_full_view_joins_advanced(tmp_path) -> None:
     assert row["TS_PCT"] == 0.6  # joined from advanced stats
 
 
-def test_seed_builds_possessions_from_play_by_play(tmp_path) -> None:
+def test_seed_builds_possessions_from_play_by_play(tmp_path: Path) -> None:
     db, raw_dir = _make_db(tmp_path)
     db.ensure_db_ready(raw_dir=raw_dir)
 
@@ -188,7 +188,7 @@ def test_seed_builds_possessions_from_play_by_play(tmp_path) -> None:
     assert possession["ended_by"] == "made_fg"
 
 
-def test_seed_falls_back_to_processed_dir_when_raw_is_empty(tmp_path) -> None:
+def test_seed_falls_back_to_processed_dir_when_raw_is_empty(tmp_path: Path) -> None:
     # Hosted-demo scenario: data/raw is gitignored (empty), the versioned demo
     # parquet live in the processed directory instead.
     processed = tmp_path / "processed"
@@ -204,7 +204,7 @@ def test_seed_falls_back_to_processed_dir_when_raw_is_empty(tmp_path) -> None:
     assert db.table_rows("possessions") == 1
 
 
-def test_migrations_create_structural_tables_and_are_idempotent(tmp_path) -> None:
+def test_migrations_create_structural_tables_and_are_idempotent(tmp_path: Path) -> None:
     db = Database(path=tmp_path / "db" / "test.duckdb")
 
     first = db.run_migrations()
@@ -216,7 +216,7 @@ def test_migrations_create_structural_tables_and_are_idempotent(tmp_path) -> Non
         assert db.has_table(table)
 
 
-def test_an_unreadable_database_file_is_rebuilt_not_fatal(tmp_path) -> None:
+def test_an_unreadable_database_file_is_rebuilt_not_fatal(tmp_path: Path) -> None:
     """The DB is a cache of the parquet: a file from another DuckDB version is replaced.
 
     Streamlit Cloud once booted on DuckDB 2.0, which left a file DuckDB 1.5 cannot read
@@ -234,7 +234,7 @@ def test_an_unreadable_database_file_is_rebuilt_not_fatal(tmp_path) -> None:
     assert db.table_rows("box_scores_team") == 4
 
 
-def test_ensure_db_ready_reseeds_when_the_parquet_change(tmp_path) -> None:
+def test_ensure_db_ready_reseeds_when_the_parquet_change(tmp_path: Path) -> None:
     """Streamlit Cloud updates the repo in place after a data push, without restarting.
 
     The database must notice the new parquet and rebuild, or the weekly refresh would

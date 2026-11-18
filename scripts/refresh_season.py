@@ -19,6 +19,7 @@ commits only the published paths, so other work staged on the machine stays out.
 from __future__ import annotations
 
 import argparse
+import io
 import logging
 import os
 import shutil
@@ -145,7 +146,8 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
     # The scheduled run's hidden console cannot report the exit code: the log does.
     try:
         code = main()

@@ -8,6 +8,7 @@ access — data arrives already formatted.
 from __future__ import annotations
 
 import math
+from typing import Any
 
 import streamlit as st
 
@@ -82,7 +83,7 @@ def stat_tile_html(
     )
 
 
-def render_stat_tile_row(tiles: list[dict], columns: int | None = None) -> None:
+def render_stat_tile_row(tiles: list[dict[str, Any]], columns: int | None = None) -> None:
     """Render tiles side by side; each dict holds :func:`stat_tile_html` kwargs."""
     if not tiles:
         return
