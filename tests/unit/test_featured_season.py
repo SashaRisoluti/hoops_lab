@@ -5,7 +5,9 @@ from __future__ import annotations
 import pandas as pd
 
 from hoops_lab.analytics.seasons import featured_season
+from hoops_lab.config import FEATURED_MIN_TEAM_GAMES, PLAYER_POPULATION_MIN_GAMES
 from hoops_lab.storage.database import Database
+from scripts.export_web_data import MIN_GAMES as LEADERS_MIN_GAMES
 
 
 def _db(games_per_team: dict[str, tuple[int, int]]) -> Database:
@@ -60,3 +62,10 @@ def test_an_empty_database_has_no_featured_season() -> None:
         "games", pd.DataFrame({"season": [], "home_team_id": [], "away_team_id": []})
     )
     assert featured_season(db) is None
+
+
+def test_a_featured_season_can_fill_every_default_population() -> None:
+    # A season becomes the default only once its players can reach the default minimum
+    # games of the player page and of the website leaders; otherwise both render empty.
+    assert FEATURED_MIN_TEAM_GAMES >= PLAYER_POPULATION_MIN_GAMES
+    assert FEATURED_MIN_TEAM_GAMES >= LEADERS_MIN_GAMES

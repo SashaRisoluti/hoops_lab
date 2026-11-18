@@ -146,7 +146,7 @@ All settings are environment variables with safe defaults, read exclusively thro
 | `ENVIRONMENT` | `development` | `production` disables live-API features in the demo |
 | `REFERENCE_TEAM` | `Dallas Mavericks` | Your team for tests and scouting comparisons |
 | `DEMO_SEASONS` | `2021-22,...,2026-27` | Seasons preloaded for the public demo; the newest is the one `refresh_season.py` refreshes |
-| `FEATURED_MIN_TEAM_GAMES` | `10` | Games every team needs before the newest season becomes the default view |
+| `FEATURED_MIN_TEAM_GAMES` | `30` | Games every team needs before the newest season becomes the default view |
 | `LIVE_REFRESH_SECONDS` | `30` | Seconds between live-mode auto-refreshes |
 
 ### Changing the reference team
